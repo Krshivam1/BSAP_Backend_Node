@@ -80,7 +80,8 @@ const logger = require('../utils/logger');
 router.post('/login', validateLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
-    const result = await authService.login(email, password);
+    console.log(email, password);
+    const result = await authService.doLogin(req.body);
 
     // Set HTTP-only cookie for token
     res.cookie('token', result.token, {

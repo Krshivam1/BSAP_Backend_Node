@@ -148,7 +148,7 @@ const User = sequelize.define('User', {
     allowNull: true
   },
   active: {
-    type: DataTypes.BOOLEAN,
+    type: DataTypes.INTEGER,
     defaultValue: true
   }
 }, {

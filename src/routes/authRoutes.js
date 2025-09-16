@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const { User, Role } = require('../models');
 const { hashPassword, comparePassword, generateOTP, formatResponse } = require('../utils/helpers');
 const logger = require('../utils/logger');
+const sequelize = require('../config/database');
 
 const router = express.Router();
 
@@ -36,14 +37,54 @@ router.post('/login', loginValidation, async (req, res, next) => {
     }
 
     const { email, password } = req.body;
+    console.log(email, password);
+    
+    // Test database connection with raw query
+    try {
+      const [results, metadata] = await sequelize.query('SELECT COUNT(*) as userCount FROM user WHERE active = 1');
+      console.log('Database connection test - Active users count:', results[0].userCount);
+      // Test if user table exists and get structure
+      const [tableInfo] = await sequelize.query('DESCRIBE user');
+      console.log('User table structure:', tableInfo.map(col => `${col.Field} (${col.Type})`));
 
-    // Find user with role
+    } catch (dbError) {
+      console.error('Database connection test failed:', dbError.message);
+      logger.error('Database test error:', dbError);
+    }
+    
+    // Find user with role using raw query for additional testing
+    try {
+      const [userResults] = await sequelize.query(
+        'SELECT id, email, password, first_name, last_name, mobile_no, role_id, verified, is_first FROM user WHERE email = :email AND active = 1',
+        {
+          replacements: { email },
+          type: sequelize.QueryTypes.SELECT
+        }
+      );
+      console.log('Raw query result for user:', userResults ? 'User found' : 'User not found');
+      if (userResults) {
+        console.log('User details from raw query:', {
+          id: userResults.id,
+          email: userResults.email,
+          firstName: userResults.first_name,
+          lastName: userResults.last_name,
+          mobileNo: userResults.mobile_no,
+          roleId: userResults.role_id,
+          verified: userResults.verified,
+          isFirst: userResults.is_first
+        });
+      }
+    } catch (rawQueryError) {
+      console.error('Raw query failed:', rawQueryError.message);
+    }
+    
+    // Find user with role using Sequelize ORM
     const user = await User.findOne({
-      where: { email, active: true },
-      include: [{
-        model: Role,
-        as: 'role'
-      }]
+      where: { email, active: 1 },
+      // include: [{
+      //   model: Role,
+      //   as: 'role'
+      // }]
     });
 
     if (!user) {

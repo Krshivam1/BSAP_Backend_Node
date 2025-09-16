@@ -12,10 +12,10 @@ class AuthService {
    * @returns {Object} Login response with user data and token
    */
   async doLogin(loginData) {
-    const { username, password } = loginData;
-
+    const { email, password } = loginData;
+    console.log(email, password);
     // Validation
-    if (!username || username.trim() === '') {
+    if (!email || email.trim() === '') {
       throw new Error('Email is required');
     }
     if (!password || password.trim() === '') {
@@ -25,8 +25,8 @@ class AuthService {
     // Find user by email/username
     const user = await User.findOne({
       where: { 
-        email: username,
-        active: true 
+        email,
+        active: 1 
       },
       include: [{
         model: Role,

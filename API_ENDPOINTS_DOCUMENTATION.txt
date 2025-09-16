@@ -1,0 +1,1958 @@
+===============================================================================
+                    BSAP BACKEND API ENDPOINTS DOCUMENTATION
+===============================================================================
+
+Base URL: http://localhost:3000/api
+Authentication: Bearer Token (JWT) required for most endpoints
+Content-Type: application/json (unless specified otherwise)
+
+===============================================================================
+                            AUTHENTICATION ENDPOINTS
+===============================================================================
+Base Path: /api/auth
+
+1. POST /api/auth/login
+   Description: User login authentication
+   Authentication: Not required
+   Request Body:
+   {
+     "email": "string (required)",
+     "password": "string (required, min 6 chars)"
+   }
+   Example:
+   {
+     "email": "user@example.com",
+     "password": "password123"
+   }
+
+2. POST /api/auth/signup
+   Description: User registration
+   Authentication: Not required (may require admin approval)
+   Request Body:
+   {
+     "email": "string (required, valid email)",
+     "firstName": "string (required, 2-50 chars)",
+     "lastName": "string (required, 2-50 chars)",
+     "mobileNo": "string (required, 10 digits)",
+     "password": "string (required, min 6 chars)",
+     "roleId": "number (required, positive integer)",
+     "stateId": "number (optional, positive integer)",
+     "rangeId": "number (optional, positive integer)",
+     "districtId": "number (optional, positive integer)"
+   }
+
+3. POST /api/auth/logout
+   Description: User logout
+   Authentication: Required
+   Request Body: None
+
+4. POST /api/auth/forgot-password
+   Description: Request password reset
+   Authentication: Not required
+   Request Body:
+   {
+     "email": "string (required, valid email)"
+   }
+
+5. POST /api/auth/verify-otp
+   Description: Verify OTP for password reset
+   Authentication: Not required
+   Request Body:
+   {
+     "email": "string (required, valid email)",
+     "otp": "string (required, 6 digits)"
+   }
+
+6. POST /api/auth/reset-password
+   Description: Reset password with OTP
+   Authentication: Not required
+   Request Body:
+   {
+     "email": "string (required, valid email)",
+     "otp": "string (required, 6 digits)",
+     "newPassword": "string (required, min 6 chars)"
+   }
+
+7. POST /api/auth/change-password
+   Description: Change user password
+   Authentication: Required
+   Request Body:
+   {
+     "currentPassword": "string (required)",
+     "newPassword": "string (required, min 6 chars)"
+   }
+
+8. POST /api/auth/refresh-token
+   Description: Refresh authentication token
+   Authentication: Required
+   Request Body: None
+
+9. GET /api/auth/me
+   Description: Get current user profile
+   Authentication: Required
+   Request Body: None
+
+10. POST /api/auth/verify-email
+    Description: Verify email address
+    Authentication: Not required
+    Request Body:
+    {
+      "email": "string (required)",
+      "token": "string (required)"
+    }
+
+11. POST /api/auth/resend-verification
+    Description: Resend email verification
+    Authentication: Not required
+    Request Body:
+    {
+      "email": "string (required)"
+    }
+
+12. POST /api/auth/check-session
+    Description: Check session validity
+    Authentication: Required
+    Request Body: None
+
+13. GET /api/auth/user-permissions
+    Description: Get user permissions
+    Authentication: Required
+    Request Body: None
+
+===============================================================================
+                            USER MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/users
+
+1. GET /api/users
+   Description: Get all users with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/users/:id
+   Description: Get user by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/users
+   Description: Create new user
+   Authentication: Required
+   Request Body:
+   {
+     "email": "string (required)",
+     "firstName": "string (required)",
+     "lastName": "string (required)",
+     "mobileNo": "string (required)",
+     "roleId": "number (required)",
+     "stateId": "number (optional)",
+     "rangeId": "number (optional)",
+     "districtId": "number (optional)"
+   }
+
+4. PUT /api/users/:id
+   Description: Update user
+   Authentication: Required
+   Request Body:
+   {
+     "firstName": "string (optional)",
+     "lastName": "string (optional)",
+     "mobileNo": "string (optional)",
+     "roleId": "number (optional)",
+     "stateId": "number (optional)",
+     "rangeId": "number (optional)",
+     "districtId": "number (optional)"
+   }
+
+5. DELETE /api/users/:id
+   Description: Delete user
+   Authentication: Required
+   Request Body: None
+
+6. POST /api/users/:id/activate
+   Description: Activate user account
+   Authentication: Required
+   Request Body: None
+
+7. POST /api/users/:id/deactivate
+   Description: Deactivate user account
+   Authentication: Required
+   Request Body: None
+
+8. PUT /api/users/:id/first-time-password
+   Description: Set first-time password
+   Authentication: Required
+   Request Body:
+   {
+     "newPassword": "string (required)"
+   }
+
+9. GET /api/users/by-role/:roleId
+   Description: Get users by role
+   Authentication: Required
+   Request Body: None
+
+10. GET /api/users/by-location
+    Description: Get users by location
+    Authentication: Required
+    Query Parameters: stateId, districtId, rangeId
+    Request Body: None
+
+11. GET /api/users/search/:searchTerm
+    Description: Search users
+    Authentication: Required
+    Query Parameters: page, size
+    Request Body: None
+
+12. GET /api/users/statistics
+    Description: Get user statistics
+    Authentication: Required
+    Request Body: None
+
+13. POST /api/users/bulk-operation
+    Description: Bulk operations on users
+    Authentication: Required
+    Request Body:
+    {
+      "operation": "string (activate/deactivate/delete)",
+      "userIds": "array of numbers"
+    }
+
+===============================================================================
+                            STATE MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/states
+
+1. GET /api/states
+   Description: Get all states with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/states/:id
+   Description: Get state by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/states
+   Description: Create new state
+   Authentication: Required
+   Request Body:
+   {
+     "stateName": "string (required)",
+     "stateCode": "string (required)",
+     "description": "string (optional)"
+   }
+
+4. PUT /api/states/:id
+   Description: Update state
+   Authentication: Required
+   Request Body:
+   {
+     "stateName": "string (optional)",
+     "stateCode": "string (optional)",
+     "description": "string (optional)"
+   }
+
+5. DELETE /api/states/:id
+   Description: Delete state
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/states/search/:searchTerm
+   Description: Search states
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+7. GET /api/states/:id/districts
+   Description: Get districts in a state
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+8. GET /api/states/status/active
+   Description: Get active states
+   Authentication: Required
+   Request Body: None
+
+9. POST /api/states/:id/activate
+   Description: Activate state
+   Authentication: Required
+   Request Body: None
+
+10. POST /api/states/:id/deactivate
+    Description: Deactivate state
+    Authentication: Required
+    Request Body: None
+
+11. GET /api/states/stats/overview
+    Description: Get state statistics overview
+    Authentication: Required
+    Request Body: None
+
+===============================================================================
+                           DISTRICT MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/districts
+
+1. GET /api/districts
+   Description: Get all districts with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/districts/:id
+   Description: Get district by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/districts
+   Description: Create new district
+   Authentication: Required
+   Request Body:
+   {
+     "districtName": "string (required)",
+     "districtCode": "string (required)",
+     "stateId": "number (required)",
+     "description": "string (optional)"
+   }
+
+4. PUT /api/districts/:id
+   Description: Update district
+   Authentication: Required
+   Request Body:
+   {
+     "districtName": "string (optional)",
+     "districtCode": "string (optional)",
+     "stateId": "number (optional)",
+     "description": "string (optional)"
+   }
+
+5. DELETE /api/districts/:id
+   Description: Delete district
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/districts/by-state/:stateId
+   Description: Get districts by state
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+7. GET /api/districts/search/:searchTerm
+   Description: Search districts
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+8. GET /api/districts/:id/police-stations
+   Description: Get police stations in district
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+9. GET /api/districts/:id/sub-divisions
+   Description: Get sub-divisions in district
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+10. GET /api/districts/status/active
+    Description: Get active districts
+    Authentication: Required
+    Request Body: None
+
+11. POST /api/districts/:id/activate
+    Description: Activate district
+    Authentication: Required
+    Request Body: None
+
+12. POST /api/districts/:id/deactivate
+    Description: Deactivate district
+    Authentication: Required
+    Request Body: None
+
+13. GET /api/districts/stats/overview
+    Description: Get district statistics overview
+    Authentication: Required
+    Request Body: None
+
+===============================================================================
+                            RANGE MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/ranges
+
+1. GET /api/ranges
+   Description: Get all ranges with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/ranges/:id
+   Description: Get range by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/ranges
+   Description: Create new range
+   Authentication: Required
+   Request Body:
+   {
+     "rangeName": "string (required)",
+     "rangeCode": "string (required)",
+     "districtId": "number (required)",
+     "stateId": "number (required)",
+     "description": "string (optional)"
+   }
+
+4. PUT /api/ranges/:id
+   Description: Update range
+   Authentication: Required
+   Request Body:
+   {
+     "rangeName": "string (optional)",
+     "rangeCode": "string (optional)",
+     "districtId": "number (optional)",
+     "stateId": "number (optional)",
+     "description": "string (optional)"
+   }
+
+5. DELETE /api/ranges/:id
+   Description: Delete range
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/ranges/by-district/:districtId
+   Description: Get ranges by district
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+7. GET /api/ranges/by-state/:stateId
+   Description: Get ranges by state
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+8. GET /api/ranges/search/:searchTerm
+   Description: Search ranges
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+9. GET /api/ranges/:id/police-stations
+   Description: Get police stations in range
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+10. GET /api/ranges/status/active
+    Description: Get active ranges
+    Authentication: Required
+    Request Body: None
+
+11. POST /api/ranges/:id/activate
+    Description: Activate range
+    Authentication: Required
+    Request Body: None
+
+12. POST /api/ranges/:id/deactivate
+    Description: Deactivate range
+    Authentication: Required
+    Request Body: None
+
+13. GET /api/ranges/stats/overview
+    Description: Get range statistics overview
+    Authentication: Required
+    Request Body: None
+
+14. GET /api/ranges/:id/users
+    Description: Get users in range
+    Authentication: Required
+    Query Parameters: page, size
+    Request Body: None
+
+===============================================================================
+                        PERFORMANCE STATISTICS ENDPOINTS
+===============================================================================
+Base Path: /api/performance-statistics
+
+1. GET /api/performance-statistics
+   Description: Get performance statistics with pagination
+   Authentication: Required
+   Query Parameters: page, size, userId, startDate, endDate
+   Request Body: None
+
+2. GET /api/performance-statistics/:id
+   Description: Get performance statistic by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/performance-statistics
+   Description: Create performance statistic
+   Authentication: Required
+   Request Body:
+   {
+     "userId": "number (required)",
+     "date": "string (required, YYYY-MM-DD)",
+     "statistics": "object (required)",
+     "notes": "string (optional)"
+   }
+
+4. POST /api/performance-statistics/save-statistics
+   Description: Save performance statistics
+   Authentication: Required
+   Request Body:
+   {
+     "userId": "number (required)",
+     "date": "string (required)",
+     "data": "object (required)"
+   }
+
+5. PUT /api/performance-statistics/:id
+   Description: Update performance statistic
+   Authentication: Required
+   Request Body:
+   {
+     "statistics": "object (optional)",
+     "notes": "string (optional)"
+   }
+
+6. DELETE /api/performance-statistics/:id
+   Description: Delete performance statistic
+   Authentication: Required
+   Request Body: None
+
+7. POST /api/performance-statistics/:id/make-active
+   Description: Make performance statistic active
+   Authentication: Required
+   Request Body: None
+
+8. GET /api/performance-statistics/user/:userId
+   Description: Get performance statistics for user
+   Authentication: Required
+   Query Parameters: startDate, endDate
+   Request Body: None
+
+9. GET /api/performance-statistics/user/:userId/month/:monthYear
+   Description: Get monthly performance statistics for user
+   Authentication: Required
+   Request Body: None
+
+10. GET /api/performance-statistics/summary
+    Description: Get performance statistics summary
+    Authentication: Required
+    Query Parameters: startDate, endDate, userId
+    Request Body: None
+
+11. GET /api/performance-statistics/labels
+    Description: Get performance statistics labels
+    Authentication: Required
+    Request Body: None
+
+12. POST /api/performance-statistics/labels/filter
+    Description: Filter performance statistics labels
+    Authentication: Required
+    Request Body:
+    {
+      "filters": "object (required)"
+    }
+
+13. POST /api/performance-statistics/report-values
+    Description: Get report values
+    Authentication: Required
+    Request Body:
+    {
+      "reportType": "string (required)",
+      "parameters": "object (required)"
+    }
+
+14. GET /api/performance-statistics/count/user/:userId/date/:date
+    Description: Get count for user on specific date
+    Authentication: Required
+    Request Body: None
+
+15. GET /api/performance-statistics/success-count/user/:userId/date/:date
+    Description: Get success count for user on specific date
+    Authentication: Required
+    Request Body: None
+
+===============================================================================
+                            COMMUNICATION ENDPOINTS
+===============================================================================
+Base Path: /api/communications
+
+1. GET /api/communications
+   Description: Get all communications with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/communications/user
+   Description: Get user's communications
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+3. GET /api/communications/:id
+   Description: Get communication by ID
+   Authentication: Required
+   Request Body: None
+
+4. POST /api/communications/start
+   Description: Start new communication
+   Authentication: Required
+   Content-Type: multipart/form-data
+   Request Body:
+   {
+     "title": "string (required)",
+     "content": "string (required)",
+     "recipients": "array of user IDs (required)",
+     "priority": "string (optional, high/medium/low)",
+     "attachments": "files (optional, max 5)"
+   }
+
+5. POST /api/communications/:id/reply
+   Description: Reply to communication
+   Authentication: Required
+   Content-Type: multipart/form-data
+   Request Body:
+   {
+     "content": "string (required)",
+     "attachments": "files (optional, max 5)"
+   }
+
+6. PUT /api/communications/:id
+   Description: Update communication
+   Authentication: Required
+   Request Body:
+   {
+     "title": "string (optional)",
+     "content": "string (optional)",
+     "priority": "string (optional)"
+   }
+
+7. DELETE /api/communications/:id
+   Description: Delete communication
+   Authentication: Required
+   Request Body: None
+
+8. GET /api/communications/:id/messages
+   Description: Get messages in communication
+   Authentication: Required
+   Request Body: None
+
+9. GET /api/communications/:id/users
+   Description: Get users in communication
+   Authentication: Required
+   Request Body: None
+
+10. POST /api/communications/:id/users
+    Description: Add users to communication
+    Authentication: Required
+    Request Body:
+    {
+      "userIds": "array of numbers (required)"
+    }
+
+11. DELETE /api/communications/:id/users/:userId
+    Description: Remove user from communication
+    Authentication: Required
+    Request Body: None
+
+12. PUT /api/communications/messages/:messageId/status
+    Description: Update message status
+    Authentication: Required
+    Request Body:
+    {
+      "status": "string (required, read/unread)"
+    }
+
+13. GET /api/communications/:id/statistics
+    Description: Get communication statistics
+    Authentication: Required
+    Request Body: None
+
+14. GET /api/communications/search/:searchTerm
+    Description: Search communications
+    Authentication: Required
+    Query Parameters: page, size
+    Request Body: None
+
+15. GET /api/communications/:id/update-status
+    Description: Update communication status
+    Authentication: Required
+    Request Body: None
+
+===============================================================================
+                                REPORT ENDPOINTS
+===============================================================================
+Base Path: /api/reports
+
+1. POST /api/reports/generate
+   Description: Generate report
+   Authentication: Required
+   Request Body:
+   {
+     "reportType": "string (required)",
+     "startDate": "string (required, YYYY-MM-DD)",
+     "endDate": "string (required, YYYY-MM-DD)",
+     "filters": "object (optional)"
+   }
+
+2. POST /api/reports/excel
+   Description: Generate Excel report
+   Authentication: Required
+   Request Body:
+   {
+     "reportType": "string (required)",
+     "startDate": "string (required)",
+     "endDate": "string (required)",
+     "filters": "object (optional)"
+   }
+
+3. GET /api/reports/excel
+   Description: Get Excel report
+   Authentication: Required
+   Query Parameters: startDate, endDate, filters
+   Request Body: None
+
+4. POST /api/reports/district-excel
+   Description: Generate district Excel report
+   Authentication: Required
+   Request Body:
+   {
+     "districtId": "number (required)",
+     "startDate": "string (required)",
+     "endDate": "string (required)"
+   }
+
+5. GET /api/reports/district-excel
+   Description: Get district Excel report
+   Authentication: Required
+   Query Parameters: districtId, startDate, endDate
+   Request Body: None
+
+6. GET /api/reports/view
+   Description: View report
+   Authentication: Required
+   Query Parameters: reportType, startDate, endDate
+   Request Body: None
+
+7. GET /api/reports/user/:userId/summary
+   Description: Get user report summary
+   Authentication: Required
+   Query Parameters: startDate, endDate
+   Request Body: None
+
+8. POST /api/reports/custom
+   Description: Generate custom report
+   Authentication: Required
+   Request Body:
+   {
+     "template": "string (required)",
+     "parameters": "object (required)",
+     "format": "string (optional, pdf/excel/csv)"
+   }
+
+9. GET /api/reports/templates
+   Description: Get report templates
+   Authentication: Required
+   Request Body: None
+
+10. POST /api/reports/schedule
+    Description: Schedule report
+    Authentication: Required
+    Request Body:
+    {
+      "reportType": "string (required)",
+      "schedule": "string (required, daily/weekly/monthly)",
+      "recipients": "array of emails (required)",
+      "parameters": "object (optional)"
+    }
+
+===============================================================================
+                            MODULE MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/modules
+
+1. GET /api/modules
+   Description: Get all modules with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/modules/:id
+   Description: Get module by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/modules
+   Description: Create new module
+   Authentication: Required
+   Request Body:
+   {
+     "moduleName": "string (required)",
+     "description": "string (optional)",
+     "order": "number (optional)"
+   }
+
+4. PUT /api/modules/:id
+   Description: Update module
+   Authentication: Required
+   Request Body:
+   {
+     "moduleName": "string (optional)",
+     "description": "string (optional)",
+     "order": "number (optional)"
+   }
+
+5. DELETE /api/modules/:id
+   Description: Delete module
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/modules/:id/topics
+   Description: Get topics in module
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+7. GET /api/modules/search/:searchTerm
+   Description: Search modules
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+8. GET /api/modules/status/active
+   Description: Get active modules
+   Authentication: Required
+   Request Body: None
+
+9. POST /api/modules/:id/activate
+   Description: Activate module
+   Authentication: Required
+   Request Body: None
+
+10. POST /api/modules/:id/deactivate
+    Description: Deactivate module
+    Authentication: Required
+    Request Body: None
+
+11. GET /api/modules/stats/overview
+    Description: Get module statistics overview
+    Authentication: Required
+    Request Body: None
+
+12. PUT /api/modules/:id/order
+    Description: Update module order
+    Authentication: Required
+    Request Body:
+    {
+      "order": "number (required)"
+    }
+
+13. GET /api/modules/:id/permissions
+    Description: Get module permissions
+    Authentication: Required
+    Request Body: None
+
+14. POST /api/modules/:id/clone
+    Description: Clone module
+    Authentication: Required
+    Request Body:
+    {
+      "newName": "string (required)"
+    }
+
+===============================================================================
+                             TOPIC MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/topics
+
+1. GET /api/topics
+   Description: Get all topics with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/topics/:id
+   Description: Get topic by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/topics
+   Description: Create new topic
+   Authentication: Required
+   Request Body:
+   {
+     "topicName": "string (required)",
+     "moduleId": "number (required)",
+     "description": "string (optional)",
+     "order": "number (optional)"
+   }
+
+4. PUT /api/topics/:id
+   Description: Update topic
+   Authentication: Required
+   Request Body:
+   {
+     "topicName": "string (optional)",
+     "moduleId": "number (optional)",
+     "description": "string (optional)",
+     "order": "number (optional)"
+   }
+
+5. DELETE /api/topics/:id
+   Description: Delete topic
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/topics/by-module/:moduleId
+   Description: Get topics by module
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+7. GET /api/topics/:id/sub-topics
+   Description: Get sub-topics in topic
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+8. GET /api/topics/search/:searchTerm
+   Description: Search topics
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+9. GET /api/topics/status/active
+   Description: Get active topics
+   Authentication: Required
+   Request Body: None
+
+10. POST /api/topics/:id/activate
+    Description: Activate topic
+    Authentication: Required
+    Request Body: None
+
+11. POST /api/topics/:id/deactivate
+    Description: Deactivate topic
+    Authentication: Required
+    Request Body: None
+
+12. PUT /api/topics/:id/order
+    Description: Update topic order
+    Authentication: Required
+    Request Body:
+    {
+      "order": "number (required)"
+    }
+
+13. GET /api/topics/stats/overview
+    Description: Get topic statistics overview
+    Authentication: Required
+    Request Body: None
+
+14. POST /api/topics/:id/clone
+    Description: Clone topic
+    Authentication: Required
+    Request Body:
+    {
+      "newName": "string (required)"
+    }
+
+15. PUT /api/topics/reorder
+    Description: Reorder topics
+    Authentication: Required
+    Request Body:
+    {
+      "topics": "array of {id, order} objects (required)"
+    }
+
+===============================================================================
+                          SUB-TOPIC MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/sub-topics
+
+1. GET /api/sub-topics
+   Description: Get all sub-topics with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/sub-topics/:id
+   Description: Get sub-topic by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/sub-topics
+   Description: Create new sub-topic
+   Authentication: Required
+   Request Body:
+   {
+     "subTopicName": "string (required)",
+     "topicId": "number (required)",
+     "description": "string (optional)",
+     "order": "number (optional)"
+   }
+
+4. PUT /api/sub-topics/:id
+   Description: Update sub-topic
+   Authentication: Required
+   Request Body:
+   {
+     "subTopicName": "string (optional)",
+     "topicId": "number (optional)",
+     "description": "string (optional)",
+     "order": "number (optional)"
+   }
+
+5. DELETE /api/sub-topics/:id
+   Description: Delete sub-topic
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/sub-topics/by-topic/:topicId
+   Description: Get sub-topics by topic
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+7. GET /api/sub-topics/:id/questions
+   Description: Get questions in sub-topic
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+8. GET /api/sub-topics/search/:searchTerm
+   Description: Search sub-topics
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+9. GET /api/sub-topics/status/active
+   Description: Get active sub-topics
+   Authentication: Required
+   Request Body: None
+
+10. POST /api/sub-topics/:id/activate
+    Description: Activate sub-topic
+    Authentication: Required
+    Request Body: None
+
+11. POST /api/sub-topics/:id/deactivate
+    Description: Deactivate sub-topic
+    Authentication: Required
+    Request Body: None
+
+12. PUT /api/sub-topics/:id/order
+    Description: Update sub-topic order
+    Authentication: Required
+    Request Body:
+    {
+      "order": "number (required)"
+    }
+
+13. GET /api/sub-topics/stats/overview
+    Description: Get sub-topic statistics overview
+    Authentication: Required
+    Request Body: None
+
+14. POST /api/sub-topics/:id/clone
+    Description: Clone sub-topic
+    Authentication: Required
+    Request Body:
+    {
+      "newName": "string (required)"
+    }
+
+15. PUT /api/sub-topics/reorder
+    Description: Reorder sub-topics
+    Authentication: Required
+    Request Body:
+    {
+      "subTopics": "array of {id, order} objects (required)"
+    }
+
+16. GET /api/sub-topics/:id/performance-statistics
+    Description: Get performance statistics for sub-topic
+    Authentication: Required
+    Query Parameters: page, size
+    Request Body: None
+
+===============================================================================
+                           QUESTION MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/questions
+
+1. GET /api/questions
+   Description: Get all questions with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/questions/:id
+   Description: Get question by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/questions
+   Description: Create new question
+   Authentication: Required
+   Request Body:
+   {
+     "questionText": "string (required)",
+     "subTopicId": "number (required)",
+     "type": "string (required)",
+     "description": "string (optional)",
+     "order": "number (optional)"
+   }
+
+4. PUT /api/questions/:id
+   Description: Update question
+   Authentication: Required
+   Request Body:
+   {
+     "questionText": "string (optional)",
+     "subTopicId": "number (optional)",
+     "type": "string (optional)",
+     "description": "string (optional)",
+     "order": "number (optional)"
+   }
+
+5. DELETE /api/questions/:id
+   Description: Delete question
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/questions/by-sub-topic/:subTopicId
+   Description: Get questions by sub-topic
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+7. GET /api/questions/by-type/:type
+   Description: Get questions by type
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+8. GET /api/questions/search/:searchTerm
+   Description: Search questions
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+9. GET /api/questions/status/active
+   Description: Get active questions
+   Authentication: Required
+   Request Body: None
+
+10. POST /api/questions/:id/activate
+    Description: Activate question
+    Authentication: Required
+    Request Body: None
+
+11. POST /api/questions/:id/deactivate
+    Description: Deactivate question
+    Authentication: Required
+    Request Body: None
+
+12. PUT /api/questions/:id/order
+    Description: Update question order
+    Authentication: Required
+    Request Body:
+    {
+      "order": "number (required)"
+    }
+
+13. GET /api/questions/config/types
+    Description: Get question types configuration
+    Authentication: Required
+    Request Body: None
+
+14. GET /api/questions/stats/overview
+    Description: Get question statistics overview
+    Authentication: Required
+    Request Body: None
+
+15. POST /api/questions/:id/clone
+    Description: Clone question
+    Authentication: Required
+    Request Body:
+    {
+      "newText": "string (required)"
+    }
+
+16. PUT /api/questions/reorder
+    Description: Reorder questions
+    Authentication: Required
+    Request Body:
+    {
+      "questions": "array of {id, order} objects (required)"
+    }
+
+17. POST /api/questions/bulk-create
+    Description: Bulk create questions
+    Authentication: Required
+    Request Body:
+    {
+      "questions": "array of question objects (required)"
+    }
+
+18. GET /api/questions/:id/performance-statistics
+    Description: Get performance statistics for question
+    Authentication: Required
+    Query Parameters: page, size
+    Request Body: None
+
+19. PUT /api/questions/:id/metadata
+    Description: Update question metadata
+    Authentication: Required
+    Request Body:
+    {
+      "metadata": "object (required)"
+    }
+
+===============================================================================
+                             MENU MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/menus
+
+1. GET /api/menus
+   Description: Get all menus with pagination
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. GET /api/menus/:id
+   Description: Get menu by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/menus
+   Description: Create new menu
+   Authentication: Required
+   Request Body:
+   {
+     "menuName": "string (required)",
+     "parentId": "number (optional)",
+     "url": "string (optional)",
+     "icon": "string (optional)",
+     "order": "number (optional)"
+   }
+
+4. PUT /api/menus/:id
+   Description: Update menu
+   Authentication: Required
+   Request Body:
+   {
+     "menuName": "string (optional)",
+     "parentId": "number (optional)",
+     "url": "string (optional)",
+     "icon": "string (optional)",
+     "order": "number (optional)"
+   }
+
+5. DELETE /api/menus/:id
+   Description: Delete menu
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/menus/structure/hierarchy
+   Description: Get menu hierarchy structure
+   Authentication: Required
+   Request Body: None
+
+7. GET /api/menus/user/:userId
+   Description: Get menus for user
+   Authentication: Required
+   Request Body: None
+
+8. GET /api/menus/role/:roleId
+   Description: Get menus for role
+   Authentication: Required
+   Request Body: None
+
+9. GET /api/menus/parent/:parentId
+   Description: Get child menus
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+10. GET /api/menus/level/root
+    Description: Get root level menus
+    Authentication: Required
+    Request Body: None
+
+11. GET /api/menus/search/:searchTerm
+    Description: Search menus
+    Authentication: Required
+    Query Parameters: page, size
+    Request Body: None
+
+12. GET /api/menus/status/active
+    Description: Get active menus
+    Authentication: Required
+    Request Body: None
+
+13. POST /api/menus/:id/activate
+    Description: Activate menu
+    Authentication: Required
+    Request Body: None
+
+14. POST /api/menus/:id/deactivate
+    Description: Deactivate menu
+    Authentication: Required
+    Request Body: None
+
+15. PUT /api/menus/:id/order
+    Description: Update menu order
+    Authentication: Required
+    Request Body:
+    {
+      "order": "number (required)"
+    }
+
+16. PUT /api/menus/reorder
+    Description: Reorder menus
+    Authentication: Required
+    Request Body:
+    {
+      "menus": "array of {id, order} objects (required)"
+    }
+
+17. GET /api/menus/sidebar/:userId
+    Description: Get sidebar menu for user
+    Authentication: Required
+    Request Body: None
+
+18. GET /api/menus/breadcrumb/:menuId
+    Description: Get menu breadcrumb
+    Authentication: Required
+    Request Body: None
+
+19. GET /api/menus/stats/overview
+    Description: Get menu statistics overview
+    Authentication: Required
+    Request Body: None
+
+20. POST /api/menus/:id/permissions
+    Description: Assign menu permissions
+    Authentication: Required
+    Request Body:
+    {
+      "roleIds": "array of numbers (required)"
+    }
+
+21. DELETE /api/menus/:id/permissions/:roleId
+    Description: Remove menu permission
+    Authentication: Required
+    Request Body: None
+
+===============================================================================
+                    CID (CRIME INVESTIGATION DEPARTMENT) ENDPOINTS
+===============================================================================
+
+Base Path: /api/cid
+
+CID DISTRICTS (/api/cid/districts)
+----------------------------------
+1. GET /api/cid/districts
+   Description: Get all CID districts
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. POST /api/cid/districts
+   Description: Create new CID district
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "districtName": "string (required)",
+     "districtCode": "string (required)",
+     "stateId": "number (required)"
+   }
+
+3. GET /api/cid/districts/:id
+   Description: Get CID district by ID
+   Authentication: Required
+   Request Body: None
+
+4. PUT /api/cid/districts/:id
+   Description: Update CID district
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "districtName": "string (optional)",
+     "districtCode": "string (optional)",
+     "stateId": "number (optional)"
+   }
+
+5. DELETE /api/cid/districts/:id
+   Description: Delete CID district
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+6. POST /api/cid/districts/:id/activate
+   Description: Activate CID district
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+7. POST /api/cid/districts/:id/deactivate
+   Description: Deactivate CID district
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+CID POLICE STATIONS (/api/cid/police-stations)
+---------------------------------------------
+1. GET /api/cid/police-stations
+   Description: Get all CID police stations
+   Authentication: Required
+   Query Parameters: page, size, search, districtId
+   Request Body: None
+
+2. POST /api/cid/police-stations
+   Description: Create new CID police station
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "stationName": "string (required)",
+     "stationCode": "string (required)",
+     "districtId": "number (required)"
+   }
+
+3. GET /api/cid/police-stations/:id
+   Description: Get CID police station by ID
+   Authentication: Required
+   Request Body: None
+
+4. PUT /api/cid/police-stations/:id
+   Description: Update CID police station
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "stationName": "string (optional)",
+     "stationCode": "string (optional)",
+     "districtId": "number (optional)"
+   }
+
+5. DELETE /api/cid/police-stations/:id
+   Description: Delete CID police station
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+CID SUB DIVISIONS (/api/cid/sub-divisions)
+-----------------------------------------
+1. GET /api/cid/sub-divisions
+   Description: Get all CID sub divisions
+   Authentication: Required
+   Query Parameters: page, size, search, districtId
+   Request Body: None
+
+2. POST /api/cid/sub-divisions
+   Description: Create new CID sub division
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "subDivisionName": "string (required)",
+     "subDivisionCode": "string (required)",
+     "districtId": "number (required)"
+   }
+
+3. GET /api/cid/sub-divisions/:id
+   Description: Get CID sub division by ID
+   Authentication: Required
+   Request Body: None
+
+4. PUT /api/cid/sub-divisions/:id
+   Description: Update CID sub division
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "subDivisionName": "string (optional)",
+     "subDivisionCode": "string (optional)",
+     "districtId": "number (optional)"
+   }
+
+5. DELETE /api/cid/sub-divisions/:id
+   Description: Delete CID sub division
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+CID CRIME DATA (/api/cid/crime-data)
+-----------------------------------
+1. GET /api/cid/crime-data
+   Description: Get all CID crime data
+   Authentication: Required
+   Query Parameters: page, size, search, districtId, categoryId
+   Request Body: None
+
+2. GET /api/cid/crime-data/:id
+   Description: Get CID crime data by ID
+   Authentication: Required
+   Request Body: None
+
+3. POST /api/cid/crime-data
+   Description: Create new CID crime data
+   Authentication: Required
+   Request Body:
+   {
+     "firNumber": "string (required)",
+     "dateOfIncident": "string (required, YYYY-MM-DD)",
+     "placeOfIncident": "string (required)",
+     "categoryId": "number (required)",
+     "districtId": "number (required)",
+     "policeStationId": "number (required)",
+     "description": "string (optional)"
+   }
+
+4. PUT /api/cid/crime-data/:id
+   Description: Update CID crime data
+   Authentication: Required
+   Request Body:
+   {
+     "firNumber": "string (optional)",
+     "dateOfIncident": "string (optional)",
+     "placeOfIncident": "string (optional)",
+     "categoryId": "number (optional)",
+     "districtId": "number (optional)",
+     "policeStationId": "number (optional)",
+     "description": "string (optional)"
+   }
+
+5. DELETE /api/cid/crime-data/:id
+   Description: Delete CID crime data
+   Authentication: Required
+   Request Body: None
+
+6. GET /api/cid/crime-data/statistics
+   Description: Get CID crime data statistics
+   Authentication: Required
+   Query Parameters: startDate, endDate, districtId
+   Request Body: None
+
+7. GET /api/cid/crime-data/search/:searchTerm
+   Description: Search CID crime data
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+8. GET /api/cid/crime-data/by-status/:active
+   Description: Get CID crime data by status
+   Authentication: Required
+   Query Parameters: page, size
+   Request Body: None
+
+9. POST /api/cid/crime-data/:id/victims
+   Description: Add victims to crime data
+   Authentication: Required
+   Request Body:
+   {
+     "victims": "array of victim objects (required)"
+   }
+
+10. POST /api/cid/crime-data/:id/accused
+    Description: Add accused to crime data
+    Authentication: Required
+    Request Body:
+    {
+      "accused": "array of accused objects (required)"
+    }
+
+11. POST /api/cid/crime-data/:id/deceased
+    Description: Add deceased to crime data
+    Authentication: Required
+    Request Body:
+    {
+      "deceased": "array of deceased objects (required)"
+    }
+
+12. GET /api/cid/crime-data/district/:districtId
+    Description: Get crime data by district
+    Authentication: Required
+    Query Parameters: page, size
+    Request Body: None
+
+13. GET /api/cid/crime-data/category/:categoryId
+    Description: Get crime data by category
+    Authentication: Required
+    Query Parameters: page, size
+    Request Body: None
+
+14. GET /api/cid/crime-data/export/excel
+    Description: Export crime data to Excel
+    Authentication: Required
+    Query Parameters: startDate, endDate, filters
+    Request Body: None
+
+CID CRIME CATEGORIES (/api/cid/crime-categories)
+-----------------------------------------------
+1. GET /api/cid/crime-categories
+   Description: Get all CID crime categories
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. POST /api/cid/crime-categories
+   Description: Create new CID crime category
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "categoryName": "string (required)",
+     "categoryCode": "string (required)",
+     "description": "string (optional)"
+   }
+
+3. GET /api/cid/crime-categories/:id
+   Description: Get CID crime category by ID
+   Authentication: Required
+   Request Body: None
+
+4. PUT /api/cid/crime-categories/:id
+   Description: Update CID crime category
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "categoryName": "string (optional)",
+     "categoryCode": "string (optional)",
+     "description": "string (optional)"
+   }
+
+5. PUT /api/cid/crime-categories/:id/activate
+   Description: Activate CID crime category
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+6. PUT /api/cid/crime-categories/:id/deactivate
+   Description: Deactivate CID crime category
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+7. DELETE /api/cid/crime-categories/:id
+   Description: Delete CID crime category
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+CID CRIME CATEGORY TYPES (/api/cid/crime-category-types)
+-------------------------------------------------------
+1. GET /api/cid/crime-category-types
+   Description: Get all CID crime category types
+   Authentication: Required
+   Query Parameters: page, size, search, categoryId
+   Request Body: None
+
+2. POST /api/cid/crime-category-types
+   Description: Create new CID crime category type
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "typeName": "string (required)",
+     "typeCode": "string (required)",
+     "categoryId": "number (required)",
+     "description": "string (optional)"
+   }
+
+3. GET /api/cid/crime-category-types/:id
+   Description: Get CID crime category type by ID
+   Authentication: Required
+   Request Body: None
+
+4. PUT /api/cid/crime-category-types/:id
+   Description: Update CID crime category type
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "typeName": "string (optional)",
+     "typeCode": "string (optional)",
+     "categoryId": "number (optional)",
+     "description": "string (optional)"
+   }
+
+5. PUT /api/cid/crime-category-types/:id/activate
+   Description: Activate CID crime category type
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+6. PUT /api/cid/crime-category-types/:id/deactivate
+   Description: Deactivate CID crime category type
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+7. DELETE /api/cid/crime-category-types/:id
+   Description: Delete CID crime category type
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+CID CRIME MODUS (/api/cid/crime-modus)
+-------------------------------------
+1. GET /api/cid/crime-modus
+   Description: Get all CID crime modus
+   Authentication: Required
+   Query Parameters: page, size, search
+   Request Body: None
+
+2. POST /api/cid/crime-modus
+   Description: Create new CID crime modus
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "modusName": "string (required)",
+     "modusCode": "string (required)",
+     "description": "string (optional)"
+   }
+
+3. GET /api/cid/crime-modus/:id
+   Description: Get CID crime modus by ID
+   Authentication: Required
+   Request Body: None
+
+4. PUT /api/cid/crime-modus/:id
+   Description: Update CID crime modus
+   Authentication: Required (Admin/Super Admin)
+   Request Body:
+   {
+     "modusName": "string (optional)",
+     "modusCode": "string (optional)",
+     "description": "string (optional)"
+   }
+
+5. PUT /api/cid/crime-modus/:id/activate
+   Description: Activate CID crime modus
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+6. PUT /api/cid/crime-modus/:id/deactivate
+   Description: Deactivate CID crime modus
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+7. DELETE /api/cid/crime-modus/:id
+   Description: Delete CID crime modus
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+===============================================================================
+                            ADMIN MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/admin
+
+1. GET /api/admin/dashboard
+   Description: Get admin dashboard data
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+2. GET /api/admin/system-config
+   Description: Get system configuration
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+3. PUT /api/admin/system-config/:key
+   Description: Update system configuration
+   Authentication: Required (Super Admin)
+   Request Body:
+   {
+     "value": "any (required)"
+   }
+
+4. POST /api/admin/system-config
+   Description: Create system configuration
+   Authentication: Required (Super Admin)
+   Request Body:
+   {
+     "key": "string (required)",
+     "value": "any (required)",
+     "description": "string (optional)"
+   }
+
+5. DELETE /api/admin/system-config/:key
+   Description: Delete system configuration
+   Authentication: Required (Super Admin)
+   Request Body: None
+
+6. GET /api/admin/users/statistics
+   Description: Get user statistics
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+7. GET /api/admin/performance/overview
+   Description: Get performance overview
+   Authentication: Required (Admin/Super Admin)
+   Request Body: None
+
+8. POST /api/admin/backup/create
+   Description: Create system backup
+   Authentication: Required (Super Admin)
+   Request Body:
+   {
+     "type": "string (optional, full/partial)",
+     "tables": "array of strings (optional)"
+   }
+
+===============================================================================
+                             FILE MANAGEMENT ENDPOINTS
+===============================================================================
+Base Path: /api/files
+
+1. POST /api/files/upload/:type?
+   Description: Upload file
+   Authentication: Required
+   Content-Type: multipart/form-data
+   Request Body:
+   {
+     "file": "file (required)"
+   }
+
+===============================================================================
+                               HEALTH CHECK ENDPOINTS
+===============================================================================
+
+1. GET /health
+   Description: Application health check
+   Authentication: Not required
+   Request Body: None
+
+2. GET /api/health
+   Description: API health check
+   Authentication: Not required
+   Request Body: None
+
+3. GET /api/docs
+   Description: API documentation
+   Authentication: Not required
+   Request Body: None
+
+===============================================================================
+                             COMMON RESPONSE FORMAT
+===============================================================================
+
+All API responses follow this standard format:
+
+SUCCESS RESPONSE:
+{
+  "status": "SUCCESS",
+  "message": "Operation successful message",
+  "data": {
+    // Response data object
+  },
+  "timestamp": "2025-09-16T10:30:00.000Z"
+}
+
+ERROR RESPONSE:
+{
+  "status": "ERROR",
+  "message": "Error description",
+  "error": {
+    "code": "ERROR_CODE",
+    "details": "Additional error details"
+  },
+  "timestamp": "2025-09-16T10:30:00.000Z"
+}
+
+PAGINATED RESPONSE:
+{
+  "status": "SUCCESS",
+  "message": "Data retrieved successfully",
+  "data": {
+    "items": [],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalItems": 50,
+      "itemsPerPage": 10,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  },
+  "timestamp": "2025-09-16T10:30:00.000Z"
+}
+
+===============================================================================
+                              AUTHENTICATION HEADERS
+===============================================================================
+
+For authenticated endpoints, include the following headers:
+
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+For file upload endpoints:
+Authorization: Bearer <jwt_token>
+Content-Type: multipart/form-data
+
+===============================================================================
+                              COMMON QUERY PARAMETERS
+===============================================================================
+
+Pagination Parameters:
+- page: number (default: 1) - Page number
+- size: number (default: 10) - Items per page
+- limit: number - Alias for size
+
+Search Parameters:
+- search: string - Search term for filtering results
+
+Date Range Parameters:
+- startDate: string (YYYY-MM-DD) - Start date for filtering
+- endDate: string (YYYY-MM-DD) - End date for filtering
+
+Filtering Parameters:
+- stateId: number - Filter by state ID
+- districtId: number - Filter by district ID
+- rangeId: number - Filter by range ID
+- userId: number - Filter by user ID
+- roleId: number - Filter by role ID
+- categoryId: number - Filter by category ID
+- active: boolean - Filter by active status
+
+===============================================================================
+                              ERROR CODES
+===============================================================================
+
+Common HTTP Status Codes:
+- 200: OK - Request successful
+- 201: Created - Resource created successfully
+- 400: Bad Request - Invalid request parameters
+- 401: Unauthorized - Authentication required or invalid
+- 403: Forbidden - Insufficient permissions
+- 404: Not Found - Resource not found
+- 422: Unprocessable Entity - Validation errors
+- 429: Too Many Requests - Rate limit exceeded
+- 500: Internal Server Error - Server error
+
+Common Error Codes in Response:
+- VALIDATION_ERROR: Input validation failed
+- AUTHENTICATION_FAILED: Authentication failed
+- AUTHORIZATION_FAILED: Insufficient permissions
+- RESOURCE_NOT_FOUND: Requested resource not found
+- DUPLICATE_ENTRY: Resource already exists
+- FOREIGN_KEY_CONSTRAINT: Related resource dependency
+- RATE_LIMIT_EXCEEDED: Too many requests
+
+===============================================================================
+                                  NOTES
+===============================================================================
+
+1. All timestamps are in ISO 8601 format (UTC)
+2. All date parameters should be in YYYY-MM-DD format
+3. Pagination starts from page 1
+4. Maximum file upload size is 10MB (configurable)
+5. Rate limiting: 100 requests per 15 minutes per IP
+6. JWT tokens expire after 24 hours (configurable)
+7. All string comparisons are case-insensitive for search
+8. Soft delete is implemented for most resources (active flag)
+9. Audit logging is enabled for all write operations
+10. All endpoints support CORS for cross-origin requests
+
+===============================================================================
+                              END OF DOCUMENTATION
+===============================================================================
+
+Generated on: September 16, 2025
+Version: 1.0.0
+Application: BSAP Performance Statistics Management System
+Contact: development@bsap.gov.in
+
+===============================================================================
