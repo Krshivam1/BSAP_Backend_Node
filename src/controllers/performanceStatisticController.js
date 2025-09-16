@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { performanceStatisticService } = require('../services');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validateStatisticsCreate, validateOTP } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
 
@@ -153,7 +153,7 @@ const logger = require('../utils/logger');
  * @desc Get performance statistics with pagination and filtering
  * @access Private
  */
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const filters = {
       page: parseInt(req.query.page) || 1,
@@ -200,7 +200,7 @@ router.get('/', authMiddleware, async (req, res) => {
  * @desc Get performance statistic by ID
  * @access Private
  */
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     // Get single performance statistic by finding in paginated results
@@ -238,7 +238,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
  * @desc Create new performance statistic
  * @access Private
  */
-router.post('/', authMiddleware, validateStatisticsCreate, async (req, res) => {
+router.post('/', authenticate, validateStatisticsCreate, async (req, res) => {
   try {
     const statisticData = req.body;
     const createdBy = req.user.id;
@@ -265,7 +265,7 @@ router.post('/', authMiddleware, validateStatisticsCreate, async (req, res) => {
  * @desc Save multiple performance statistics
  * @access Private
  */
-router.post('/save-statistics', authMiddleware, async (req, res) => {
+router.post('/save-statistics', authenticate, async (req, res) => {
   try {
     const { statistics } = req.body;
     const createdBy = req.user.id;
@@ -305,7 +305,7 @@ router.post('/save-statistics', authMiddleware, async (req, res) => {
  * @desc Update performance statistic
  * @access Private
  */
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -336,7 +336,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
  * @desc Delete performance statistic (soft delete)
  * @access Private
  */
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -362,7 +362,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
  * @desc Make performance statistic active/inactive
  * @access Private
  */
-router.post('/:id/make-active', authMiddleware, async (req, res) => {
+router.post('/:id/make-active', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { active = true } = req.body;
@@ -394,7 +394,7 @@ router.post('/:id/make-active', authMiddleware, async (req, res) => {
  * @desc Get performance statistics by user ID
  * @access Private
  */
-router.get('/user/:userId', authMiddleware, async (req, res) => {
+router.get('/user/:userId', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     const statistics = await performanceStatisticService.getByUserId(parseInt(userId));
@@ -420,7 +420,7 @@ router.get('/user/:userId', authMiddleware, async (req, res) => {
  * @desc Get performance statistics by user ID and month
  * @access Private
  */
-router.get('/user/:userId/month/:monthYear', authMiddleware, async (req, res) => {
+router.get('/user/:userId/month/:monthYear', authenticate, async (req, res) => {
   try {
     const { userId, monthYear } = req.params;
     const statistics = await performanceStatisticService.getByUserIdAndMonth(
@@ -449,7 +449,7 @@ router.get('/user/:userId/month/:monthYear', authMiddleware, async (req, res) =>
  * @desc Get performance statistics summary
  * @access Private
  */
-router.get('/summary', authMiddleware, async (req, res) => {
+router.get('/summary', authenticate, async (req, res) => {
   try {
     const filters = {
       userId: req.query.userId ? parseInt(req.query.userId) : undefined,
@@ -482,7 +482,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
  * @desc Get all unique month-year labels
  * @access Private
  */
-router.get('/labels', authMiddleware, async (req, res) => {
+router.get('/labels', authenticate, async (req, res) => {
   try {
     const labels = await performanceStatisticService.getAllLabels();
 
@@ -507,7 +507,7 @@ router.get('/labels', authMiddleware, async (req, res) => {
  * @desc Get labels by filters
  * @access Private
  */
-router.post('/labels/filter', authMiddleware, async (req, res) => {
+router.post('/labels/filter', authenticate, async (req, res) => {
   try {
     const filters = req.body;
     const labels = await performanceStatisticService.getLabelsByFilters(filters);
@@ -533,7 +533,7 @@ router.post('/labels/filter', authMiddleware, async (req, res) => {
  * @desc Get values for report generation
  * @access Private
  */
-router.post('/report-values', authMiddleware, async (req, res) => {
+router.post('/report-values', authenticate, async (req, res) => {
   try {
     const filters = req.body;
     const values = await performanceStatisticService.getValuesForReport(filters);
@@ -559,7 +559,7 @@ router.post('/report-values', authMiddleware, async (req, res) => {
  * @desc Get count by user ID and date
  * @access Private
  */
-router.get('/count/user/:userId/date/:date', authMiddleware, async (req, res) => {
+router.get('/count/user/:userId/date/:date', authenticate, async (req, res) => {
   try {
     const { userId, date } = req.params;
     const count = await performanceStatisticService.getCountByUserIdAndDate(
@@ -588,7 +588,7 @@ router.get('/count/user/:userId/date/:date', authMiddleware, async (req, res) =>
  * @desc Get success count by user ID and date
  * @access Private
  */
-router.get('/success-count/user/:userId/date/:date', authMiddleware, async (req, res) => {
+router.get('/success-count/user/:userId/date/:date', authenticate, async (req, res) => {
   try {
     const { userId, date } = req.params;
     const count = await performanceStatisticService.getSuccessCountByUserIdAndDate(

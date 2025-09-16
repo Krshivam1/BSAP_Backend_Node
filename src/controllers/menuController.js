@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const MenuService = require('../services/menuService');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validateMenu, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/menus - Get all menus with pagination
-router.get('/', authMiddleware, validatePagination, async (req, res) => {
+router.get('/', authenticate, validatePagination, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -50,7 +50,7 @@ router.get('/', authMiddleware, validatePagination, async (req, res) => {
 });
 
 // GET /api/menus/:id - Get menu by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const menu = await MenuService.getMenuById(id);
@@ -77,7 +77,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // POST /api/menus - Create new menu
-router.post('/', authMiddleware, validateMenu, async (req, res) => {
+router.post('/', authenticate, validateMenu, async (req, res) => {
   try {
     const menuData = {
       ...req.body,
@@ -109,7 +109,7 @@ router.post('/', authMiddleware, validateMenu, async (req, res) => {
 });
 
 // PUT /api/menus/:id - Update menu
-router.put('/:id', authMiddleware, validateMenu, async (req, res) => {
+router.put('/:id', authenticate, validateMenu, async (req, res) => {
   try {
     const { id } = req.params;
     const menuData = {
@@ -148,7 +148,7 @@ router.put('/:id', authMiddleware, validateMenu, async (req, res) => {
 });
 
 // DELETE /api/menus/:id - Delete menu
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await MenuService.deleteMenu(id);
@@ -174,7 +174,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/menus/hierarchy - Get menu hierarchy
-router.get('/structure/hierarchy', authMiddleware, async (req, res) => {
+router.get('/structure/hierarchy', authenticate, async (req, res) => {
   try {
     const { roleId } = req.query;
     const menus = await MenuService.getMenuHierarchy(roleId);
@@ -194,7 +194,7 @@ router.get('/structure/hierarchy', authMiddleware, async (req, res) => {
 });
 
 // GET /api/menus/user/:userId - Get user-specific menus
-router.get('/user/:userId', authMiddleware, async (req, res) => {
+router.get('/user/:userId', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     const menus = await MenuService.getUserMenus(userId);
@@ -214,7 +214,7 @@ router.get('/user/:userId', authMiddleware, async (req, res) => {
 });
 
 // GET /api/menus/role/:roleId - Get role-specific menus
-router.get('/role/:roleId', authMiddleware, async (req, res) => {
+router.get('/role/:roleId', authenticate, async (req, res) => {
   try {
     const { roleId } = req.params;
     const menus = await MenuService.getRoleMenus(roleId);
@@ -234,7 +234,7 @@ router.get('/role/:roleId', authMiddleware, async (req, res) => {
 });
 
 // GET /api/menus/parent/:parentId - Get child menus
-router.get('/parent/:parentId', authMiddleware, validatePagination, async (req, res) => {
+router.get('/parent/:parentId', authenticate, validatePagination, async (req, res) => {
   try {
     const { parentId } = req.params;
     const { 
@@ -274,7 +274,7 @@ router.get('/parent/:parentId', authMiddleware, validatePagination, async (req, 
 });
 
 // GET /api/menus/root - Get root menus
-router.get('/level/root', authMiddleware, async (req, res) => {
+router.get('/level/root', authenticate, async (req, res) => {
   try {
     const { roleId } = req.query;
     const menus = await MenuService.getRootMenus(roleId);
@@ -294,7 +294,7 @@ router.get('/level/root', authMiddleware, async (req, res) => {
 });
 
 // GET /api/menus/search/:searchTerm - Search menus
-router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, status, roleId } = req.query;
@@ -330,7 +330,7 @@ router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req
 });
 
 // GET /api/menus/active - Get all active menus
-router.get('/status/active', authMiddleware, async (req, res) => {
+router.get('/status/active', authenticate, async (req, res) => {
   try {
     const { roleId, parentId } = req.query;
     const menus = await MenuService.getActiveMenus(roleId, parentId);
@@ -350,7 +350,7 @@ router.get('/status/active', authMiddleware, async (req, res) => {
 });
 
 // POST /api/menus/:id/activate - Activate menu
-router.post('/:id/activate', authMiddleware, async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const menu = await MenuService.activateMenu(id, req.user.id);
@@ -377,7 +377,7 @@ router.post('/:id/activate', authMiddleware, async (req, res) => {
 });
 
 // POST /api/menus/:id/deactivate - Deactivate menu
-router.post('/:id/deactivate', authMiddleware, async (req, res) => {
+router.post('/:id/deactivate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const menu = await MenuService.deactivateMenu(id, req.user.id);
@@ -404,7 +404,7 @@ router.post('/:id/deactivate', authMiddleware, async (req, res) => {
 });
 
 // PUT /api/menus/:id/order - Update menu display order
-router.put('/:id/order', authMiddleware, async (req, res) => {
+router.put('/:id/order', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -440,7 +440,7 @@ router.put('/:id/order', authMiddleware, async (req, res) => {
 });
 
 // PUT /api/menus/reorder - Reorder menus
-router.put('/reorder', authMiddleware, async (req, res) => {
+router.put('/reorder', authenticate, async (req, res) => {
   try {
     const { parentId, menuOrders } = req.body;
     
@@ -468,7 +468,7 @@ router.put('/reorder', authMiddleware, async (req, res) => {
 });
 
 // GET /api/menus/sidebar/:userId - Get sidebar menu for user
-router.get('/sidebar/:userId', authMiddleware, async (req, res) => {
+router.get('/sidebar/:userId', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     const sidebarMenu = await MenuService.getSidebarMenuForUser(userId);
@@ -488,7 +488,7 @@ router.get('/sidebar/:userId', authMiddleware, async (req, res) => {
 });
 
 // GET /api/menus/breadcrumb/:menuId - Get breadcrumb for menu
-router.get('/breadcrumb/:menuId', authMiddleware, async (req, res) => {
+router.get('/breadcrumb/:menuId', authenticate, async (req, res) => {
   try {
     const { menuId } = req.params;
     const breadcrumb = await MenuService.getMenuBreadcrumb(menuId);
@@ -508,7 +508,7 @@ router.get('/breadcrumb/:menuId', authMiddleware, async (req, res) => {
 });
 
 // GET /api/menus/statistics - Get menu statistics
-router.get('/stats/overview', authMiddleware, async (req, res) => {
+router.get('/stats/overview', authenticate, async (req, res) => {
   try {
     const statistics = await MenuService.getMenuStatistics();
     
@@ -527,7 +527,7 @@ router.get('/stats/overview', authMiddleware, async (req, res) => {
 });
 
 // POST /api/menus/:id/permissions - Assign permissions to menu
-router.post('/:id/permissions', authMiddleware, async (req, res) => {
+router.post('/:id/permissions', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { roleIds } = req.body;
@@ -556,7 +556,7 @@ router.post('/:id/permissions', authMiddleware, async (req, res) => {
 });
 
 // DELETE /api/menus/:id/permissions/:roleId - Remove menu permission
-router.delete('/:id/permissions/:roleId', authMiddleware, async (req, res) => {
+router.delete('/:id/permissions/:roleId', authenticate, async (req, res) => {
   try {
     const { id, roleId } = req.params;
     const removed = await MenuService.removeMenuPermission(id, roleId);

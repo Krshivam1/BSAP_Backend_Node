@@ -1,6 +1,6 @@
 const express = require('express');
 const districtController = require('../controllers/districtController');
-
+const { authenticate, authorize } = require('../middleware/auth');
 const router = express.Router();
 
 // Mount district controller routes

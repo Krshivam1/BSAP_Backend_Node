@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const SubTopicService = require('../services/subTopicService');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validateSubTopic, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/sub-topics - Get all sub-topics with pagination
-router.get('/', authMiddleware, validatePagination, async (req, res) => {
+router.get('/', authenticate, validatePagination, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -50,7 +50,7 @@ router.get('/', authMiddleware, validatePagination, async (req, res) => {
 });
 
 // GET /api/sub-topics/:id - Get sub-topic by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const subTopic = await SubTopicService.getSubTopicById(id);
@@ -77,7 +77,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // POST /api/sub-topics - Create new sub-topic
-router.post('/', authMiddleware, validateSubTopic, async (req, res) => {
+router.post('/', authenticate, validateSubTopic, async (req, res) => {
   try {
     const subTopicData = {
       ...req.body,
@@ -109,7 +109,7 @@ router.post('/', authMiddleware, validateSubTopic, async (req, res) => {
 });
 
 // PUT /api/sub-topics/:id - Update sub-topic
-router.put('/:id', authMiddleware, validateSubTopic, async (req, res) => {
+router.put('/:id', authenticate, validateSubTopic, async (req, res) => {
   try {
     const { id } = req.params;
     const subTopicData = {
@@ -148,7 +148,7 @@ router.put('/:id', authMiddleware, validateSubTopic, async (req, res) => {
 });
 
 // DELETE /api/sub-topics/:id - Delete sub-topic
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await SubTopicService.deleteSubTopic(id);
@@ -174,7 +174,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/sub-topics/by-topic/:topicId - Get sub-topics by topic
-router.get('/by-topic/:topicId', authMiddleware, validatePagination, async (req, res) => {
+router.get('/by-topic/:topicId', authenticate, validatePagination, async (req, res) => {
   try {
     const { topicId } = req.params;
     const { 
@@ -216,7 +216,7 @@ router.get('/by-topic/:topicId', authMiddleware, validatePagination, async (req,
 });
 
 // GET /api/sub-topics/:id/questions - Get questions by sub-topic
-router.get('/:id/questions', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/questions', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10, sortBy = 'displayOrder', sortOrder = 'ASC' } = req.query;
@@ -251,7 +251,7 @@ router.get('/:id/questions', authMiddleware, validatePagination, async (req, res
 });
 
 // GET /api/sub-topics/search/:searchTerm - Search sub-topics
-router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, topicId, status } = req.query;
@@ -287,7 +287,7 @@ router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req
 });
 
 // GET /api/sub-topics/active - Get all active sub-topics
-router.get('/status/active', authMiddleware, async (req, res) => {
+router.get('/status/active', authenticate, async (req, res) => {
   try {
     const { topicId } = req.query;
     const subTopics = await SubTopicService.getActiveSubTopics(topicId);
@@ -307,7 +307,7 @@ router.get('/status/active', authMiddleware, async (req, res) => {
 });
 
 // POST /api/sub-topics/:id/activate - Activate sub-topic
-router.post('/:id/activate', authMiddleware, async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const subTopic = await SubTopicService.activateSubTopic(id, req.user.id);
@@ -334,7 +334,7 @@ router.post('/:id/activate', authMiddleware, async (req, res) => {
 });
 
 // POST /api/sub-topics/:id/deactivate - Deactivate sub-topic
-router.post('/:id/deactivate', authMiddleware, async (req, res) => {
+router.post('/:id/deactivate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const subTopic = await SubTopicService.deactivateSubTopic(id, req.user.id);
@@ -361,7 +361,7 @@ router.post('/:id/deactivate', authMiddleware, async (req, res) => {
 });
 
 // PUT /api/sub-topics/:id/order - Update sub-topic display order
-router.put('/:id/order', authMiddleware, async (req, res) => {
+router.put('/:id/order', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -397,7 +397,7 @@ router.put('/:id/order', authMiddleware, async (req, res) => {
 });
 
 // GET /api/sub-topics/statistics - Get sub-topic statistics
-router.get('/stats/overview', authMiddleware, async (req, res) => {
+router.get('/stats/overview', authenticate, async (req, res) => {
   try {
     const { topicId } = req.query;
     const statistics = await SubTopicService.getSubTopicStatistics(topicId);
@@ -417,7 +417,7 @@ router.get('/stats/overview', authMiddleware, async (req, res) => {
 });
 
 // POST /api/sub-topics/:id/clone - Clone sub-topic
-router.post('/:id/clone', authMiddleware, async (req, res) => {
+router.post('/:id/clone', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, topicId, description } = req.body;
@@ -466,7 +466,7 @@ router.post('/:id/clone', authMiddleware, async (req, res) => {
 });
 
 // PUT /api/sub-topics/reorder - Reorder sub-topics within a topic
-router.put('/reorder', authMiddleware, async (req, res) => {
+router.put('/reorder', authenticate, async (req, res) => {
   try {
     const { topicId, subTopicOrders } = req.body;
     
@@ -494,7 +494,7 @@ router.put('/reorder', authMiddleware, async (req, res) => {
 });
 
 // GET /api/sub-topics/:id/performance-statistics - Get performance statistics for sub-topic
-router.get('/:id/performance-statistics', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/performance-statistics', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { 

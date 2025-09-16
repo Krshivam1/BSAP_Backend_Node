@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const StateService = require('../services/stateService');
-const authMiddleware = require('../middleware/authMiddleware');
-const { validateState, validatePagination } = require('../middleware/validationMiddleware');
+const { authenticate } = require('../middleware/auth');
+const { validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/states - Get all states with pagination
-router.get('/', authMiddleware, validatePagination, async (req, res) => {
+router.get('/', authenticate, validatePagination, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -46,7 +46,7 @@ router.get('/', authMiddleware, validatePagination, async (req, res) => {
 });
 
 // GET /api/states/:id - Get state by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const state = await StateService.getStateById(id);
@@ -73,7 +73,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // POST /api/states - Create new state
-router.post('/', authMiddleware, validateState, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const stateData = {
       ...req.body,
@@ -105,7 +105,7 @@ router.post('/', authMiddleware, validateState, async (req, res) => {
 });
 
 // PUT /api/states/:id - Update state
-router.put('/:id', authMiddleware, validateState, async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const stateData = {
@@ -144,7 +144,7 @@ router.put('/:id', authMiddleware, validateState, async (req, res) => {
 });
 
 // DELETE /api/states/:id - Delete state
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await StateService.deleteState(id);
@@ -170,7 +170,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/states/search/:searchTerm - Search states
-router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -204,7 +204,7 @@ router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req
 });
 
 // GET /api/states/:id/districts - Get districts by state
-router.get('/:id/districts', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/districts', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -237,7 +237,7 @@ router.get('/:id/districts', authMiddleware, validatePagination, async (req, res
 });
 
 // GET /api/states/active - Get all active states
-router.get('/status/active', authMiddleware, async (req, res) => {
+router.get('/status/active', authenticate, async (req, res) => {
   try {
     const states = await StateService.getActiveStates();
     
@@ -256,7 +256,7 @@ router.get('/status/active', authMiddleware, async (req, res) => {
 });
 
 // POST /api/states/:id/activate - Activate state
-router.post('/:id/activate', authMiddleware, async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const state = await StateService.activateState(id, req.user.id);
@@ -283,7 +283,7 @@ router.post('/:id/activate', authMiddleware, async (req, res) => {
 });
 
 // POST /api/states/:id/deactivate - Deactivate state
-router.post('/:id/deactivate', authMiddleware, async (req, res) => {
+router.post('/:id/deactivate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const state = await StateService.deactivateState(id, req.user.id);
@@ -310,7 +310,7 @@ router.post('/:id/deactivate', authMiddleware, async (req, res) => {
 });
 
 // GET /api/states/statistics - Get state statistics
-router.get('/stats/overview', authMiddleware, async (req, res) => {
+router.get('/stats/overview', authenticate, async (req, res) => {
   try {
     const statistics = await StateService.getStateStatistics();
     

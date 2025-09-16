@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { cidCrimeDataService } = require('../services');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validateCrimeDataCreate, validateCrimeDataUpdate } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
 
@@ -10,7 +10,7 @@ const logger = require('../utils/logger');
  * @desc Get all CID crime data with pagination and filtering
  * @access Private
  */
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const filters = {
       page: parseInt(req.query.page) || 1,
@@ -56,7 +56,7 @@ router.get('/', authMiddleware, async (req, res) => {
  * @desc Get CID crime data by ID
  * @access Private
  */
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const crimeData = await cidCrimeDataService.getCrimeDataById(parseInt(id));
@@ -82,7 +82,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
  * @desc Create new CID crime data
  * @access Private
  */
-router.post('/', authMiddleware, validateCrimeDataCreate, async (req, res) => {
+router.post('/', authenticate, validateCrimeDataCreate, async (req, res) => {
   try {
     const crimeData = req.body;
     const createdBy = req.user.id;
@@ -110,7 +110,7 @@ router.post('/', authMiddleware, validateCrimeDataCreate, async (req, res) => {
  * @desc Update CID crime data
  * @access Private
  */
-router.put('/:id', authMiddleware, validateCrimeDataUpdate, async (req, res) => {
+router.put('/:id', authenticate, validateCrimeDataUpdate, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -139,7 +139,7 @@ router.put('/:id', authMiddleware, validateCrimeDataUpdate, async (req, res) => 
  * @desc Delete CID crime data (soft delete)
  * @access Private
  */
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deletedBy = req.user.id;
@@ -166,7 +166,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
  * @desc Get CID crime statistics
  * @access Private
  */
-router.get('/statistics', authMiddleware, async (req, res) => {
+router.get('/statistics', authenticate, async (req, res) => {
   try {
     const filters = {
       districtId: req.query.districtId ? parseInt(req.query.districtId) : undefined,
@@ -199,7 +199,7 @@ router.get('/statistics', authMiddleware, async (req, res) => {
  * @desc Search CID crime data
  * @access Private
  */
-router.get('/search/:searchTerm', authMiddleware, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const filters = {
@@ -231,7 +231,7 @@ router.get('/search/:searchTerm', authMiddleware, async (req, res) => {
  * @desc Get crimes by active status
  * @access Private
  */
-router.get('/by-status/:active', authMiddleware, async (req, res) => {
+router.get('/by-status/:active', authenticate, async (req, res) => {
   try {
     const { active } = req.params;
     const isActive = active === 'true';
@@ -259,7 +259,7 @@ router.get('/by-status/:active', authMiddleware, async (req, res) => {
  * @desc Add victim to crime data
  * @access Private
  */
-router.post('/:id/victims', authMiddleware, async (req, res) => {
+router.post('/:id/victims', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const victimData = req.body;
@@ -288,7 +288,7 @@ router.post('/:id/victims', authMiddleware, async (req, res) => {
  * @desc Add accused to crime data
  * @access Private
  */
-router.post('/:id/accused', authMiddleware, async (req, res) => {
+router.post('/:id/accused', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const accusedData = req.body;
@@ -317,7 +317,7 @@ router.post('/:id/accused', authMiddleware, async (req, res) => {
  * @desc Add deceased to crime data
  * @access Private
  */
-router.post('/:id/deceased', authMiddleware, async (req, res) => {
+router.post('/:id/deceased', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deceasedData = req.body;
@@ -346,7 +346,7 @@ router.post('/:id/deceased', authMiddleware, async (req, res) => {
  * @desc Get crimes by district
  * @access Private
  */
-router.get('/district/:districtId', authMiddleware, async (req, res) => {
+router.get('/district/:districtId', authenticate, async (req, res) => {
   try {
     const { districtId } = req.params;
     const { page = 1, limit = 20 } = req.query;
@@ -388,7 +388,7 @@ router.get('/district/:districtId', authMiddleware, async (req, res) => {
  * @desc Get crimes by category
  * @access Private
  */
-router.get('/category/:categoryId', authMiddleware, async (req, res) => {
+router.get('/category/:categoryId', authenticate, async (req, res) => {
   try {
     const { categoryId } = req.params;
     const { page = 1, limit = 20 } = req.query;
@@ -430,7 +430,7 @@ router.get('/category/:categoryId', authMiddleware, async (req, res) => {
  * @desc Export crime data to Excel
  * @access Private
  */
-router.get('/export/excel', authMiddleware, async (req, res) => {
+router.get('/export/excel', authenticate, async (req, res) => {
   try {
     const filters = {
       categoryId: req.query.categoryId ? parseInt(req.query.categoryId) : undefined,

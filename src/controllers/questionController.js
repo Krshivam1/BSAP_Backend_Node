@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const QuestionService = require('../services/questionService');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validateQuestion, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/questions - Get all questions with pagination
-router.get('/', authMiddleware, validatePagination, async (req, res) => {
+router.get('/', authenticate, validatePagination, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -52,7 +52,7 @@ router.get('/', authMiddleware, validatePagination, async (req, res) => {
 });
 
 // GET /api/questions/:id - Get question by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const question = await QuestionService.getQuestionById(id);
@@ -79,7 +79,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // POST /api/questions - Create new question
-router.post('/', authMiddleware, validateQuestion, async (req, res) => {
+router.post('/', authenticate, validateQuestion, async (req, res) => {
   try {
     const questionData = {
       ...req.body,
@@ -111,7 +111,7 @@ router.post('/', authMiddleware, validateQuestion, async (req, res) => {
 });
 
 // PUT /api/questions/:id - Update question
-router.put('/:id', authMiddleware, validateQuestion, async (req, res) => {
+router.put('/:id', authenticate, validateQuestion, async (req, res) => {
   try {
     const { id } = req.params;
     const questionData = {
@@ -150,7 +150,7 @@ router.put('/:id', authMiddleware, validateQuestion, async (req, res) => {
 });
 
 // DELETE /api/questions/:id - Delete question
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await QuestionService.deleteQuestion(id);
@@ -176,7 +176,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/questions/by-sub-topic/:subTopicId - Get questions by sub-topic
-router.get('/by-sub-topic/:subTopicId', authMiddleware, validatePagination, async (req, res) => {
+router.get('/by-sub-topic/:subTopicId', authenticate, validatePagination, async (req, res) => {
   try {
     const { subTopicId } = req.params;
     const { 
@@ -220,7 +220,7 @@ router.get('/by-sub-topic/:subTopicId', authMiddleware, validatePagination, asyn
 });
 
 // GET /api/questions/by-type/:type - Get questions by type
-router.get('/by-type/:type', authMiddleware, validatePagination, async (req, res) => {
+router.get('/by-type/:type', authenticate, validatePagination, async (req, res) => {
   try {
     const { type } = req.params;
     const { 
@@ -262,7 +262,7 @@ router.get('/by-type/:type', authMiddleware, validatePagination, async (req, res
 });
 
 // GET /api/questions/search/:searchTerm - Search questions
-router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, subTopicId, type, status } = req.query;
@@ -299,7 +299,7 @@ router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req
 });
 
 // GET /api/questions/active - Get all active questions
-router.get('/status/active', authMiddleware, async (req, res) => {
+router.get('/status/active', authenticate, async (req, res) => {
   try {
     const { subTopicId, type } = req.query;
     const questions = await QuestionService.getActiveQuestions(subTopicId, type);
@@ -319,7 +319,7 @@ router.get('/status/active', authMiddleware, async (req, res) => {
 });
 
 // POST /api/questions/:id/activate - Activate question
-router.post('/:id/activate', authMiddleware, async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const question = await QuestionService.activateQuestion(id, req.user.id);
@@ -346,7 +346,7 @@ router.post('/:id/activate', authMiddleware, async (req, res) => {
 });
 
 // POST /api/questions/:id/deactivate - Deactivate question
-router.post('/:id/deactivate', authMiddleware, async (req, res) => {
+router.post('/:id/deactivate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const question = await QuestionService.deactivateQuestion(id, req.user.id);
@@ -373,7 +373,7 @@ router.post('/:id/deactivate', authMiddleware, async (req, res) => {
 });
 
 // PUT /api/questions/:id/order - Update question display order
-router.put('/:id/order', authMiddleware, async (req, res) => {
+router.put('/:id/order', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -409,7 +409,7 @@ router.put('/:id/order', authMiddleware, async (req, res) => {
 });
 
 // GET /api/questions/types - Get question types
-router.get('/config/types', authMiddleware, async (req, res) => {
+router.get('/config/types', authenticate, async (req, res) => {
   try {
     const types = await QuestionService.getQuestionTypes();
     
@@ -428,7 +428,7 @@ router.get('/config/types', authMiddleware, async (req, res) => {
 });
 
 // GET /api/questions/statistics - Get question statistics
-router.get('/stats/overview', authMiddleware, async (req, res) => {
+router.get('/stats/overview', authenticate, async (req, res) => {
   try {
     const { subTopicId, type } = req.query;
     const statistics = await QuestionService.getQuestionStatistics(subTopicId, type);
@@ -448,7 +448,7 @@ router.get('/stats/overview', authMiddleware, async (req, res) => {
 });
 
 // POST /api/questions/:id/clone - Clone question
-router.post('/:id/clone', authMiddleware, async (req, res) => {
+router.post('/:id/clone', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, subTopicId, description } = req.body;
@@ -497,7 +497,7 @@ router.post('/:id/clone', authMiddleware, async (req, res) => {
 });
 
 // PUT /api/questions/reorder - Reorder questions within a sub-topic
-router.put('/reorder', authMiddleware, async (req, res) => {
+router.put('/reorder', authenticate, async (req, res) => {
   try {
     const { subTopicId, questionOrders } = req.body;
     
@@ -525,7 +525,7 @@ router.put('/reorder', authMiddleware, async (req, res) => {
 });
 
 // POST /api/questions/bulk-create - Bulk create questions
-router.post('/bulk-create', authMiddleware, async (req, res) => {
+router.post('/bulk-create', authenticate, async (req, res) => {
   try {
     const { questions } = req.body;
     
@@ -560,7 +560,7 @@ router.post('/bulk-create', authMiddleware, async (req, res) => {
 });
 
 // GET /api/questions/:id/performance-statistics - Get performance statistics for question
-router.get('/:id/performance-statistics', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/performance-statistics', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { 
@@ -602,7 +602,7 @@ router.get('/:id/performance-statistics', authMiddleware, validatePagination, as
 });
 
 // PUT /api/questions/:id/metadata - Update question metadata
-router.put('/:id/metadata', authMiddleware, async (req, res) => {
+router.put('/:id/metadata', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { 

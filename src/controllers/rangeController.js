@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const RangeService = require('../services/rangeService');
-const authMiddleware = require('../middleware/authMiddleware');
-const { validateRange, validatePagination } = require('../middleware/validationMiddleware');
+const { authenticate } = require('../middleware/auth');
+const { validateRangeCreate, validateRangeUpdate, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/ranges - Get all ranges with pagination
-router.get('/', authMiddleware, validatePagination, async (req, res) => {
+router.get('/', authenticate, validatePagination, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -50,7 +50,7 @@ router.get('/', authMiddleware, validatePagination, async (req, res) => {
 });
 
 // GET /api/ranges/:id - Get range by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const range = await RangeService.getRangeById(id);
@@ -77,7 +77,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // POST /api/ranges - Create new range
-router.post('/', authMiddleware, validateRange, async (req, res) => {
+router.post('/', authenticate, validateRangeCreate, async (req, res) => {
   try {
     const rangeData = {
       ...req.body,
@@ -109,7 +109,7 @@ router.post('/', authMiddleware, validateRange, async (req, res) => {
 });
 
 // PUT /api/ranges/:id - Update range
-router.put('/:id', authMiddleware, validateRange, async (req, res) => {
+router.put('/:id', authenticate, validateRangeUpdate, async (req, res) => {
   try {
     const { id } = req.params;
     const rangeData = {
@@ -148,7 +148,7 @@ router.put('/:id', authMiddleware, validateRange, async (req, res) => {
 });
 
 // DELETE /api/ranges/:id - Delete range
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await RangeService.deleteRange(id);
@@ -174,7 +174,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/ranges/by-district/:districtId - Get ranges by district
-router.get('/by-district/:districtId', authMiddleware, validatePagination, async (req, res) => {
+router.get('/by-district/:districtId', authenticate, validatePagination, async (req, res) => {
   try {
     const { districtId } = req.params;
     const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
@@ -209,7 +209,7 @@ router.get('/by-district/:districtId', authMiddleware, validatePagination, async
 });
 
 // GET /api/ranges/by-state/:stateId - Get ranges by state
-router.get('/by-state/:stateId', authMiddleware, validatePagination, async (req, res) => {
+router.get('/by-state/:stateId', authenticate, validatePagination, async (req, res) => {
   try {
     const { stateId } = req.params;
     const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
@@ -244,7 +244,7 @@ router.get('/by-state/:stateId', authMiddleware, validatePagination, async (req,
 });
 
 // GET /api/ranges/search/:searchTerm - Search ranges
-router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, districtId, stateId } = req.query;
@@ -280,7 +280,7 @@ router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req
 });
 
 // GET /api/ranges/:id/police-stations - Get police stations by range
-router.get('/:id/police-stations', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/police-stations', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -313,7 +313,7 @@ router.get('/:id/police-stations', authMiddleware, validatePagination, async (re
 });
 
 // GET /api/ranges/active - Get all active ranges
-router.get('/status/active', authMiddleware, async (req, res) => {
+router.get('/status/active', authenticate, async (req, res) => {
   try {
     const { districtId, stateId } = req.query;
     const ranges = await RangeService.getActiveRanges(districtId, stateId);
@@ -333,7 +333,7 @@ router.get('/status/active', authMiddleware, async (req, res) => {
 });
 
 // POST /api/ranges/:id/activate - Activate range
-router.post('/:id/activate', authMiddleware, async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const range = await RangeService.activateRange(id, req.user.id);
@@ -360,7 +360,7 @@ router.post('/:id/activate', authMiddleware, async (req, res) => {
 });
 
 // POST /api/ranges/:id/deactivate - Deactivate range
-router.post('/:id/deactivate', authMiddleware, async (req, res) => {
+router.post('/:id/deactivate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const range = await RangeService.deactivateRange(id, req.user.id);
@@ -387,7 +387,7 @@ router.post('/:id/deactivate', authMiddleware, async (req, res) => {
 });
 
 // GET /api/ranges/statistics - Get range statistics
-router.get('/stats/overview', authMiddleware, async (req, res) => {
+router.get('/stats/overview', authenticate, async (req, res) => {
   try {
     const { districtId, stateId } = req.query;
     const statistics = await RangeService.getRangeStatistics(districtId, stateId);
@@ -407,7 +407,7 @@ router.get('/stats/overview', authMiddleware, async (req, res) => {
 });
 
 // GET /api/ranges/:id/users - Get users assigned to range
-router.get('/:id/users', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/users', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;

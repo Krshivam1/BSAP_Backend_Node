@@ -7,7 +7,7 @@ const path = require('path');
 require('dotenv').config();
 
 const { sequelize } = require('./models');
-const authMiddleware = require('./middleware/authMiddleware');
+const { authenticate } = require('./middleware/auth');
 const errorHandler = require('./middleware/errorHandler');
 const apiRoutes = require('./routes');
 const { specs, swaggerUi, swaggerUiOptions } = require('./config/swagger');

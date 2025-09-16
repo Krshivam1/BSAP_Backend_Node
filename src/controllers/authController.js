@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authService } = require('../services');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validateLogin, validateSignup, validatePasswordReset, validateOTP } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
 
@@ -256,7 +256,7 @@ router.post('/signup', validateSignup, async (req, res) => {
  * @desc User logout
  * @access Private
  */
-router.post('/logout', authMiddleware, async (req, res) => {
+router.post('/logout', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
     await authService.logout(userId);
@@ -377,7 +377,7 @@ router.post('/reset-password', validatePasswordReset, async (req, res) => {
  * @desc Change password for logged-in user
  * @access Private
  */
-router.post('/change-password', authMiddleware, async (req, res) => {
+router.post('/change-password', authenticate, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.id;
@@ -414,7 +414,7 @@ router.post('/change-password', authMiddleware, async (req, res) => {
  * @desc Refresh JWT token
  * @access Private
  */
-router.post('/refresh-token', authMiddleware, async (req, res) => {
+router.post('/refresh-token', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await authService.refreshToken(userId);
@@ -450,7 +450,7 @@ router.post('/refresh-token', authMiddleware, async (req, res) => {
  * @desc Get current user profile
  * @access Private
  */
-router.get('/me', authMiddleware, async (req, res) => {
+router.get('/me', authenticate, async (req, res) => {
   try {
     const user = req.user;
     
@@ -563,7 +563,7 @@ router.post('/resend-verification', async (req, res) => {
  * @desc Check if user session is valid
  * @access Private
  */
-router.post('/check-session', authMiddleware, async (req, res) => {
+router.post('/check-session', authenticate, async (req, res) => {
   try {
     res.json({
       status: 'SUCCESS',
@@ -594,7 +594,7 @@ router.post('/check-session', authMiddleware, async (req, res) => {
  * @desc Get user permissions and role information
  * @access Private
  */
-router.get('/user-permissions', authMiddleware, async (req, res) => {
+router.get('/user-permissions', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
     const permissions = await authService.getUserPermissions(userId);

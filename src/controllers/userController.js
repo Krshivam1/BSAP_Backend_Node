@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { userService } = require('../services');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validatePagination, validateUserCreate, validateUserUpdate } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
 
@@ -99,7 +99,7 @@ const logger = require('../utils/logger');
  * @desc Get all users with pagination and filtering
  * @access Private
  */
-router.get('/', authMiddleware, validatePagination, async (req, res) => {
+router.get('/', authenticate, validatePagination, async (req, res) => {
   try {
     const { page, size, stateId, rangeId, districtId, roleId, search, active } = req.query;
     
@@ -144,7 +144,7 @@ router.get('/', authMiddleware, validatePagination, async (req, res) => {
  * @desc Get user by ID
  * @access Private
  */
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const user = await userService.getUserById(parseInt(id));
@@ -245,7 +245,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
  * @desc Create new user
  * @access Private (Admin/Manager only)
  */
-router.post('/', authMiddleware, validateUserCreate, async (req, res) => {
+router.post('/', authenticate, validateUserCreate, async (req, res) => {
   try {
     const userData = req.body;
     const createdBy = req.user.id;
@@ -273,7 +273,7 @@ router.post('/', authMiddleware, validateUserCreate, async (req, res) => {
  * @desc Update user
  * @access Private (Admin/Manager only)
  */
-router.put('/:id', authMiddleware, validateUserUpdate, async (req, res) => {
+router.put('/:id', authenticate, validateUserUpdate, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -302,7 +302,7 @@ router.put('/:id', authMiddleware, validateUserUpdate, async (req, res) => {
  * @desc Delete user (soft delete)
  * @access Private (Admin only)
  */
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deletedBy = req.user.id;
@@ -329,7 +329,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
  * @desc Activate user
  * @access Private (Admin/Manager only)
  */
-router.post('/:id/activate', authMiddleware, async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const updatedBy = req.user.id;
@@ -356,7 +356,7 @@ router.post('/:id/activate', authMiddleware, async (req, res) => {
  * @desc Deactivate user
  * @access Private (Admin/Manager only)
  */
-router.post('/:id/deactivate', authMiddleware, async (req, res) => {
+router.post('/:id/deactivate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const updatedBy = req.user.id;
@@ -383,7 +383,7 @@ router.post('/:id/deactivate', authMiddleware, async (req, res) => {
  * @desc Update password for first-time login
  * @access Private
  */
-router.put('/:id/first-time-password', authMiddleware, async (req, res) => {
+router.put('/:id/first-time-password', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { newPassword } = req.body;
@@ -423,7 +423,7 @@ router.put('/:id/first-time-password', authMiddleware, async (req, res) => {
  * @desc Get users by role
  * @access Private
  */
-router.get('/by-role/:roleId', authMiddleware, async (req, res) => {
+router.get('/by-role/:roleId', authenticate, async (req, res) => {
   try {
     const { roleId } = req.params;
     const users = await userService.getUsersByRole(parseInt(roleId));
@@ -449,7 +449,7 @@ router.get('/by-role/:roleId', authMiddleware, async (req, res) => {
  * @desc Get users by location
  * @access Private
  */
-router.get('/by-location', authMiddleware, async (req, res) => {
+router.get('/by-location', authenticate, async (req, res) => {
   try {
     const { stateId, rangeId, districtId } = req.query;
     
@@ -482,7 +482,7 @@ router.get('/by-location', authMiddleware, async (req, res) => {
  * @desc Search users
  * @access Private
  */
-router.get('/search/:searchTerm', authMiddleware, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { roleId, stateId, rangeId, districtId } = req.query;
@@ -517,7 +517,7 @@ router.get('/search/:searchTerm', authMiddleware, async (req, res) => {
  * @desc Get user statistics
  * @access Private (Admin/Manager only)
  */
-router.get('/statistics', authMiddleware, async (req, res) => {
+router.get('/statistics', authenticate, async (req, res) => {
   try {
     const statistics = await userService.getUserStatistics();
 
@@ -542,7 +542,7 @@ router.get('/statistics', authMiddleware, async (req, res) => {
  * @desc Bulk operations on users
  * @access Private (Admin only)
  */
-router.post('/bulk-operation', authMiddleware, async (req, res) => {
+router.post('/bulk-operation', authenticate, async (req, res) => {
   try {
     const { userIds, operation } = req.body;
     const performedBy = req.user.id;

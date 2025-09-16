@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { communicationService } = require('../services');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validateCommunicationCreate, validateMessageCreate } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
 const multer = require('multer');
@@ -42,7 +42,7 @@ const upload = multer({
  * @desc Get all communications with pagination and filtering
  * @access Private
  */
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const filters = {
       page: parseInt(req.query.page) || 1,
@@ -73,7 +73,7 @@ router.get('/', authMiddleware, async (req, res) => {
  * @desc Get communications for current user
  * @access Private
  */
-router.get('/user', authMiddleware, async (req, res) => {
+router.get('/user', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
     const communications = await communicationService.getCommunicationsForUser(userId);
@@ -99,7 +99,7 @@ router.get('/user', authMiddleware, async (req, res) => {
  * @desc Get communication by ID
  * @access Private
  */
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const communication = await communicationService.getCommunicationById(parseInt(id));
@@ -125,7 +125,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
  * @desc Start new communication
  * @access Private
  */
-router.post('/start', authMiddleware, upload.array('attachments', 5), validateCommunicationCreate, async (req, res) => {
+router.post('/start', authenticate, upload.array('attachments', 5), validateCommunicationCreate, async (req, res) => {
   try {
     const { name, description, userIds, message } = req.body;
     const createdBy = req.user.id;
@@ -178,7 +178,7 @@ router.post('/start', authMiddleware, upload.array('attachments', 5), validateCo
  * @desc Reply to communication
  * @access Private
  */
-router.post('/:id/reply', authMiddleware, upload.array('attachments', 5), validateMessageCreate, async (req, res) => {
+router.post('/:id/reply', authenticate, upload.array('attachments', 5), validateMessageCreate, async (req, res) => {
   try {
     const { id } = req.params;
     const { message, userIds } = req.body;
@@ -227,7 +227,7 @@ router.post('/:id/reply', authMiddleware, upload.array('attachments', 5), valida
  * @desc Update communication
  * @access Private
  */
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -260,7 +260,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
  * @desc Delete communication (soft delete)
  * @access Private
  */
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deletedBy = req.user.id;
@@ -287,7 +287,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
  * @desc Get messages for a communication
  * @access Private
  */
-router.get('/:id/messages', authMiddleware, async (req, res) => {
+router.get('/:id/messages', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const communication = await communicationService.getCommunicationById(parseInt(id));
@@ -313,7 +313,7 @@ router.get('/:id/messages', authMiddleware, async (req, res) => {
  * @desc Get users in a communication
  * @access Private
  */
-router.get('/:id/users', authMiddleware, async (req, res) => {
+router.get('/:id/users', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const communication = await communicationService.getCommunicationById(parseInt(id));
@@ -339,7 +339,7 @@ router.get('/:id/users', authMiddleware, async (req, res) => {
  * @desc Add users to communication
  * @access Private
  */
-router.post('/:id/users', authMiddleware, async (req, res) => {
+router.post('/:id/users', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { userIds } = req.body;
@@ -371,7 +371,7 @@ router.post('/:id/users', authMiddleware, async (req, res) => {
  * @desc Remove user from communication
  * @access Private
  */
-router.delete('/:id/users/:userId', authMiddleware, async (req, res) => {
+router.delete('/:id/users/:userId', authenticate, async (req, res) => {
   try {
     const { id, userId } = req.params;
     const removedBy = req.user.id;
@@ -402,7 +402,7 @@ router.delete('/:id/users/:userId', authMiddleware, async (req, res) => {
  * @desc Update message read status
  * @access Private
  */
-router.put('/messages/:messageId/status', authMiddleware, async (req, res) => {
+router.put('/messages/:messageId/status', authenticate, async (req, res) => {
   try {
     const { messageId } = req.params;
     const { status } = req.body;
@@ -441,7 +441,7 @@ router.put('/messages/:messageId/status', authMiddleware, async (req, res) => {
  * @desc Get communication statistics
  * @access Private
  */
-router.get('/:id/statistics', authMiddleware, async (req, res) => {
+router.get('/:id/statistics', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const statistics = await communicationService.getCommunicationStatistics(parseInt(id));
@@ -467,7 +467,7 @@ router.get('/:id/statistics', authMiddleware, async (req, res) => {
  * @desc Search communications
  * @access Private
  */
-router.get('/search/:searchTerm', authMiddleware, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { userId } = req.query;
@@ -499,7 +499,7 @@ router.get('/search/:searchTerm', authMiddleware, async (req, res) => {
  * @desc Get update status for communication and user
  * @access Private
  */
-router.get('/:id/update-status', authMiddleware, async (req, res) => {
+router.get('/:id/update-status', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;

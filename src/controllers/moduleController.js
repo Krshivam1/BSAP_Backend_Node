@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const ModuleService = require('../services/moduleService');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { validateModule, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/modules - Get all modules with pagination
-router.get('/', authMiddleware, validatePagination, async (req, res) => {
+router.get('/', authenticate, validatePagination, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -48,7 +48,7 @@ router.get('/', authMiddleware, validatePagination, async (req, res) => {
 });
 
 // GET /api/modules/:id - Get module by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const module = await ModuleService.getModuleById(id);
@@ -75,7 +75,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // POST /api/modules - Create new module
-router.post('/', authMiddleware, validateModule, async (req, res) => {
+router.post('/', authenticate, validateModule, async (req, res) => {
   try {
     const moduleData = {
       ...req.body,
@@ -107,7 +107,7 @@ router.post('/', authMiddleware, validateModule, async (req, res) => {
 });
 
 // PUT /api/modules/:id - Update module
-router.put('/:id', authMiddleware, validateModule, async (req, res) => {
+router.put('/:id', authenticate, validateModule, async (req, res) => {
   try {
     const { id } = req.params;
     const moduleData = {
@@ -146,7 +146,7 @@ router.put('/:id', authMiddleware, validateModule, async (req, res) => {
 });
 
 // DELETE /api/modules/:id - Delete module
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await ModuleService.deleteModule(id);
@@ -172,7 +172,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/modules/:id/topics - Get topics by module
-router.get('/:id/topics', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/topics', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
@@ -207,7 +207,7 @@ router.get('/:id/topics', authMiddleware, validatePagination, async (req, res) =
 });
 
 // GET /api/modules/search/:searchTerm - Search modules
-router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, status } = req.query;
@@ -242,7 +242,7 @@ router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req
 });
 
 // GET /api/modules/active - Get all active modules
-router.get('/status/active', authMiddleware, async (req, res) => {
+router.get('/status/active', authenticate, async (req, res) => {
   try {
     const modules = await ModuleService.getActiveModules();
     
@@ -261,7 +261,7 @@ router.get('/status/active', authMiddleware, async (req, res) => {
 });
 
 // POST /api/modules/:id/activate - Activate module
-router.post('/:id/activate', authMiddleware, async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const module = await ModuleService.activateModule(id, req.user.id);
@@ -288,7 +288,7 @@ router.post('/:id/activate', authMiddleware, async (req, res) => {
 });
 
 // POST /api/modules/:id/deactivate - Deactivate module
-router.post('/:id/deactivate', authMiddleware, async (req, res) => {
+router.post('/:id/deactivate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const module = await ModuleService.deactivateModule(id, req.user.id);
@@ -315,7 +315,7 @@ router.post('/:id/deactivate', authMiddleware, async (req, res) => {
 });
 
 // GET /api/modules/statistics - Get module statistics
-router.get('/stats/overview', authMiddleware, async (req, res) => {
+router.get('/stats/overview', authenticate, async (req, res) => {
   try {
     const statistics = await ModuleService.getModuleStatistics();
     
@@ -334,7 +334,7 @@ router.get('/stats/overview', authMiddleware, async (req, res) => {
 });
 
 // PUT /api/modules/:id/order - Update module display order
-router.put('/:id/order', authMiddleware, async (req, res) => {
+router.put('/:id/order', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -370,7 +370,7 @@ router.put('/:id/order', authMiddleware, async (req, res) => {
 });
 
 // GET /api/modules/:id/permissions - Get module permissions
-router.get('/:id/permissions', authMiddleware, async (req, res) => {
+router.get('/:id/permissions', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const permissions = await ModuleService.getModulePermissions(id);
@@ -390,7 +390,7 @@ router.get('/:id/permissions', authMiddleware, async (req, res) => {
 });
 
 // POST /api/modules/:id/clone - Clone module
-router.post('/:id/clone', authMiddleware, async (req, res) => {
+router.post('/:id/clone', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, code, description } = req.body;

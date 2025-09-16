@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const DistrictService = require('../services/districtService');
-const authMiddleware = require('../middleware/authMiddleware');
-const { validateDistrict, validatePagination } = require('../middleware/validationMiddleware');
+const { authenticate, authorize } = require('../middleware/auth');
+const {  validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/districts - Get all districts with pagination
-router.get('/', authMiddleware, validatePagination, async (req, res) => {
+router.get('/', authenticate, validatePagination, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -48,7 +48,7 @@ router.get('/', authMiddleware, validatePagination, async (req, res) => {
 });
 
 // GET /api/districts/:id - Get district by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const district = await DistrictService.getDistrictById(id);
@@ -75,7 +75,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // POST /api/districts - Create new district
-router.post('/', authMiddleware, validateDistrict, async (req, res) => {
+router.post('/', authenticate,  async (req, res) => {
   try {
     const districtData = {
       ...req.body,
@@ -107,7 +107,7 @@ router.post('/', authMiddleware, validateDistrict, async (req, res) => {
 });
 
 // PUT /api/districts/:id - Update district
-router.put('/:id', authMiddleware, validateDistrict, async (req, res) => {
+router.put('/:id', authenticate,  async (req, res) => {
   try {
     const { id } = req.params;
     const districtData = {
@@ -146,7 +146,7 @@ router.put('/:id', authMiddleware, validateDistrict, async (req, res) => {
 });
 
 // DELETE /api/districts/:id - Delete district
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await DistrictService.deleteDistrict(id);
@@ -172,7 +172,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/districts/by-state/:stateId - Get districts by state
-router.get('/by-state/:stateId', authMiddleware, validatePagination, async (req, res) => {
+router.get('/by-state/:stateId', authenticate, validatePagination, async (req, res) => {
   try {
     const { stateId } = req.params;
     const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
@@ -207,7 +207,7 @@ router.get('/by-state/:stateId', authMiddleware, validatePagination, async (req,
 });
 
 // GET /api/districts/search/:searchTerm - Search districts
-router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req, res) => {
+router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, stateId } = req.query;
@@ -242,7 +242,7 @@ router.get('/search/:searchTerm', authMiddleware, validatePagination, async (req
 });
 
 // GET /api/districts/:id/police-stations - Get police stations by district
-router.get('/:id/police-stations', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/police-stations', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -275,7 +275,7 @@ router.get('/:id/police-stations', authMiddleware, validatePagination, async (re
 });
 
 // GET /api/districts/:id/sub-divisions - Get sub-divisions by district
-router.get('/:id/sub-divisions', authMiddleware, validatePagination, async (req, res) => {
+router.get('/:id/sub-divisions', authenticate, validatePagination, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -308,7 +308,7 @@ router.get('/:id/sub-divisions', authMiddleware, validatePagination, async (req,
 });
 
 // GET /api/districts/active - Get all active districts
-router.get('/status/active', authMiddleware, async (req, res) => {
+router.get('/status/active', authenticate, async (req, res) => {
   try {
     const { stateId } = req.query;
     const districts = await DistrictService.getActiveDistricts(stateId);
@@ -328,7 +328,7 @@ router.get('/status/active', authMiddleware, async (req, res) => {
 });
 
 // POST /api/districts/:id/activate - Activate district
-router.post('/:id/activate', authMiddleware, async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const district = await DistrictService.activateDistrict(id, req.user.id);
@@ -355,7 +355,7 @@ router.post('/:id/activate', authMiddleware, async (req, res) => {
 });
 
 // POST /api/districts/:id/deactivate - Deactivate district
-router.post('/:id/deactivate', authMiddleware, async (req, res) => {
+router.post('/:id/deactivate', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const district = await DistrictService.deactivateDistrict(id, req.user.id);
@@ -382,7 +382,7 @@ router.post('/:id/deactivate', authMiddleware, async (req, res) => {
 });
 
 // GET /api/districts/statistics - Get district statistics
-router.get('/stats/overview', authMiddleware, async (req, res) => {
+router.get('/stats/overview', authenticate, async (req, res) => {
   try {
     const { stateId } = req.query;
     const statistics = await DistrictService.getDistrictStatistics(stateId);

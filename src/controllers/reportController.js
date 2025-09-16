@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { reportService } = require('../services');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const logger = require('../utils/logger');
 
 /**
@@ -9,7 +9,7 @@ const logger = require('../utils/logger');
  * @desc Generate detailed report
  * @access Private
  */
-router.post('/generate', authMiddleware, async (req, res) => {
+router.post('/generate', authenticate, async (req, res) => {
   try {
     const reportRequest = req.body;
     const report = await reportService.getReportDetailed(reportRequest);
@@ -39,7 +39,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
  * @desc Generate Excel report
  * @access Private
  */
-router.post('/excel', authMiddleware, async (req, res) => {
+router.post('/excel', authenticate, async (req, res) => {
   try {
     const reportRequest = req.body;
     const excelBuffer = await reportService.generateExcelReport(reportRequest);
@@ -67,7 +67,7 @@ router.post('/excel', authMiddleware, async (req, res) => {
  * @desc Generate Excel report via GET (with base64 encoded data)
  * @access Private
  */
-router.get('/excel', authMiddleware, async (req, res) => {
+router.get('/excel', authenticate, async (req, res) => {
   try {
     const { data } = req.query;
     
@@ -107,7 +107,7 @@ router.get('/excel', authMiddleware, async (req, res) => {
  * @desc Generate district-specific Excel report
  * @access Private
  */
-router.post('/district-excel', authMiddleware, async (req, res) => {
+router.post('/district-excel', authenticate, async (req, res) => {
   try {
     const reportRequest = req.body;
     const excelBuffer = await reportService.generateDistrictReport(reportRequest);
@@ -135,7 +135,7 @@ router.post('/district-excel', authMiddleware, async (req, res) => {
  * @desc Generate district Excel report via GET (with base64 encoded data)
  * @access Private
  */
-router.get('/district-excel', authMiddleware, async (req, res) => {
+router.get('/district-excel', authenticate, async (req, res) => {
   try {
     const { data } = req.query;
     
@@ -175,7 +175,7 @@ router.get('/district-excel', authMiddleware, async (req, res) => {
  * @desc View report (similar to generate but for viewing)
  * @access Private
  */
-router.get('/view', authMiddleware, async (req, res) => {
+router.get('/view', authenticate, async (req, res) => {
   try {
     const reportRequest = req.query;
     
@@ -232,7 +232,7 @@ router.get('/view', authMiddleware, async (req, res) => {
  * @desc Get user performance summary
  * @access Private
  */
-router.get('/user/:userId/summary', authMiddleware, async (req, res) => {
+router.get('/user/:userId/summary', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
     const { monthYear, questionIds } = req.query;
@@ -265,7 +265,7 @@ router.get('/user/:userId/summary', authMiddleware, async (req, res) => {
  * @desc Generate custom report with specific parameters
  * @access Private
  */
-router.post('/custom', authMiddleware, async (req, res) => {
+router.post('/custom', authenticate, async (req, res) => {
   try {
     const {
       reportType,
@@ -321,7 +321,7 @@ router.post('/custom', authMiddleware, async (req, res) => {
  * @desc Get available report templates
  * @access Private
  */
-router.get('/templates', authMiddleware, async (req, res) => {
+router.get('/templates', authenticate, async (req, res) => {
   try {
     const templates = [
       {
@@ -371,7 +371,7 @@ router.get('/templates', authMiddleware, async (req, res) => {
  * @desc Schedule a report for periodic generation
  * @access Private (Admin only)
  */
-router.post('/schedule', authMiddleware, async (req, res) => {
+router.post('/schedule', authenticate, async (req, res) => {
   try {
     const {
       name,

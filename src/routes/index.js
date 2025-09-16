@@ -22,7 +22,7 @@ const menuRoutes = require('./menuRoutes');
 const fileRoutes = require('./fileRoutes');
 
 // Import middleware
-const authMiddleware = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 const { sanitizeInput } = require('../middleware/validationMiddleware');
 
 // Apply global middleware
