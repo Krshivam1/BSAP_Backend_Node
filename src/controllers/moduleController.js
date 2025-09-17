@@ -1,11 +1,7 @@
-const express = require('express');
-const router = express.Router();
 const ModuleService = require('../services/moduleService');
-const { authenticate } = require('../middleware/auth');
-const { validateModule, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/modules - Get all modules with pagination
-router.get('/', authenticate, validatePagination, async (req, res) => {
+async function list(req, res) {
   try {
     const { 
       page = 1, 
@@ -45,10 +41,10 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/modules/:id - Get module by ID
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const module = await ModuleService.getModuleById(id);
@@ -72,10 +68,10 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/modules - Create new module
-router.post('/', authenticate, validateModule, async (req, res) => {
+async function create(req, res) {
   try {
     const moduleData = {
       ...req.body,
@@ -104,10 +100,10 @@ router.post('/', authenticate, validateModule, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/modules/:id - Update module
-router.put('/:id', authenticate, validateModule, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const moduleData = {
@@ -143,10 +139,10 @@ router.put('/:id', authenticate, validateModule, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/modules/:id - Delete module
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deleted = await ModuleService.deleteModule(id);
@@ -169,10 +165,10 @@ router.delete('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/modules/:id/topics - Get topics by module
-router.get('/:id/topics', authenticate, validatePagination, async (req, res) => {
+async function topics(req, res) {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
@@ -204,10 +200,10 @@ router.get('/:id/topics', authenticate, validatePagination, async (req, res) => 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/modules/search/:searchTerm - Search modules
-router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, status } = req.query;
@@ -239,10 +235,10 @@ router.get('/search/:searchTerm', authenticate, validatePagination, async (req, 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/modules/active - Get all active modules
-router.get('/status/active', authenticate, async (req, res) => {
+async function active(req, res) {
   try {
     const modules = await ModuleService.getActiveModules();
     
@@ -258,10 +254,10 @@ router.get('/status/active', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/modules/:id/activate - Activate module
-router.post('/:id/activate', authenticate, async (req, res) => {
+async function activate(req, res) {
   try {
     const { id } = req.params;
     const module = await ModuleService.activateModule(id, req.user.id);
@@ -285,10 +281,10 @@ router.post('/:id/activate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/modules/:id/deactivate - Deactivate module
-router.post('/:id/deactivate', authenticate, async (req, res) => {
+async function deactivate(req, res) {
   try {
     const { id } = req.params;
     const module = await ModuleService.deactivateModule(id, req.user.id);
@@ -312,10 +308,10 @@ router.post('/:id/deactivate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/modules/statistics - Get module statistics
-router.get('/stats/overview', authenticate, async (req, res) => {
+async function stats(req, res) {
   try {
     const statistics = await ModuleService.getModuleStatistics();
     
@@ -331,10 +327,10 @@ router.get('/stats/overview', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/modules/:id/order - Update module display order
-router.put('/:id/order', authenticate, async (req, res) => {
+async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -367,10 +363,10 @@ router.put('/:id/order', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/modules/:id/permissions - Get module permissions
-router.get('/:id/permissions', authenticate, async (req, res) => {
+async function permissions(req, res) {
   try {
     const { id } = req.params;
     const permissions = await ModuleService.getModulePermissions(id);
@@ -387,10 +383,10 @@ router.get('/:id/permissions', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/modules/:id/clone - Clone module
-router.post('/:id/clone', authenticate, async (req, res) => {
+async function clone(req, res) {
   try {
     const { id } = req.params;
     const { name, code, description } = req.body;
@@ -436,6 +432,21 @@ router.post('/:id/clone', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  update,
+  remove,
+  topics,
+  search,
+  active,
+  activate,
+  deactivate,
+  stats,
+  updateOrder,
+  permissions,
+  clone
+};

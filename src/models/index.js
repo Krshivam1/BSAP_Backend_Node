@@ -66,6 +66,17 @@ Permission.belongsToMany(Role, {
   as: 'roles'
 });
 
+// RolePermission associations (for eager loading)
+RolePermission.belongsTo(Permission, {
+  foreignKey: 'permissionId',
+  as: 'permission'
+});
+
+RolePermission.belongsTo(Role, {
+  foreignKey: 'roleId',
+  as: 'role'
+});
+
 // Menu associations
 Menu.belongsToMany(Role, {
   through: RoleMenu,

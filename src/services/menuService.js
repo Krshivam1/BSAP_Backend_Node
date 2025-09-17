@@ -180,36 +180,45 @@ class MenuService {
     const user = await User.findByPk(userId, {
       include: [{
         model: Role,
-        as: 'roles',
+        as: 'role',
         include: [{
           model: Menu,
           as: 'menus',
-          where: { isActive: true },
+          where: { active: true },
           required: false
         }]
       }]
     });
+    console.log('🎯 Fetched user with roles and menus:', JSON.stringify(user, null, 2));
+    
+    if (!user || !user.role) {
+      console.log('❌ No user or role found');
+      return [];
+    }
 
-    if (!user) return [];
+    console.log('🔍 User role found:', user.role.roleName);
+    console.log('🔍 Raw menus from role:', user.role.menus.length);
 
-    // Collect all menus from user roles
-    const menuSet = new Set();
-    user.roles.forEach(role => {
-      role.menus.forEach(menu => {
-        menuSet.add(menu.id);
-      });
+    // Collect all menus from user's role
+    const menus = user.role.menus.filter(menu => {
+      console.log(`📋 Menu: ${menu.menuName}, active: ${menu.active}`);
+      return menu.active;
     });
 
-    const menuIds = Array.from(menuSet);
-    const menus = await Menu.findAll({
-      where: {
-        id: { [Op.in]: menuIds },
-        isActive: true
-      },
-      order: [['level', 'ASC'], ['displayOrder', 'ASC']]
-    });
+    console.log('🔍 Filtered active menus:', menus.length);
 
-    return includeHierarchy ? this.buildHierarchy(menus) : menus;
+    if (!menus.length) {
+      console.log('❌ No active menus found');
+      return [];
+    }
+
+    console.log('✅ Returning menus:', menus.map(m => m.menuName));
+    
+    // For now, return flat list since Menu model doesn't have parentId for hierarchy
+    // TODO: Add parentId field to Menu model if hierarchy is needed
+    return menus.sort((a, b) => a.priority - b.priority);
+    
+    // return includeHierarchy ? this.buildHierarchy(menus) : menus;
   }
 
   // Get role menus

@@ -1,21 +1,28 @@
-const express = require('express');
-const router = express.Router();
 const QuestionService = require('../services/questionService');
-const { authenticate } = require('../middleware/auth');
-const { validateQuestion, validatePagination } = require('../middleware/validationMiddleware');
+
+// Utility: parse status query into boolean isActive
+function parseIsActive(status) {
+  if (status === undefined || status === null) return undefined;
+  const s = String(status).toLowerCase();
+  if (['active', 'true', '1', 'yes'].includes(s)) return true;
+  if (['inactive', 'false', '0', 'no'].includes(s)) return false;
+  return undefined;
+}
 
 // GET /api/questions - Get all questions with pagination
-router.get('/', authenticate, validatePagination, async (req, res) => {
+async function list(req, res) {
   try {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'name', 
+      sortBy = 'displayOrder', 
       sortOrder = 'ASC',
       search,
+      topicId,
       subTopicId,
       type,
-      status 
+      status,
+      moduleId
     } = req.query;
 
     const options = {
@@ -24,9 +31,11 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       sortBy,
       sortOrder: sortOrder.toUpperCase(),
       search,
+      topicId,
       subTopicId,
-      type,
-      status
+      moduleId,
+      questionType: type,
+      isActive: parseIsActive(status)
     };
 
     const result = await QuestionService.getAllQuestions(options);
@@ -49,10 +58,10 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/questions/:id - Get question by ID
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const question = await QuestionService.getQuestionById(id);
@@ -76,10 +85,10 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/questions - Create new question
-router.post('/', authenticate, validateQuestion, async (req, res) => {
+async function create(req, res) {
   try {
     const questionData = {
       ...req.body,
@@ -108,10 +117,10 @@ router.post('/', authenticate, validateQuestion, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/questions/:id - Update question
-router.put('/:id', authenticate, validateQuestion, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const questionData = {
@@ -147,10 +156,10 @@ router.put('/:id', authenticate, validateQuestion, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/questions/:id - Delete question
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deleted = await QuestionService.deleteQuestion(id);
@@ -173,10 +182,10 @@ router.delete('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/questions/by-sub-topic/:subTopicId - Get questions by sub-topic
-router.get('/by-sub-topic/:subTopicId', authenticate, validatePagination, async (req, res) => {
+async function bySubTopic(req, res) {
   try {
     const { subTopicId } = req.params;
     const { 
@@ -193,8 +202,8 @@ router.get('/by-sub-topic/:subTopicId', authenticate, validatePagination, async 
       limit: parseInt(limit),
       sortBy,
       sortOrder: sortOrder.toUpperCase(),
-      type,
-      status
+      questionType: type,
+      isActive: parseIsActive(status)
     };
 
     const result = await QuestionService.getQuestionsBySubTopic(subTopicId, options);
@@ -217,18 +226,21 @@ router.get('/by-sub-topic/:subTopicId', authenticate, validatePagination, async 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/questions/by-type/:type - Get questions by type
-router.get('/by-type/:type', authenticate, validatePagination, async (req, res) => {
+async function byType(req, res) {
   try {
     const { type } = req.params;
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'name', 
+      sortBy = 'displayOrder', 
       sortOrder = 'ASC',
-      subTopicId 
+      topicId,
+      subTopicId,
+      moduleId,
+      status
     } = req.query;
     
     const options = {
@@ -236,10 +248,13 @@ router.get('/by-type/:type', authenticate, validatePagination, async (req, res) 
       limit: parseInt(limit),
       sortBy,
       sortOrder: sortOrder.toUpperCase(),
-      subTopicId
+      topicId,
+      subTopicId,
+      moduleId,
+      questionType: type,
+      isActive: parseIsActive(status)
     };
-
-    const result = await QuestionService.getQuestionsByType(type, options);
+    const result = await QuestionService.getAllQuestions(options);
     
     res.json({
       status: 'SUCCESS',
@@ -259,21 +274,23 @@ router.get('/by-type/:type', authenticate, validatePagination, async (req, res) 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/questions/search/:searchTerm - Search questions
-router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
-    const { page = 1, limit = 10, subTopicId, type, status } = req.query;
+    const { page = 1, limit = 10, topicId, subTopicId, moduleId, type, status } = req.query;
     
     const options = {
       page: parseInt(page),
       limit: parseInt(limit),
       search: searchTerm,
+      topicId,
       subTopicId,
-      type,
-      status
+      moduleId,
+      questionType: type,
+      isActive: parseIsActive(status)
     };
 
     const result = await QuestionService.searchQuestions(options);
@@ -296,18 +313,19 @@ router.get('/search/:searchTerm', authenticate, validatePagination, async (req, 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/questions/active - Get all active questions
-router.get('/status/active', authenticate, async (req, res) => {
+async function active(req, res) {
   try {
-    const { subTopicId, type } = req.query;
-    const questions = await QuestionService.getActiveQuestions(subTopicId, type);
+    const { topicId, subTopicId, moduleId, type } = req.query;
+    const questions = await QuestionService.getActiveQuestions(topicId, subTopicId, moduleId);
+    const filtered = type ? questions.filter(q => q.questionType === type) : questions;
     
     res.json({
       status: 'SUCCESS',
       message: 'Active questions retrieved successfully',
-      data: questions
+      data: filtered
     });
   } catch (error) {
     res.status(500).json({
@@ -316,10 +334,10 @@ router.get('/status/active', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/questions/:id/activate - Activate question
-router.post('/:id/activate', authenticate, async (req, res) => {
+async function activate(req, res) {
   try {
     const { id } = req.params;
     const question = await QuestionService.activateQuestion(id, req.user.id);
@@ -343,10 +361,10 @@ router.post('/:id/activate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/questions/:id/deactivate - Deactivate question
-router.post('/:id/deactivate', authenticate, async (req, res) => {
+async function deactivate(req, res) {
   try {
     const { id } = req.params;
     const question = await QuestionService.deactivateQuestion(id, req.user.id);
@@ -370,10 +388,10 @@ router.post('/:id/deactivate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/questions/:id/order - Update question display order
-router.put('/:id/order', authenticate, async (req, res) => {
+async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -385,7 +403,11 @@ router.put('/:id/order', authenticate, async (req, res) => {
       });
     }
 
-    const question = await QuestionService.updateQuestionOrder(id, displayOrder, req.user.id);
+    // Service doesn't have single updateOrder; reuse reorderQuestions for a single item
+    const updated = await QuestionService.reorderQuestions([
+      { id: parseInt(id, 10), displayOrder }
+    ], req.user.id);
+    const question = updated && updated.length ? updated.find(q => q.id === parseInt(id, 10)) : null;
     
     if (!question) {
       return res.status(404).json({
@@ -406,12 +428,13 @@ router.put('/:id/order', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/questions/types - Get question types
-router.get('/config/types', authenticate, async (req, res) => {
+async function types(req, res) {
   try {
-    const types = await QuestionService.getQuestionTypes();
+    // Static list aligned with validation schema
+    const types = ['TEXT', 'NUMBER', 'BOOLEAN', 'MULTIPLE_CHOICE', 'RATING'];
     
     res.json({
       status: 'SUCCESS',
@@ -425,10 +448,10 @@ router.get('/config/types', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/questions/statistics - Get question statistics
-router.get('/stats/overview', authenticate, async (req, res) => {
+async function stats(req, res) {
   try {
     const { subTopicId, type } = req.query;
     const statistics = await QuestionService.getQuestionStatistics(subTopicId, type);
@@ -445,28 +468,21 @@ router.get('/stats/overview', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/questions/:id/clone - Clone question
-router.post('/:id/clone', authenticate, async (req, res) => {
+async function clone(req, res) {
   try {
     const { id } = req.params;
-    const { name, subTopicId, description } = req.body;
-    
-    if (!name || !subTopicId) {
+    const { targetTopicId, targetSubTopicId = null } = req.body;
+    if (!targetTopicId) {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Name and sub-topic ID are required for cloning'
+        message: 'targetTopicId is required to clone question'
       });
     }
 
-    const clonedQuestion = await QuestionService.cloneQuestion(id, {
-      name,
-      subTopicId,
-      description,
-      createdBy: req.user.id,
-      updatedBy: req.user.id
-    });
+    const clonedQuestion = await QuestionService.copyQuestion(id, targetTopicId, targetSubTopicId, req.user.id);
     
     if (!clonedQuestion) {
       return res.status(404).json({
@@ -481,34 +497,31 @@ router.post('/:id/clone', authenticate, async (req, res) => {
       data: clonedQuestion
     });
   } catch (error) {
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        status: 'ERROR',
-        message: 'Question with this name already exists in the target sub-topic'
-      });
-    }
-    
     res.status(500).json({
       status: 'ERROR',
       message: 'Failed to clone question',
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/questions/reorder - Reorder questions within a sub-topic
-router.put('/reorder', authenticate, async (req, res) => {
+async function reorder(req, res) {
   try {
-    const { subTopicId, questionOrders } = req.body;
-    
-    if (!subTopicId || !Array.isArray(questionOrders)) {
+    const { subTopicId } = req.body;
+    // Accept both { questionOrders: [...] } and { items: [...] }
+    const questionOrders = Array.isArray(req.body.questionOrders)
+      ? req.body.questionOrders
+      : Array.isArray(req.body.items) ? req.body.items : null;
+
+    if (!Array.isArray(questionOrders) || questionOrders.length === 0) {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Sub-topic ID and question orders array are required'
+        message: 'Question orders array is required'
       });
     }
 
-    const updatedQuestions = await QuestionService.reorderQuestions(subTopicId, questionOrders, req.user.id);
+    const updatedQuestions = await QuestionService.reorderQuestions(questionOrders, req.user.id);
     
     res.json({
       status: 'SUCCESS',
@@ -522,10 +535,10 @@ router.put('/reorder', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/questions/bulk-create - Bulk create questions
-router.post('/bulk-create', authenticate, async (req, res) => {
+async function bulkCreate(req, res) {
   try {
     const { questions } = req.body;
     
@@ -557,10 +570,10 @@ router.post('/bulk-create', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/questions/:id/performance-statistics - Get performance statistics for question
-router.get('/:id/performance-statistics', authenticate, validatePagination, async (req, res) => {
+async function performanceStatistics(req, res) {
   try {
     const { id } = req.params;
     const { 
@@ -572,25 +585,17 @@ router.get('/:id/performance-statistics', authenticate, validatePagination, asyn
     } = req.query;
     
     const options = {
-      page: parseInt(page),
-      limit: parseInt(limit),
       startDate,
       endDate,
       userId
     };
 
-    const result = await QuestionService.getPerformanceStatistics(id, options);
-    
+    const stats = await QuestionService.getQuestionPerformanceStats(id, options);
+
     res.json({
       status: 'SUCCESS',
       message: 'Performance statistics retrieved successfully',
-      data: result.statistics,
-      pagination: {
-        total: result.total,
-        page: options.page,
-        limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
-      }
+      data: stats
     });
   } catch (error) {
     res.status(500).json({
@@ -599,10 +604,10 @@ router.get('/:id/performance-statistics', authenticate, validatePagination, asyn
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/questions/:id/metadata - Update question metadata
-router.put('/:id/metadata', authenticate, async (req, res) => {
+async function updateMetadata(req, res) {
   try {
     const { id } = req.params;
     const { 
@@ -641,6 +646,26 @@ router.put('/:id/metadata', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  update,
+  remove,
+  bySubTopic,
+  byType,
+  search,
+  active,
+  activate,
+  deactivate,
+  updateOrder,
+  types,
+  stats,
+  clone,
+  reorder,
+  bulkCreate,
+  performanceStatistics,
+  updateMetadata
+};

@@ -1,48 +1,13 @@
-const express = require('express');
-const router = express.Router();
 const { communicationService } = require('../services');
-const { authenticate } = require('../middleware/auth');
-const { validateCommunicationCreate, validateMessageCreate } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
-const multer = require('multer');
 const path = require('path');
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/communications/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Allow documents, images, and other common file types
-    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|xlsx|xls/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Invalid file type'));
-    }
-  }
-});
 
 /**
  * @route GET /api/communications
  * @desc Get all communications with pagination and filtering
  * @access Private
  */
-router.get('/', authenticate, async (req, res) => {
+async function list(req, res) {
   try {
     const filters = {
       page: parseInt(req.query.page) || 1,
@@ -66,14 +31,14 @@ router.get('/', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/communications/user
  * @desc Get communications for current user
  * @access Private
  */
-router.get('/user', authenticate, async (req, res) => {
+async function userCommunications(req, res) {
   try {
     const userId = req.user.id;
     const communications = await communicationService.getCommunicationsForUser(userId);
@@ -92,14 +57,14 @@ router.get('/user', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/communications/:id
  * @desc Get communication by ID
  * @access Private
  */
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const communication = await communicationService.getCommunicationById(parseInt(id));
@@ -118,14 +83,14 @@ router.get('/:id', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route POST /api/communications/start
  * @desc Start new communication
  * @access Private
  */
-router.post('/start', authenticate, upload.array('attachments', 5), validateCommunicationCreate, async (req, res) => {
+async function start(req, res) {
   try {
     const { name, description, userIds, message } = req.body;
     const createdBy = req.user.id;
@@ -171,14 +136,14 @@ router.post('/start', authenticate, upload.array('attachments', 5), validateComm
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route POST /api/communications/:id/reply
  * @desc Reply to communication
  * @access Private
  */
-router.post('/:id/reply', authenticate, upload.array('attachments', 5), validateMessageCreate, async (req, res) => {
+async function reply(req, res) {
   try {
     const { id } = req.params;
     const { message, userIds } = req.body;
@@ -220,14 +185,14 @@ router.post('/:id/reply', authenticate, upload.array('attachments', 5), validate
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route PUT /api/communications/:id
  * @desc Update communication
  * @access Private
  */
-router.put('/:id', authenticate, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -253,14 +218,14 @@ router.put('/:id', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route DELETE /api/communications/:id
  * @desc Delete communication (soft delete)
  * @access Private
  */
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deletedBy = req.user.id;
@@ -280,14 +245,14 @@ router.delete('/:id', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/communications/:id/messages
  * @desc Get messages for a communication
  * @access Private
  */
-router.get('/:id/messages', authenticate, async (req, res) => {
+async function messages(req, res) {
   try {
     const { id } = req.params;
     const communication = await communicationService.getCommunicationById(parseInt(id));
@@ -306,14 +271,14 @@ router.get('/:id/messages', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/communications/:id/users
  * @desc Get users in a communication
  * @access Private
  */
-router.get('/:id/users', authenticate, async (req, res) => {
+async function users(req, res) {
   try {
     const { id } = req.params;
     const communication = await communicationService.getCommunicationById(parseInt(id));
@@ -332,14 +297,14 @@ router.get('/:id/users', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route POST /api/communications/:id/users
  * @desc Add users to communication
  * @access Private
  */
-router.post('/:id/users', authenticate, async (req, res) => {
+async function addUsers(req, res) {
   try {
     const { id } = req.params;
     const { userIds } = req.body;
@@ -364,14 +329,14 @@ router.post('/:id/users', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route DELETE /api/communications/:id/users/:userId
  * @desc Remove user from communication
  * @access Private
  */
-router.delete('/:id/users/:userId', authenticate, async (req, res) => {
+async function removeUser(req, res) {
   try {
     const { id, userId } = req.params;
     const removedBy = req.user.id;
@@ -395,14 +360,14 @@ router.delete('/:id/users/:userId', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route PUT /api/communications/messages/:messageId/status
  * @desc Update message read status
  * @access Private
  */
-router.put('/messages/:messageId/status', authenticate, async (req, res) => {
+async function updateMessageStatus(req, res) {
   try {
     const { messageId } = req.params;
     const { status } = req.body;
@@ -434,14 +399,14 @@ router.put('/messages/:messageId/status', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/communications/:id/statistics
  * @desc Get communication statistics
  * @access Private
  */
-router.get('/:id/statistics', authenticate, async (req, res) => {
+async function statistics(req, res) {
   try {
     const { id } = req.params;
     const statistics = await communicationService.getCommunicationStatistics(parseInt(id));
@@ -460,14 +425,14 @@ router.get('/:id/statistics', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/communications/search/:searchTerm
  * @desc Search communications
  * @access Private
  */
-router.get('/search/:searchTerm', authenticate, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
     const { userId } = req.query;
@@ -492,14 +457,14 @@ router.get('/search/:searchTerm', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/communications/:id/update-status
  * @desc Get update status for communication and user
  * @access Private
  */
-router.get('/:id/update-status', authenticate, async (req, res) => {
+async function updateStatus(req, res) {
   try {
     const { id } = req.params;
     const userId = req.user.id;
@@ -523,6 +488,22 @@ router.get('/:id/update-status', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  userCommunications,
+  detail,
+  start,
+  reply,
+  update,
+  remove,
+  messages,
+  users,
+  addUsers,
+  removeUser,
+  updateMessageStatus,
+  statistics,
+  search,
+  updateStatus
+};

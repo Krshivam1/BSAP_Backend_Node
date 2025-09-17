@@ -1,25 +1,139 @@
 const express = require('express');
 const router = express.Router();
 
-// Import all route modules
-const authRoutes = require('./authRoutes');
-const userRoutes = require('./userRoutes');
-const performanceStatisticRoutes = require('./performanceStatisticRoutes');
-const communicationRoutes = require('./communicationRoutes');
-const reportRoutes = require('./reportRoutes');
-const cidRoutes = require('./cidRoutes');
-const adminRoutes = require('./adminRoutes');
+// Import all route modules with error handling
+console.log('🔧 Loading route modules...');
 
-// Import additional route modules
-const stateRoutes = require('./stateRoutes');
-const districtRoutes = require('./districtRoutes');
-const rangeRoutes = require('./rangeRoutes');
-const moduleRoutes = require('./moduleRoutes');
-const topicRoutes = require('./topicRoutes');
-const subTopicRoutes = require('./subTopicRoutes');
-const questionRoutes = require('./questionRoutes');
-const menuRoutes = require('./menuRoutes');
-const fileRoutes = require('./fileRoutes');
+let authRoutes, userRoutes, performanceStatisticRoutes, communicationRoutes, reportRoutes, cidRoutes, adminRoutes;
+let stateRoutes, districtRoutes, rangeRoutes, moduleRoutes, topicRoutes, subTopicRoutes, questionRoutes, menuRoutes, fileRoutes;
+
+try {
+  authRoutes = require('./authRoutes');
+  console.log('✅ authRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load authRoutes:', error.message);
+  authRoutes = express.Router(); // fallback empty router
+}
+
+try {
+  userRoutes = require('./userRoutes');
+  console.log('✅ userRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load userRoutes:', error.message);
+  userRoutes = express.Router();
+}
+
+try {
+  performanceStatisticRoutes = require('./performanceStatisticRoutes');
+  console.log('✅ performanceStatisticRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load performanceStatisticRoutes:', error.message);
+  performanceStatisticRoutes = express.Router();
+}
+
+try {
+  communicationRoutes = require('./communicationRoutes');
+  console.log('✅ communicationRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load communicationRoutes:', error.message);
+  communicationRoutes = express.Router();
+}
+
+try {
+  reportRoutes = require('./reportRoutes');
+  console.log('✅ reportRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load reportRoutes:', error.message);
+  reportRoutes = express.Router();
+}
+
+try {
+  cidRoutes = require('./cidRoutes');
+  console.log('✅ cidRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load cidRoutes:', error.message);
+  cidRoutes = express.Router();
+}
+
+try {
+  adminRoutes = require('./adminRoutes');
+  console.log('✅ adminRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load adminRoutes:', error.message);
+  adminRoutes = express.Router();
+}
+
+try {
+  stateRoutes = require('./stateRoutes');
+  console.log('✅ stateRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load stateRoutes:', error.message);
+  stateRoutes = express.Router();
+}
+
+try {
+  districtRoutes = require('./districtRoutes');
+  console.log('✅ districtRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load districtRoutes:', error.message);
+  districtRoutes = express.Router();
+}
+
+try {
+  rangeRoutes = require('./rangeRoutes');
+  console.log('✅ rangeRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load rangeRoutes:', error.message);
+  rangeRoutes = express.Router();
+}
+
+try {
+  moduleRoutes = require('./moduleRoutes');
+  console.log('✅ moduleRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load moduleRoutes:', error.message);
+  moduleRoutes = express.Router();
+}
+
+try {
+  topicRoutes = require('./topicRoutes');
+  console.log('✅ topicRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load topicRoutes:', error.message);
+  topicRoutes = express.Router();
+}
+
+try {
+  subTopicRoutes = require('./subTopicRoutes');
+  console.log('✅ subTopicRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load subTopicRoutes:', error.message);
+  subTopicRoutes = express.Router();
+}
+
+try {
+  questionRoutes = require('./questionRoutes');
+  console.log('✅ questionRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load questionRoutes:', error.message);
+  questionRoutes = express.Router();
+}
+
+try {
+  menuRoutes = require('./menuRoutes');
+  console.log('✅ menuRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load menuRoutes:', error.message);
+  menuRoutes = express.Router();
+}
+
+try {
+  fileRoutes = require('./fileRoutes');
+  console.log('✅ fileRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load fileRoutes:', error.message);
+  fileRoutes = express.Router();
+}
 
 // Import middleware
 const { authenticate } = require('../middleware/auth');
@@ -318,25 +432,44 @@ router.get('/docs', (req, res) => {
 });
 
 // Mount route modules
+console.log('🔧 Mounting route modules...');
 router.use('/auth', authRoutes);
+console.log('✅ /auth mounted');
 router.use('/users', userRoutes);
+console.log('✅ /users mounted');
 router.use('/admin', adminRoutes);
+console.log('✅ /admin mounted');
 router.use('/performance-statistics', performanceStatisticRoutes);
+console.log('✅ /performance-statistics mounted');
 router.use('/communications', communicationRoutes);
+console.log('✅ /communications mounted');
 router.use('/reports', reportRoutes);
+console.log('✅ /reports mounted');
 router.use('/cid', cidRoutes);
+console.log('✅ /cid mounted');
 router.use('/states', stateRoutes);
+console.log('✅ /states mounted');
 router.use('/districts', districtRoutes);
+console.log('✅ /districts mounted');
 router.use('/ranges', rangeRoutes);
+console.log('✅ /ranges mounted');
 router.use('/modules', moduleRoutes);
+console.log('✅ /modules mounted');
 router.use('/topics', topicRoutes);
+console.log('✅ /topics mounted');
 router.use('/sub-topics', subTopicRoutes);
+console.log('✅ /sub-topics mounted');
 router.use('/questions', questionRoutes);
+console.log('✅ /questions mounted');
 router.use('/menus', menuRoutes);
+console.log('✅ /menus mounted');
 router.use('/files', fileRoutes);
+console.log('✅ /files mounted');
+console.log('🎉 All route modules mounted successfully');
 
 // Error handling for undefined routes
 router.use('*', (req, res) => {
+  console.warn(`⚠️ 404 - from app`);
   res.status(404).json({
     status: 'ERROR',
     message: 'Endpoint not found',

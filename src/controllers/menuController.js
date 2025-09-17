@@ -1,11 +1,7 @@
-const express = require('express');
-const router = express.Router();
 const MenuService = require('../services/menuService');
-const { authenticate } = require('../middleware/auth');
-const { validateMenu, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/menus - Get all menus with pagination
-router.get('/', authenticate, validatePagination, async (req, res) => {
+async function list(req, res) {
   try {
     const { 
       page = 1, 
@@ -47,10 +43,10 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/:id - Get menu by ID
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const menu = await MenuService.getMenuById(id);
@@ -74,10 +70,10 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/menus - Create new menu
-router.post('/', authenticate, validateMenu, async (req, res) => {
+async function create(req, res) {
   try {
     const menuData = {
       ...req.body,
@@ -106,10 +102,10 @@ router.post('/', authenticate, validateMenu, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/menus/:id - Update menu
-router.put('/:id', authenticate, validateMenu, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const menuData = {
@@ -145,10 +141,10 @@ router.put('/:id', authenticate, validateMenu, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/menus/:id - Delete menu
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deleted = await MenuService.deleteMenu(id);
@@ -171,13 +167,13 @@ router.delete('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/hierarchy - Get menu hierarchy
-router.get('/structure/hierarchy', authenticate, async (req, res) => {
+async function hierarchy(req, res) {
   try {
-    const { roleId } = req.query;
-    const menus = await MenuService.getMenuHierarchy(roleId);
+    const { status } = req.query;
+    const menus = await MenuService.getMenuHierarchy(status);
     
     res.json({
       status: 'SUCCESS',
@@ -191,13 +187,19 @@ router.get('/structure/hierarchy', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/user/:userId - Get user-specific menus
-router.get('/user/:userId', authenticate, async (req, res) => {
+async function userMenus(req, res) {
   try {
     const { userId } = req.params;
+    console.log('🔍 menuController.userMenus called with userId:', userId);
+    console.log('🔍 Full request params:', req.params);
+    console.log('🔍 Request path:', req.path);
+    console.log('🔍 Request URL:', req.url);
+    
     const menus = await MenuService.getUserMenus(userId);
+    console.log('🔍 MenuService returned:', menus);
     
     res.json({
       status: 'SUCCESS',
@@ -205,16 +207,36 @@ router.get('/user/:userId', authenticate, async (req, res) => {
       data: menus
     });
   } catch (error) {
+    console.error('❌ Error in menuController.userMenus:', error);
     res.status(500).json({
       status: 'ERROR',
       message: 'Failed to retrieve user menus',
       error: error.message
     });
   }
-});
+}
+
+// GET /api/menus/user - Get menus for current authenticated user
+async function userMenusSelf(req, res) {
+  try {
+    const userId = req.user.id;
+    const menus = await MenuService.getUserMenus(userId);
+    res.json({
+      status: 'SUCCESS',
+      message: 'Current user menus retrieved successfully',
+      data: menus
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve current user menus',
+      error: error.message
+    });
+  }
+}
 
 // GET /api/menus/role/:roleId - Get role-specific menus
-router.get('/role/:roleId', authenticate, async (req, res) => {
+async function roleMenus(req, res) {
   try {
     const { roleId } = req.params;
     const menus = await MenuService.getRoleMenus(roleId);
@@ -231,10 +253,10 @@ router.get('/role/:roleId', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/parent/:parentId - Get child menus
-router.get('/parent/:parentId', authenticate, validatePagination, async (req, res) => {
+async function children(req, res) {
   try {
     const { parentId } = req.params;
     const { 
@@ -271,13 +293,13 @@ router.get('/parent/:parentId', authenticate, validatePagination, async (req, re
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/root - Get root menus
-router.get('/level/root', authenticate, async (req, res) => {
+async function root(req, res) {
   try {
-    const { roleId } = req.query;
-    const menus = await MenuService.getRootMenus(roleId);
+    const { status } = req.query;
+    const menus = await MenuService.getRootMenus(status);
     
     res.json({
       status: 'SUCCESS',
@@ -291,10 +313,10 @@ router.get('/level/root', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/search/:searchTerm - Search menus
-router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, status, roleId } = req.query;
@@ -327,10 +349,10 @@ router.get('/search/:searchTerm', authenticate, validatePagination, async (req, 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/active - Get all active menus
-router.get('/status/active', authenticate, async (req, res) => {
+async function active(req, res) {
   try {
     const { roleId, parentId } = req.query;
     const menus = await MenuService.getActiveMenus(roleId, parentId);
@@ -347,10 +369,10 @@ router.get('/status/active', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/menus/:id/activate - Activate menu
-router.post('/:id/activate', authenticate, async (req, res) => {
+async function activate(req, res) {
   try {
     const { id } = req.params;
     const menu = await MenuService.activateMenu(id, req.user.id);
@@ -374,10 +396,10 @@ router.post('/:id/activate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/menus/:id/deactivate - Deactivate menu
-router.post('/:id/deactivate', authenticate, async (req, res) => {
+async function deactivate(req, res) {
   try {
     const { id } = req.params;
     const menu = await MenuService.deactivateMenu(id, req.user.id);
@@ -401,10 +423,10 @@ router.post('/:id/deactivate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/menus/:id/order - Update menu display order
-router.put('/:id/order', authenticate, async (req, res) => {
+async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -437,10 +459,10 @@ router.put('/:id/order', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/menus/reorder - Reorder menus
-router.put('/reorder', authenticate, async (req, res) => {
+async function reorder(req, res) {
   try {
     const { parentId, menuOrders } = req.body;
     
@@ -465,13 +487,13 @@ router.put('/reorder', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/sidebar/:userId - Get sidebar menu for user
-router.get('/sidebar/:userId', authenticate, async (req, res) => {
+async function sidebar(req, res) {
   try {
     const { userId } = req.params;
-    const sidebarMenu = await MenuService.getSidebarMenuForUser(userId);
+    const sidebarMenu = await MenuService.getSidebarMenu(userId);
     
     res.json({
       status: 'SUCCESS',
@@ -485,10 +507,10 @@ router.get('/sidebar/:userId', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/breadcrumb/:menuId - Get breadcrumb for menu
-router.get('/breadcrumb/:menuId', authenticate, async (req, res) => {
+async function breadcrumb(req, res) {
   try {
     const { menuId } = req.params;
     const breadcrumb = await MenuService.getMenuBreadcrumb(menuId);
@@ -505,10 +527,10 @@ router.get('/breadcrumb/:menuId', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/menus/statistics - Get menu statistics
-router.get('/stats/overview', authenticate, async (req, res) => {
+async function stats(req, res) {
   try {
     const statistics = await MenuService.getMenuStatistics();
     
@@ -524,10 +546,10 @@ router.get('/stats/overview', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/menus/:id/permissions - Assign permissions to menu
-router.post('/:id/permissions', authenticate, async (req, res) => {
+async function assignPermissions(req, res) {
   try {
     const { id } = req.params;
     const { roleIds } = req.body;
@@ -553,10 +575,10 @@ router.post('/:id/permissions', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/menus/:id/permissions/:roleId - Remove menu permission
-router.delete('/:id/permissions/:roleId', authenticate, async (req, res) => {
+async function removePermission(req, res) {
   try {
     const { id, roleId } = req.params;
     const removed = await MenuService.removeMenuPermission(id, roleId);
@@ -579,6 +601,29 @@ router.delete('/:id/permissions/:roleId', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  update,
+  remove,
+  hierarchy,
+  userMenus,
+  userMenusSelf,
+  roleMenus,
+  children,
+  root,
+  search,
+  active,
+  activate,
+  deactivate,
+  updateOrder,
+  reorder,
+  sidebar,
+  breadcrumb,
+  stats,
+  assignPermissions,
+  removePermission
+};

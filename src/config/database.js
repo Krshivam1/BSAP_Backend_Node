@@ -22,12 +22,13 @@ const sequelize = new Sequelize(
       timestamps: true,
       underscored: false, // Changed to false to match migration table names
       createdAt: 'createdAt',
-      updatedAt: 'updatedAt'
+      updatedAt: 'updatedAt',
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci'
     },
     timezone: '+05:30', // IST timezone
     dialectOptions: {
       charset: 'utf8mb4',
-      collate: 'utf8mb4_unicode_ci',
       supportBigNumbers: true,
       bigNumberStrings: true
     }
@@ -45,9 +46,12 @@ const config = {
     dialect: 'mysql',
     dialectOptions: {
       charset: 'utf8mb4',
-      collate: 'utf8mb4_unicode_ci',
       supportBigNumbers: true,
       bigNumberStrings: true
+    },
+    define: {
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci'
     },
     pool: {
       max: 10,
@@ -69,6 +73,9 @@ const config = {
     port: process.env.TEST_DB_PORT || 3306,
     dialect: 'mysql',
     dialectOptions: {
+      charset: 'utf8mb4'
+    },
+    define: {
       charset: 'utf8mb4',
       collate: 'utf8mb4_unicode_ci'
     },
@@ -85,11 +92,14 @@ const config = {
     dialect: 'mysql',
     dialectOptions: {
       charset: 'utf8mb4',
-      collate: 'utf8mb4_unicode_ci',
       ssl: {
         require: true,
         rejectUnauthorized: false
       }
+    },
+    define: {
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci'
     },
     pool: {
       max: 20,

@@ -1,60 +1,29 @@
 const express = require('express');
-const districtController = require('../controllers/districtController');
-const { authenticate, authorize } = require('../middleware/auth');
 const router = express.Router();
 
-// Mount district controller routes
-router.use('/', districtController);
+const districtController = require('../controllers/districtController');
+const { authenticate } = require('../middleware/auth');
+const { validatePagination, validateId } = require('../middleware/validationMiddleware');
 
-module.exports = router;
+// Stats and active
+router.get('/stats/overview', authenticate, districtController.stats);
+router.get('/status/active', authenticate, districtController.active);
 
-// Get all districts
-router.get('/', authenticate, async (req, res, next) => {
-  try {
-    const { page, size, rangeId, search } = req.query;
-    const { limit, offset } = getPagination(page, size);
+// Search and relations
+router.get('/search/:searchTerm', authenticate, validatePagination, districtController.search);
+router.get('/by-state/:stateId', authenticate, validatePagination, districtController.byState);
+router.get('/:id/police-stations', authenticate, validateId, validatePagination, districtController.policeStations);
+router.get('/:id/sub-divisions', authenticate, validateId, validatePagination, districtController.subDivisions);
 
-    const whereCondition = { active: true };
-    
-    if (rangeId) whereCondition.rangeId = rangeId;
-    
-    if (search) {
-      const { Op } = require('sequelize');
-      whereCondition.districtName = { [Op.like]: `%${search}%` };
-    }
+// CRUD
+router.get('/', authenticate, validatePagination, districtController.list);
+router.get('/:id', authenticate, validateId, districtController.detail);
+router.post('/', authenticate, districtController.create);
+router.put('/:id', authenticate, validateId, districtController.update);
+router.delete('/:id', authenticate, validateId, districtController.remove);
 
-    const districts = await District.findAndCountAll({
-      where: whereCondition,
-      include: [{ model: Range, as: 'range' }],
-      limit,
-      offset,
-      order: [['districtName', 'ASC']]
-    });
-
-    const response = getPagingData(districts, page, limit);
-    res.json(formatResponse(true, 'Districts retrieved successfully', response));
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Get district by ID
-router.get('/:id', authenticate, async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    
-    const district = await District.findByPk(id, {
-      include: [{ model: Range, as: 'range' }]
-    });
-    
-    if (!district || !district.active) {
-      return res.status(404).json(formatResponse(false, 'District not found'));
-    }
-
-    res.json(formatResponse(true, 'District retrieved successfully', district));
-  } catch (error) {
-    next(error);
-  }
-});
+// Activation
+router.post('/:id/activate', authenticate, validateId, districtController.activate);
+router.post('/:id/deactivate', authenticate, validateId, districtController.deactivate);
 
 module.exports = router;

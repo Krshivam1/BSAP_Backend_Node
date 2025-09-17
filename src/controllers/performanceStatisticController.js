@@ -1,8 +1,4 @@
-const express = require('express');
-const router = express.Router();
 const { performanceStatisticService } = require('../services');
-const { authenticate } = require('../middleware/auth');
-const { validateStatisticsCreate, validateOTP } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
 
 /**
@@ -153,7 +149,7 @@ const logger = require('../utils/logger');
  * @desc Get performance statistics with pagination and filtering
  * @access Private
  */
-router.get('/', authenticate, async (req, res) => {
+async function list(req, res) {
   try {
     const filters = {
       page: parseInt(req.query.page) || 1,
@@ -193,14 +189,14 @@ router.get('/', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/performance-statistics/:id
  * @desc Get performance statistic by ID
  * @access Private
  */
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     // Get single performance statistic by finding in paginated results
@@ -231,14 +227,14 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route POST /api/performance-statistics
  * @desc Create new performance statistic
  * @access Private
  */
-router.post('/', authenticate, validateStatisticsCreate, async (req, res) => {
+async function create(req, res) {
   try {
     const statisticData = req.body;
     const createdBy = req.user.id;
@@ -258,14 +254,14 @@ router.post('/', authenticate, validateStatisticsCreate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route POST /api/performance-statistics/save-statistics
  * @desc Save multiple performance statistics
  * @access Private
  */
-router.post('/save-statistics', authenticate, async (req, res) => {
+async function bulkSave(req, res) {
   try {
     const { statistics } = req.body;
     const createdBy = req.user.id;
@@ -298,14 +294,14 @@ router.post('/save-statistics', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route PUT /api/performance-statistics/:id
  * @desc Update performance statistic
  * @access Private
  */
-router.put('/:id', authenticate, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -329,14 +325,14 @@ router.put('/:id', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route DELETE /api/performance-statistics/:id
  * @desc Delete performance statistic (soft delete)
  * @access Private
  */
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
 
@@ -355,14 +351,14 @@ router.delete('/:id', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route POST /api/performance-statistics/:id/make-active
  * @desc Make performance statistic active/inactive
  * @access Private
  */
-router.post('/:id/make-active', authenticate, async (req, res) => {
+async function makeActive(req, res) {
   try {
     const { id } = req.params;
     const { active = true } = req.body;
@@ -387,14 +383,14 @@ router.post('/:id/make-active', authenticate, async (req, res) => {
       message: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/performance-statistics/user/:userId
  * @desc Get performance statistics by user ID
  * @access Private
  */
-router.get('/user/:userId', authenticate, async (req, res) => {
+async function byUser(req, res) {
   try {
     const { userId } = req.params;
     const statistics = await performanceStatisticService.getByUserId(parseInt(userId));
@@ -413,14 +409,14 @@ router.get('/user/:userId', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/performance-statistics/user/:userId/month/:monthYear
  * @desc Get performance statistics by user ID and month
  * @access Private
  */
-router.get('/user/:userId/month/:monthYear', authenticate, async (req, res) => {
+async function byUserMonth(req, res) {
   try {
     const { userId, monthYear } = req.params;
     const statistics = await performanceStatisticService.getByUserIdAndMonth(
@@ -442,14 +438,14 @@ router.get('/user/:userId/month/:monthYear', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/performance-statistics/summary
  * @desc Get performance statistics summary
  * @access Private
  */
-router.get('/summary', authenticate, async (req, res) => {
+async function summary(req, res) {
   try {
     const filters = {
       userId: req.query.userId ? parseInt(req.query.userId) : undefined,
@@ -475,14 +471,14 @@ router.get('/summary', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/performance-statistics/labels
  * @desc Get all unique month-year labels
  * @access Private
  */
-router.get('/labels', authenticate, async (req, res) => {
+async function labels(req, res) {
   try {
     const labels = await performanceStatisticService.getAllLabels();
 
@@ -500,14 +496,14 @@ router.get('/labels', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route POST /api/performance-statistics/labels/filter
  * @desc Get labels by filters
  * @access Private
  */
-router.post('/labels/filter', authenticate, async (req, res) => {
+async function labelsFilter(req, res) {
   try {
     const filters = req.body;
     const labels = await performanceStatisticService.getLabelsByFilters(filters);
@@ -526,14 +522,14 @@ router.post('/labels/filter', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route POST /api/performance-statistics/report-values
  * @desc Get values for report generation
  * @access Private
  */
-router.post('/report-values', authenticate, async (req, res) => {
+async function reportValues(req, res) {
   try {
     const filters = req.body;
     const values = await performanceStatisticService.getValuesForReport(filters);
@@ -552,14 +548,14 @@ router.post('/report-values', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/performance-statistics/count/user/:userId/date/:date
  * @desc Get count by user ID and date
  * @access Private
  */
-router.get('/count/user/:userId/date/:date', authenticate, async (req, res) => {
+async function countByUserDate(req, res) {
   try {
     const { userId, date } = req.params;
     const count = await performanceStatisticService.getCountByUserIdAndDate(
@@ -581,14 +577,14 @@ router.get('/count/user/:userId/date/:date', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 /**
  * @route GET /api/performance-statistics/success-count/user/:userId/date/:date
  * @desc Get success count by user ID and date
  * @access Private
  */
-router.get('/success-count/user/:userId/date/:date', authenticate, async (req, res) => {
+async function successCountByUserDate(req, res) {
   try {
     const { userId, date } = req.params;
     const count = await performanceStatisticService.getSuccessCountByUserIdAndDate(
@@ -610,6 +606,22 @@ router.get('/success-count/user/:userId/date/:date', authenticate, async (req, r
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  bulkSave,
+  update,
+  remove,
+  makeActive,
+  byUser,
+  byUserMonth,
+  summary,
+  labels,
+  labelsFilter,
+  reportValues,
+  countByUserDate,
+  successCountByUserDate
+};

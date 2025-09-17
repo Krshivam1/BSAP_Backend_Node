@@ -1,11 +1,7 @@
-const express = require('express');
-const router = express.Router();
 const RangeService = require('../services/rangeService');
-const { authenticate } = require('../middleware/auth');
-const { validateRangeCreate, validateRangeUpdate, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/ranges - Get all ranges with pagination
-router.get('/', authenticate, validatePagination, async (req, res) => {
+async function list(req, res) {
   try {
     const { 
       page = 1, 
@@ -47,10 +43,10 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/ranges/:id - Get range by ID
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const range = await RangeService.getRangeById(id);
@@ -74,10 +70,10 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/ranges - Create new range
-router.post('/', authenticate, validateRangeCreate, async (req, res) => {
+async function create(req, res) {
   try {
     const rangeData = {
       ...req.body,
@@ -106,10 +102,10 @@ router.post('/', authenticate, validateRangeCreate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/ranges/:id - Update range
-router.put('/:id', authenticate, validateRangeUpdate, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const rangeData = {
@@ -145,10 +141,10 @@ router.put('/:id', authenticate, validateRangeUpdate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/ranges/:id - Delete range
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deleted = await RangeService.deleteRange(id);
@@ -171,10 +167,10 @@ router.delete('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/ranges/by-district/:districtId - Get ranges by district
-router.get('/by-district/:districtId', authenticate, validatePagination, async (req, res) => {
+async function byDistrict(req, res) {
   try {
     const { districtId } = req.params;
     const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
@@ -206,10 +202,10 @@ router.get('/by-district/:districtId', authenticate, validatePagination, async (
       error: error.message
     });
   }
-});
+}
 
 // GET /api/ranges/by-state/:stateId - Get ranges by state
-router.get('/by-state/:stateId', authenticate, validatePagination, async (req, res) => {
+async function byState(req, res) {
   try {
     const { stateId } = req.params;
     const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
@@ -241,10 +237,10 @@ router.get('/by-state/:stateId', authenticate, validatePagination, async (req, r
       error: error.message
     });
   }
-});
+}
 
 // GET /api/ranges/search/:searchTerm - Search ranges
-router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, districtId, stateId } = req.query;
@@ -277,10 +273,10 @@ router.get('/search/:searchTerm', authenticate, validatePagination, async (req, 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/ranges/:id/police-stations - Get police stations by range
-router.get('/:id/police-stations', authenticate, validatePagination, async (req, res) => {
+async function policeStations(req, res) {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -310,10 +306,10 @@ router.get('/:id/police-stations', authenticate, validatePagination, async (req,
       error: error.message
     });
   }
-});
+}
 
 // GET /api/ranges/active - Get all active ranges
-router.get('/status/active', authenticate, async (req, res) => {
+async function active(req, res) {
   try {
     const { districtId, stateId } = req.query;
     const ranges = await RangeService.getActiveRanges(districtId, stateId);
@@ -330,10 +326,10 @@ router.get('/status/active', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/ranges/:id/activate - Activate range
-router.post('/:id/activate', authenticate, async (req, res) => {
+async function activate(req, res) {
   try {
     const { id } = req.params;
     const range = await RangeService.activateRange(id, req.user.id);
@@ -357,10 +353,10 @@ router.post('/:id/activate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/ranges/:id/deactivate - Deactivate range
-router.post('/:id/deactivate', authenticate, async (req, res) => {
+async function deactivate(req, res) {
   try {
     const { id } = req.params;
     const range = await RangeService.deactivateRange(id, req.user.id);
@@ -384,10 +380,10 @@ router.post('/:id/deactivate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/ranges/statistics - Get range statistics
-router.get('/stats/overview', authenticate, async (req, res) => {
+async function stats(req, res) {
   try {
     const { districtId, stateId } = req.query;
     const statistics = await RangeService.getRangeStatistics(districtId, stateId);
@@ -404,10 +400,10 @@ router.get('/stats/overview', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/ranges/:id/users - Get users assigned to range
-router.get('/:id/users', authenticate, validatePagination, async (req, res) => {
+async function users(req, res) {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -437,6 +433,21 @@ router.get('/:id/users', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  update,
+  remove,
+  byDistrict,
+  byState,
+  search,
+  policeStations,
+  active,
+  activate,
+  deactivate,
+  stats,
+  users
+};

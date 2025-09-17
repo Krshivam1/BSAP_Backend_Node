@@ -1,11 +1,7 @@
-const express = require('express');
-const router = express.Router();
 const DistrictService = require('../services/districtService');
-const { authenticate, authorize } = require('../middleware/auth');
-const {  validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/districts - Get all districts with pagination
-router.get('/', authenticate, validatePagination, async (req, res) => {
+async function list(req, res) {
   try {
     const { 
       page = 1, 
@@ -45,10 +41,10 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/districts/:id - Get district by ID
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const district = await DistrictService.getDistrictById(id);
@@ -72,10 +68,10 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/districts - Create new district
-router.post('/', authenticate,  async (req, res) => {
+async function create(req, res) {
   try {
     const districtData = {
       ...req.body,
@@ -104,10 +100,10 @@ router.post('/', authenticate,  async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/districts/:id - Update district
-router.put('/:id', authenticate,  async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const districtData = {
@@ -143,10 +139,10 @@ router.put('/:id', authenticate,  async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/districts/:id - Delete district
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deleted = await DistrictService.deleteDistrict(id);
@@ -169,10 +165,10 @@ router.delete('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/districts/by-state/:stateId - Get districts by state
-router.get('/by-state/:stateId', authenticate, validatePagination, async (req, res) => {
+async function byState(req, res) {
   try {
     const { stateId } = req.params;
     const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
@@ -204,10 +200,10 @@ router.get('/by-state/:stateId', authenticate, validatePagination, async (req, r
       error: error.message
     });
   }
-});
+}
 
 // GET /api/districts/search/:searchTerm - Search districts
-router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, stateId } = req.query;
@@ -239,10 +235,10 @@ router.get('/search/:searchTerm', authenticate, validatePagination, async (req, 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/districts/:id/police-stations - Get police stations by district
-router.get('/:id/police-stations', authenticate, validatePagination, async (req, res) => {
+async function policeStations(req, res) {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -272,10 +268,10 @@ router.get('/:id/police-stations', authenticate, validatePagination, async (req,
       error: error.message
     });
   }
-});
+}
 
 // GET /api/districts/:id/sub-divisions - Get sub-divisions by district
-router.get('/:id/sub-divisions', authenticate, validatePagination, async (req, res) => {
+async function subDivisions(req, res) {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -305,10 +301,10 @@ router.get('/:id/sub-divisions', authenticate, validatePagination, async (req, r
       error: error.message
     });
   }
-});
+}
 
 // GET /api/districts/active - Get all active districts
-router.get('/status/active', authenticate, async (req, res) => {
+async function active(req, res) {
   try {
     const { stateId } = req.query;
     const districts = await DistrictService.getActiveDistricts(stateId);
@@ -325,10 +321,10 @@ router.get('/status/active', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/districts/:id/activate - Activate district
-router.post('/:id/activate', authenticate, async (req, res) => {
+async function activate(req, res) {
   try {
     const { id } = req.params;
     const district = await DistrictService.activateDistrict(id, req.user.id);
@@ -352,10 +348,10 @@ router.post('/:id/activate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/districts/:id/deactivate - Deactivate district
-router.post('/:id/deactivate', authenticate, async (req, res) => {
+async function deactivate(req, res) {
   try {
     const { id } = req.params;
     const district = await DistrictService.deactivateDistrict(id, req.user.id);
@@ -379,10 +375,10 @@ router.post('/:id/deactivate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/districts/statistics - Get district statistics
-router.get('/stats/overview', authenticate, async (req, res) => {
+async function stats(req, res) {
   try {
     const { stateId } = req.query;
     const statistics = await DistrictService.getDistrictStatistics(stateId);
@@ -399,6 +395,20 @@ router.get('/stats/overview', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  update,
+  remove,
+  byState,
+  search,
+  policeStations,
+  subDivisions,
+  active,
+  activate,
+  deactivate,
+  stats
+};

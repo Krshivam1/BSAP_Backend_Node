@@ -1,11 +1,16 @@
-const express = require('express');
-const router = express.Router();
 const TopicService = require('../services/topicService');
-const { authenticate } = require('../middleware/auth');
-const { validateTopic, validatePagination } = require('../middleware/validationMiddleware');
+
+// Utility: parse status query into boolean isActive
+function parseIsActive(status) {
+  if (status === undefined || status === null) return undefined;
+  const s = String(status).toLowerCase();
+  if (['active', 'true', '1', 'yes'].includes(s)) return true;
+  if (['inactive', 'false', '0', 'no'].includes(s)) return false;
+  return undefined;
+}
 
 // GET /api/topics - Get all topics with pagination
-router.get('/', authenticate, validatePagination, async (req, res) => {
+async function list(req, res) {
   try {
     const { 
       page = 1, 
@@ -24,7 +29,7 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       sortOrder: sortOrder.toUpperCase(),
       search,
       moduleId,
-      status
+      isActive: parseIsActive(status)
     };
 
     const result = await TopicService.getAllTopics(options);
@@ -47,10 +52,10 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/topics/:id - Get topic by ID
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const topic = await TopicService.getTopicById(id);
@@ -74,10 +79,10 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/topics - Create new topic
-router.post('/', authenticate, validateTopic, async (req, res) => {
+async function create(req, res) {
   try {
     const topicData = {
       ...req.body,
@@ -106,10 +111,10 @@ router.post('/', authenticate, validateTopic, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/topics/:id - Update topic
-router.put('/:id', authenticate, validateTopic, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const topicData = {
@@ -145,10 +150,10 @@ router.put('/:id', authenticate, validateTopic, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/topics/:id - Delete topic
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deleted = await TopicService.deleteTopic(id);
@@ -171,10 +176,10 @@ router.delete('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/topics/by-module/:moduleId - Get topics by module
-router.get('/by-module/:moduleId', authenticate, validatePagination, async (req, res) => {
+async function byModule(req, res) {
   try {
     const { moduleId } = req.params;
     const { 
@@ -190,7 +195,7 @@ router.get('/by-module/:moduleId', authenticate, validatePagination, async (req,
       limit: parseInt(limit),
       sortBy,
       sortOrder: sortOrder.toUpperCase(),
-      status
+      isActive: parseIsActive(status)
     };
 
     const result = await TopicService.getTopicsByModule(moduleId, options);
@@ -213,10 +218,10 @@ router.get('/by-module/:moduleId', authenticate, validatePagination, async (req,
       error: error.message
     });
   }
-});
+}
 
 // GET /api/topics/:id/sub-topics - Get sub-topics by topic
-router.get('/:id/sub-topics', authenticate, validatePagination, async (req, res) => {
+async function subTopics(req, res) {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10, sortBy = 'displayOrder', sortOrder = 'ASC' } = req.query;
@@ -248,20 +253,20 @@ router.get('/:id/sub-topics', authenticate, validatePagination, async (req, res)
       error: error.message
     });
   }
-});
+}
 
 // GET /api/topics/search/:searchTerm - Search topics
-router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
-    const { page = 1, limit = 10, moduleId, status } = req.query;
+  const { page = 1, limit = 10, moduleId, status } = req.query;
     
     const options = {
       page: parseInt(page),
       limit: parseInt(limit),
       search: searchTerm,
       moduleId,
-      status
+      isActive: parseIsActive(status)
     };
 
     const result = await TopicService.searchTopics(options);
@@ -284,10 +289,10 @@ router.get('/search/:searchTerm', authenticate, validatePagination, async (req, 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/topics/active - Get all active topics
-router.get('/status/active', authenticate, async (req, res) => {
+async function active(req, res) {
   try {
     const { moduleId } = req.query;
     const topics = await TopicService.getActiveTopics(moduleId);
@@ -304,10 +309,10 @@ router.get('/status/active', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/topics/:id/activate - Activate topic
-router.post('/:id/activate', authenticate, async (req, res) => {
+async function activate(req, res) {
   try {
     const { id } = req.params;
     const topic = await TopicService.activateTopic(id, req.user.id);
@@ -331,10 +336,10 @@ router.post('/:id/activate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/topics/:id/deactivate - Deactivate topic
-router.post('/:id/deactivate', authenticate, async (req, res) => {
+async function deactivate(req, res) {
   try {
     const { id } = req.params;
     const topic = await TopicService.deactivateTopic(id, req.user.id);
@@ -358,10 +363,10 @@ router.post('/:id/deactivate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/topics/:id/order - Update topic display order
-router.put('/:id/order', authenticate, async (req, res) => {
+async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -373,7 +378,11 @@ router.put('/:id/order', authenticate, async (req, res) => {
       });
     }
 
-    const topic = await TopicService.updateTopicOrder(id, displayOrder, req.user.id);
+    // Service doesn't provide single update order; reuse reorderTopics for a single item
+    const updated = await TopicService.reorderTopics([
+      { id: parseInt(id, 10), displayOrder }
+    ], req.user.id);
+    const topic = updated && updated.length ? updated.find(t => t.id === parseInt(id, 10)) : null;
     
     if (!topic) {
       return res.status(404).json({
@@ -394,10 +403,10 @@ router.put('/:id/order', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/topics/statistics - Get topic statistics
-router.get('/stats/overview', authenticate, async (req, res) => {
+async function stats(req, res) {
   try {
     const { moduleId } = req.query;
     const statistics = await TopicService.getTopicStatistics(moduleId);
@@ -414,10 +423,10 @@ router.get('/stats/overview', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/topics/:id/clone - Clone topic
-router.post('/:id/clone', authenticate, async (req, res) => {
+async function clone(req, res) {
   try {
     const { id } = req.params;
     const { name, moduleId, description } = req.body;
@@ -463,21 +472,24 @@ router.post('/:id/clone', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/topics/reorder - Reorder topics within a module
-router.put('/reorder', authenticate, async (req, res) => {
+async function reorder(req, res) {
   try {
-    const { moduleId, topicOrders } = req.body;
-    
-    if (!moduleId || !Array.isArray(topicOrders)) {
+    // Accept both { topicOrders: [...] } and { items: [...] }
+    const topicOrders = Array.isArray(req.body.topicOrders)
+      ? req.body.topicOrders
+      : Array.isArray(req.body.items) ? req.body.items : null;
+
+    if (!Array.isArray(topicOrders) || topicOrders.length === 0) {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Module ID and topic orders array are required'
+        message: 'Topic orders array is required'
       });
     }
 
-    const updatedTopics = await TopicService.reorderTopics(moduleId, topicOrders, req.user.id);
+    const updatedTopics = await TopicService.reorderTopics(topicOrders, req.user.id);
     
     res.json({
       status: 'SUCCESS',
@@ -491,6 +503,22 @@ router.put('/reorder', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  update,
+  remove,
+  byModule,
+  subTopics,
+  search,
+  active,
+  activate,
+  deactivate,
+  updateOrder,
+  stats,
+  clone,
+  reorder
+};

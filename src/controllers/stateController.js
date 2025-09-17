@@ -1,11 +1,7 @@
-const express = require('express');
-const router = express.Router();
 const StateService = require('../services/stateService');
-const { authenticate } = require('../middleware/auth');
-const { validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/states - Get all states with pagination
-router.get('/', authenticate, validatePagination, async (req, res) => {
+async function list(req, res) {
   try {
     const { 
       page = 1, 
@@ -43,10 +39,10 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/states/:id - Get state by ID
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const state = await StateService.getStateById(id);
@@ -70,10 +66,10 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/states - Create new state
-router.post('/', authenticate, async (req, res) => {
+async function create(req, res) {
   try {
     const stateData = {
       ...req.body,
@@ -102,10 +98,10 @@ router.post('/', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/states/:id - Update state
-router.put('/:id', authenticate, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const stateData = {
@@ -141,10 +137,10 @@ router.put('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/states/:id - Delete state
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deleted = await StateService.deleteState(id);
@@ -167,10 +163,10 @@ router.delete('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/states/search/:searchTerm - Search states
-router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -201,10 +197,10 @@ router.get('/search/:searchTerm', authenticate, validatePagination, async (req, 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/states/:id/districts - Get districts by state
-router.get('/:id/districts', authenticate, validatePagination, async (req, res) => {
+async function districts(req, res) {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -234,10 +230,10 @@ router.get('/:id/districts', authenticate, validatePagination, async (req, res) 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/states/active - Get all active states
-router.get('/status/active', authenticate, async (req, res) => {
+async function active(req, res) {
   try {
     const states = await StateService.getActiveStates();
     
@@ -253,10 +249,10 @@ router.get('/status/active', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/states/:id/activate - Activate state
-router.post('/:id/activate', authenticate, async (req, res) => {
+async function activate(req, res) {
   try {
     const { id } = req.params;
     const state = await StateService.activateState(id, req.user.id);
@@ -280,10 +276,10 @@ router.post('/:id/activate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/states/:id/deactivate - Deactivate state
-router.post('/:id/deactivate', authenticate, async (req, res) => {
+async function deactivate(req, res) {
   try {
     const { id } = req.params;
     const state = await StateService.deactivateState(id, req.user.id);
@@ -307,10 +303,10 @@ router.post('/:id/deactivate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/states/statistics - Get state statistics
-router.get('/stats/overview', authenticate, async (req, res) => {
+async function stats(req, res) {
   try {
     const statistics = await StateService.getStateStatistics();
     
@@ -326,6 +322,18 @@ router.get('/stats/overview', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  update,
+  remove,
+  search,
+  districts,
+  active,
+  activate,
+  deactivate,
+  stats
+};

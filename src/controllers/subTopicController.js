@@ -1,11 +1,7 @@
-const express = require('express');
-const router = express.Router();
 const SubTopicService = require('../services/subTopicService');
-const { authenticate } = require('../middleware/auth');
-const { validateSubTopic, validatePagination } = require('../middleware/validationMiddleware');
 
 // GET /api/sub-topics - Get all sub-topics with pagination
-router.get('/', authenticate, validatePagination, async (req, res) => {
+async function list(req, res) {
   try {
     const { 
       page = 1, 
@@ -47,10 +43,10 @@ router.get('/', authenticate, validatePagination, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/sub-topics/:id - Get sub-topic by ID
-router.get('/:id', authenticate, async (req, res) => {
+async function detail(req, res) {
   try {
     const { id } = req.params;
     const subTopic = await SubTopicService.getSubTopicById(id);
@@ -74,10 +70,10 @@ router.get('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/sub-topics - Create new sub-topic
-router.post('/', authenticate, validateSubTopic, async (req, res) => {
+async function create(req, res) {
   try {
     const subTopicData = {
       ...req.body,
@@ -106,10 +102,10 @@ router.post('/', authenticate, validateSubTopic, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/sub-topics/:id - Update sub-topic
-router.put('/:id', authenticate, validateSubTopic, async (req, res) => {
+async function update(req, res) {
   try {
     const { id } = req.params;
     const subTopicData = {
@@ -145,10 +141,10 @@ router.put('/:id', authenticate, validateSubTopic, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // DELETE /api/sub-topics/:id - Delete sub-topic
-router.delete('/:id', authenticate, async (req, res) => {
+async function remove(req, res) {
   try {
     const { id } = req.params;
     const deleted = await SubTopicService.deleteSubTopic(id);
@@ -171,10 +167,10 @@ router.delete('/:id', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/sub-topics/by-topic/:topicId - Get sub-topics by topic
-router.get('/by-topic/:topicId', authenticate, validatePagination, async (req, res) => {
+async function byTopic(req, res) {
   try {
     const { topicId } = req.params;
     const { 
@@ -213,10 +209,10 @@ router.get('/by-topic/:topicId', authenticate, validatePagination, async (req, r
       error: error.message
     });
   }
-});
+}
 
 // GET /api/sub-topics/:id/questions - Get questions by sub-topic
-router.get('/:id/questions', authenticate, validatePagination, async (req, res) => {
+async function questions(req, res) {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10, sortBy = 'displayOrder', sortOrder = 'ASC' } = req.query;
@@ -248,10 +244,10 @@ router.get('/:id/questions', authenticate, validatePagination, async (req, res) 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/sub-topics/search/:searchTerm - Search sub-topics
-router.get('/search/:searchTerm', authenticate, validatePagination, async (req, res) => {
+async function search(req, res) {
   try {
     const { searchTerm } = req.params;
     const { page = 1, limit = 10, topicId, status } = req.query;
@@ -284,10 +280,10 @@ router.get('/search/:searchTerm', authenticate, validatePagination, async (req, 
       error: error.message
     });
   }
-});
+}
 
 // GET /api/sub-topics/active - Get all active sub-topics
-router.get('/status/active', authenticate, async (req, res) => {
+async function active(req, res) {
   try {
     const { topicId } = req.query;
     const subTopics = await SubTopicService.getActiveSubTopics(topicId);
@@ -304,10 +300,10 @@ router.get('/status/active', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/sub-topics/:id/activate - Activate sub-topic
-router.post('/:id/activate', authenticate, async (req, res) => {
+async function activate(req, res) {
   try {
     const { id } = req.params;
     const subTopic = await SubTopicService.activateSubTopic(id, req.user.id);
@@ -331,10 +327,10 @@ router.post('/:id/activate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/sub-topics/:id/deactivate - Deactivate sub-topic
-router.post('/:id/deactivate', authenticate, async (req, res) => {
+async function deactivate(req, res) {
   try {
     const { id } = req.params;
     const subTopic = await SubTopicService.deactivateSubTopic(id, req.user.id);
@@ -358,10 +354,10 @@ router.post('/:id/deactivate', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/sub-topics/:id/order - Update sub-topic display order
-router.put('/:id/order', authenticate, async (req, res) => {
+async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const { displayOrder } = req.body;
@@ -394,10 +390,10 @@ router.put('/:id/order', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/sub-topics/statistics - Get sub-topic statistics
-router.get('/stats/overview', authenticate, async (req, res) => {
+async function stats(req, res) {
   try {
     const { topicId } = req.query;
     const statistics = await SubTopicService.getSubTopicStatistics(topicId);
@@ -414,10 +410,10 @@ router.get('/stats/overview', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // POST /api/sub-topics/:id/clone - Clone sub-topic
-router.post('/:id/clone', authenticate, async (req, res) => {
+async function clone(req, res) {
   try {
     const { id } = req.params;
     const { name, topicId, description } = req.body;
@@ -463,10 +459,10 @@ router.post('/:id/clone', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // PUT /api/sub-topics/reorder - Reorder sub-topics within a topic
-router.put('/reorder', authenticate, async (req, res) => {
+async function reorder(req, res) {
   try {
     const { topicId, subTopicOrders } = req.body;
     
@@ -491,10 +487,10 @@ router.put('/reorder', authenticate, async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // GET /api/sub-topics/:id/performance-statistics - Get performance statistics for sub-topic
-router.get('/:id/performance-statistics', authenticate, validatePagination, async (req, res) => {
+async function performanceStatistics(req, res) {
   try {
     const { id } = req.params;
     const { 
@@ -533,6 +529,23 @@ router.get('/:id/performance-statistics', authenticate, validatePagination, asyn
       error: error.message
     });
   }
-});
+}
 
-module.exports = router;
+module.exports = {
+  list,
+  detail,
+  create,
+  update,
+  remove,
+  byTopic,
+  questions,
+  search,
+  active,
+  activate,
+  deactivate,
+  updateOrder,
+  stats,
+  clone,
+  reorder,
+  performanceStatistics
+};

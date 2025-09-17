@@ -131,6 +131,12 @@ class QuestionService {
     return true;
   }
 
+  // Bulk create questions
+  static async bulkCreateQuestions(questions) {
+    const created = await Question.bulkCreate(questions);
+    return created;
+  }
+
   // Get questions by topic
   static async getQuestionsByTopic(topicId, options = {}) {
     const {
