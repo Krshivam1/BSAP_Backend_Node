@@ -21,12 +21,8 @@ router.get('/level/root', authenticate, menuController.root);
 router.get('/status/active', authenticate, menuController.active);
 
 // User/role based
-router.get('/user', authenticate, menuController.userMenusSelf);
-router.get('/user/:userId', authenticate, (req, res, next) => {
-  console.log('🎯 Route /user/:userId hit with params:', req.params);
-  console.log('🎯 Full URL:', req.originalUrl);
-  next();
-}, menuController.userMenus);
+// router.get('/user', authenticate, menuController.userMenusSelf);
+router.get('/user', authenticate, menuController.userMenus) 
 router.get('/role/:roleId', authenticate, menuController.roleMenus);
 
 // Search and children

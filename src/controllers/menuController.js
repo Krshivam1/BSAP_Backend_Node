@@ -193,21 +193,14 @@ async function hierarchy(req, res) {
 async function userMenus(req, res) {
   try {
     const { userId } = req.params;
-    console.log('🔍 menuController.userMenus called with userId:', userId);
-    console.log('🔍 Full request params:', req.params);
-    console.log('🔍 Request path:', req.path);
-    console.log('🔍 Request URL:', req.url);
-    
-    const menus = await MenuService.getUserMenus(userId);
-    console.log('🔍 MenuService returned:', menus);
-    
+    const roleId = req.user.roleId;
+    const menus = await MenuService.getUserMenus(roleId);
     res.json({
       status: 'SUCCESS',
       message: 'User menus retrieved successfully',
       data: menus
     });
   } catch (error) {
-    console.error('❌ Error in menuController.userMenus:', error);
     res.status(500).json({
       status: 'ERROR',
       message: 'Failed to retrieve user menus',

@@ -1,5 +1,6 @@
 const { Menu, Role, RoleMenu, User } = require('../models');
 const { Op } = require('sequelize');
+const { sequelize } = require('../models')
 
 class MenuService {
   
@@ -176,49 +177,189 @@ class MenuService {
   }
 
   // Get user menus based on roles
-  static async getUserMenus(userId, includeHierarchy = true) {
-    const user = await User.findByPk(userId, {
-      include: [{
-        model: Role,
-        as: 'role',
-        include: [{
-          model: Menu,
-          as: 'menus',
-          where: { active: true },
-          required: false
-        }]
-      }]
-    });
-    console.log('🎯 Fetched user with roles and menus:', JSON.stringify(user, null, 2));
-    
-    if (!user || !user.role) {
-      console.log('❌ No user or role found');
-      return [];
+  // static async getUserMenus(userId, includeHierarchy = true) {
+  //   const user = await User.findByPk(userId, {
+  //     include: [{
+  //       model: Role,
+  //       as: 'role',
+  //       include: [{
+  //         model: Menu,
+  //         as: 'menus',
+  //         where: { active: true },
+  //         required: false
+  //       }]
+  //     }]
+  //   });
+  //   if (!user || !user.role) {
+  //     return [];
+  //   }
+
+  //   // Collect all menus from user's role
+  //   const menus = user.role.menus.filter(menu => {
+  //     return menu.active;
+  //   });
+
+  //   if (!menus.length) {
+  //     return [];
+  //   }
+  //   return menus.sort((a, b) => a.priority - b.priority);
+  // }
+
+
+   static async getUserMenus(roleId) {
+    try {
+      // Get all menus that the role has access to from role_menu table
+      const menuQuery = `
+        SELECT DISTINCT
+          m.id as menu_id,
+          m.menu_name as menu_name,
+          m.menu_url as menu_url,
+          m.priority as menu_priority
+        FROM role_menu rm
+        INNER JOIN menu m ON rm.menu_id = m.id AND m.active = '1'
+        WHERE rm.role_id = :roleId AND rm.active = '1'
+        ORDER BY m.priority ASC
+      `;
+
+      const menuResults = await Menu.sequelize.query(menuQuery, {
+        replacements: { roleId },
+        type: Menu.sequelize.QueryTypes.SELECT
+      });
+
+      // Get all submenus that the role has access to from roleSubmenu table
+      const submenuQuery = `
+        SELECT DISTINCT
+          m.id as menu_id,
+          m.menu_name as menu_name,
+          m.menu_url as menu_url,
+          m.priority as menu_priority,
+          sm.id as submenu_id,
+          sm.menu_name as submenu_name,
+          sm.menu_url as submenu_url,
+          sm.priority as submenu_priority,
+          sm.sub_menu_id as parent_submenu_id,
+          psm.menu_name as parent_submenu_name,
+          psm.menu_url as parent_submenu_url,
+          psm.priority as parent_submenu_priority
+        FROM role_sub_menu rs
+        INNER JOIN sub_menu sm ON rs.sub_menu_id = sm.id AND sm.active = '1'
+        INNER JOIN menu m ON sm.menu_id = m.id AND m.active = '1'
+        LEFT JOIN sub_menu psm ON sm.sub_menu_id = psm.id AND psm.active = '1'
+        WHERE rs.role_id = :roleId AND rs.active = '1'
+        ORDER BY m.priority ASC, 
+                 COALESCE(psm.priority, 999) ASC, 
+                 sm.priority ASC
+      `;
+
+      const submenuResults = await Menu.sequelize.query(submenuQuery, {
+        replacements: { roleId },
+        type: Menu.sequelize.QueryTypes.SELECT
+      });
+
+      // Build hierarchical structure
+      const menuMap = new Map();
+
+      // First, add all menus that the role has access to
+      menuResults.forEach(menuRow => {
+        menuMap.set(menuRow.menu_id, {
+          id: menuRow.menu_id,
+          name: menuRow.menu_name,
+          url: menuRow.menu_url,
+          priority: menuRow.menu_priority,
+          type: 'menu',
+          children: []
+        });
+      });
+
+      // Then add submenus to their respective menus
+      submenuResults.forEach(row => {
+        const menuId = row.menu_id;
+        
+        // Create menu if it doesn't exist (in case submenu exists but menu not in role_menu)
+        if (!menuMap.has(menuId)) {
+          menuMap.set(menuId, {
+            id: menuId,
+            name: row.menu_name,
+            url: row.menu_url,
+            priority: row.menu_priority,
+            type: 'menu',
+            children: []
+          });
+        }
+
+        const menu = menuMap.get(menuId);
+
+        // If this is a child submenu (has parent_submenu_id)
+        if (row.parent_submenu_id) {
+          // Find or create parent submenu
+          let parentSubmenu = menu.children.find(child => child.id === row.parent_submenu_id);
+          
+          if (!parentSubmenu) {
+            parentSubmenu = {
+              id: row.parent_submenu_id,
+              name: row.parent_submenu_name,
+              url: row.parent_submenu_url,
+              priority: row.parent_submenu_priority,
+              type: 'submenu',
+              parent_id: menuId,
+              children: []
+            };
+            menu.children.push(parentSubmenu);
+          }
+
+          // Add child submenu
+          const childExists = parentSubmenu.children.find(child => child.id === row.submenu_id);
+          if (!childExists) {
+            parentSubmenu.children.push({
+              id: row.submenu_id,
+              name: row.submenu_name,
+              url: row.submenu_url,
+              priority: row.submenu_priority,
+              type: 'child_submenu',
+              parent_id: row.parent_submenu_id
+            });
+          }
+        } else {
+          // This is a top-level submenu
+          const submenuExists = menu.children.find(child => child.id === row.submenu_id);
+          if (!submenuExists) {
+            menu.children.push({
+              id: row.submenu_id,
+              name: row.submenu_name,
+              url: row.submenu_url,
+              priority: row.submenu_priority,
+              type: 'submenu',
+              parent_id: menuId,
+              children: []
+            });
+          }
+        }
+      });
+
+      // Convert to array and sort everything
+      const finalResult = Array.from(menuMap.values()).map(menu => {
+        // Sort submenus
+        menu.children.sort((a, b) => a.priority - b.priority);
+        
+        // Sort child submenus within each submenu
+        menu.children.forEach(submenu => {
+          if (submenu.children && submenu.children.length > 0) {
+            submenu.children.sort((a, b) => a.priority - b.priority);
+          }
+        });
+        
+        return menu;
+      });
+
+      // Sort main menus
+      finalResult.sort((a, b) => a.priority - b.priority);
+
+      return finalResult;
+
+    } catch (error) {
+      console.error('Error fetching menus by role:', error);
+      throw new Error('Failed to fetch menus for role');
     }
-
-    console.log('🔍 User role found:', user.role.roleName);
-    console.log('🔍 Raw menus from role:', user.role.menus.length);
-
-    // Collect all menus from user's role
-    const menus = user.role.menus.filter(menu => {
-      console.log(`📋 Menu: ${menu.menuName}, active: ${menu.active}`);
-      return menu.active;
-    });
-
-    console.log('🔍 Filtered active menus:', menus.length);
-
-    if (!menus.length) {
-      console.log('❌ No active menus found');
-      return [];
-    }
-
-    console.log('✅ Returning menus:', menus.map(m => m.menuName));
-    
-    // For now, return flat list since Menu model doesn't have parentId for hierarchy
-    // TODO: Add parentId field to Menu model if hierarchy is needed
-    return menus.sort((a, b) => a.priority - b.priority);
-    
-    // return includeHierarchy ? this.buildHierarchy(menus) : menus;
   }
 
   // Get role menus
