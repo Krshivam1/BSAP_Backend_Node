@@ -18,7 +18,11 @@ const {
 	reorder,
 	bulkCreate,
 	performanceStatistics,
-	updateMetadata
+	updateMetadata,
+	withFormulas,
+	forFormula,
+	forForm,
+	validateFormula
 } = require('../controllers/questionController');
 const { authenticate } = require('../middleware/auth');
 const {
@@ -34,6 +38,12 @@ const router = express.Router();
 // Static/specific routes first
 router.get('/config/types', authenticate, types);
 router.get('/stats/overview', authenticate, stats);
+router.post('/validate-formula', authenticate, validateFormula);
+
+// Topic-specific routes
+router.get('/topic/:topicId/formulas', authenticate, withFormulas);
+router.get('/topic/:topicId/for-formula', authenticate, forFormula);
+router.get('/topic/:topicId/form', authenticate, forForm);
 
 // Collections
 router.get('/', authenticate, validatePagination, list);

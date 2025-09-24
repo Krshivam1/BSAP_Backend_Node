@@ -8,7 +8,7 @@ class SubTopicService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'displayOrder',
+      sortBy = 'priority',
       sortOrder = 'ASC',
       search,
       topicId,
@@ -21,8 +21,7 @@ class SubTopicService {
 
     if (search) {
       whereClause[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } }
+        { subTopicName: { [Op.like]: `%${search}%` } }
       ];
     }
 
@@ -31,43 +30,44 @@ class SubTopicService {
     }
 
     if (isActive !== undefined) {
-      whereClause.isActive = isActive;
+      whereClause.active = isActive;
     }
 
-    const includeClause = [
-      {
-        model: Topic,
-        as: 'topic',
-        attributes: ['id', 'name', 'moduleId'],
-        include: [{
-          model: Module,
-          as: 'module',
-          attributes: ['id', 'name'],
-          ...(moduleId && { where: { id: moduleId } })
-        }]
-      },
-      {
-        model: Question,
-        as: 'questions',
-        attributes: ['id', 'question', 'isActive'],
-        required: false
-      }
-    ];
+    // Validate sortBy to prevent SQL injection
+    const allowedSortFields = ['id', 'subTopicName', 'topicId', 'priority', 'active', 'created_date', 'updated_date'];
+    const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'priority';
+    const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'ASC';
 
-    const { count, rows } = await SubTopic.findAndCountAll({
+    // Count only from SubTopic table
+    const total = await SubTopic.count({
+      where: whereClause
+    });
+
+    // Get data with Topic join
+    const rows = await SubTopic.findAll({
       where: whereClause,
-      include: includeClause,
+      include: [
+        {
+          model: Topic,
+          as: 'topic',
+          attributes: ['id', 'topicName'],
+        }
+      ],
       limit,
       offset,
-      order: [[sortBy, sortOrder]]
+      order: [[validSortBy, validSortOrder]]
     });
 
     return {
-      subTopics: rows.map(subTopic => ({
-        ...subTopic.toJSON(),
-        questionCount: subTopic.questions ? subTopic.questions.length : 0
-      })),
-      total: count
+      subTopics: rows.map(subTopic => {
+        const subTopicData = subTopic.toJSON();
+        return {
+          ...subTopicData,
+          topicName: subTopicData.topic ? subTopicData.topic.topicName : null,
+          topic: undefined // Remove the nested topic object
+        };
+      }),
+      total: total
     };
   }
 
@@ -125,42 +125,13 @@ class SubTopicService {
   }
 
   // Get subtopics by topic
-  static async getSubTopicsByTopic(topicId, options = {}) {
-    const {
-      page = 1,
-      limit = 10,
-      sortBy = 'displayOrder',
-      sortOrder = 'ASC',
-      isActive
-    } = options;
-
-    const offset = (page - 1) * limit;
-    const whereClause = { topicId };
-
-    if (isActive !== undefined) {
-      whereClause.isActive = isActive;
-    }
-
-    const { count, rows } = await SubTopic.findAndCountAll({
-      where: whereClause,
-      include: [{
-        model: Question,
-        as: 'questions',
-        attributes: ['id'],
-        required: false
-      }],
-      limit,
-      offset,
-      order: [[sortBy, sortOrder]]
+  static async getSubTopicsByTopic(topicId) {
+    
+    const  rows = await SubTopic.findAndCountAll({
+      where: { topicId }
     });
 
-    return {
-      subTopics: rows.map(subTopic => ({
-        ...subTopic.toJSON(),
-        questionCount: subTopic.questions ? subTopic.questions.length : 0
-      })),
-      total: count
-    };
+    return rows
   }
 
   // Search subtopics
@@ -626,6 +597,53 @@ class SubTopicService {
       subTopics: rows,
       total: count
     };
+  }
+
+  // Get active subtopics by topic ID with active status
+  static async findByTopicId(topicId) {
+    return await SubTopic.findAll({
+      where: { 
+        topicId,
+        active: true 
+      },
+      include: [
+        {
+          model: Topic,
+          as: 'topic',
+          attributes: ['id', 'topicName', 'moduleId']
+        },
+        {
+          model: Question,
+          as: 'questions',
+          where: { active: true },
+          required: false,
+          order: [['priority', 'ASC']]
+        }
+      ],
+      order: [['priority', 'ASC']]
+    });
+  }
+
+  // Get active subtopics for form generation
+  static async getActiveSubTopics(topicId = null) {
+    const whereClause = { active: true };
+    
+    if (topicId) {
+      whereClause.topicId = topicId;
+    }
+
+    return await SubTopic.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: Topic,
+          as: 'topic',
+          where: { active: true },
+          attributes: ['id', 'topicName', 'formType', 'moduleId']
+        }
+      ],
+      order: [['priority', 'ASC']]
+    });
   }
 
 }

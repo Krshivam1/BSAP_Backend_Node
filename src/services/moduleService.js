@@ -1,4 +1,4 @@
-const { Module, Topic, Permission, Role, RolePermission, User } = require('../models');
+const { Module, SubMenu, Topic } = require('../models');
 const { Op } = require('sequelize');
 
 class ModuleService {
@@ -8,10 +8,10 @@ class ModuleService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'displayOrder',
+      sortBy = 'priority',
       sortOrder = 'ASC',
       search,
-      isActive
+      active
     } = options;
 
     const offset = (page - 1) * limit;
@@ -19,69 +19,52 @@ class ModuleService {
 
     if (search) {
       whereClause[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } }
+        { moduleName: { [Op.like]: `%${search}%` } }
       ];
     }
 
-    if (isActive !== undefined) {
-      whereClause.isActive = isActive;
+    if (active !== undefined) {
+      whereClause.active = active;
     }
 
     const { count, rows } = await Module.findAndCountAll({
       where: whereClause,
-      include: [
-        {
-          model: Topic,
-          as: 'topics',
-          attributes: ['id', 'name', 'isActive'],
-          required: false
-        },
-        {
-          model: Permission,
-          as: 'permissions',
-          attributes: ['id', 'name', 'isActive'],
-          required: false
-        }
-      ],
       limit,
       offset,
       order: [[sortBy, sortOrder]]
     });
 
     return {
-      modules: rows.map(module => ({
-        ...module.toJSON(),
-        topicCount: module.topics ? module.topics.length : 0,
-        permissionCount: module.permissions ? module.permissions.length : 0
-      })),
+      modules: rows.map(module => module.toJSON()),
       total: count
     };
   }
 
   // Get module by ID
   static async getModuleById(id) {
-    return await Module.findByPk(id, {
-      include: [
-        {
-          model: Topic,
-          as: 'topics',
-          attributes: ['id', 'name', 'description', 'isActive', 'displayOrder'],
-          order: [['displayOrder', 'ASC']]
-        },
-        {
-          model: Permission,
-          as: 'permissions',
-          attributes: ['id', 'name', 'description', 'isActive'],
-          order: [['name', 'ASC']]
-        }
-      ]
-    });
+    return await Module.findByPk(id);
   }
 
   // Create new module
   static async createModule(moduleData) {
-    return await Module.create(moduleData);
+    // First create the SubMenu
+    const subMenu = await SubMenu.create({ 
+      menuId: 5,
+      menuName: moduleData.moduleName, 
+      menuUrl: '#',
+      priority: moduleData.priority || 0,
+      active: moduleData.active !== undefined ? moduleData.active : true, 
+      createdBy: moduleData.createdBy,
+      updatedBy: moduleData.createdBy
+    });
+
+    // Then create the Module with the SubMenu ID
+    const module = await Module.create({
+      ...moduleData,
+      subMenuId: subMenu.id
+    });
+
+    return module;
   }
 
   // Update module
@@ -120,19 +103,18 @@ class ModuleService {
       page = 1,
       limit = 10,
       search,
-      isActive
+      active
     } = options;
 
     const offset = (page - 1) * limit;
     const whereClause = {
       [Op.or]: [
-        { name: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } }
+        { moduleName: { [Op.like]: `%${search}%` } }
       ]
     };
 
-    if (isActive !== undefined) {
-      whereClause.isActive = isActive;
+    if (active !== undefined) {
+      whereClause.active = active;
     }
 
     const { count, rows } = await Module.findAndCountAll({
@@ -145,7 +127,7 @@ class ModuleService {
       }],
       limit,
       offset,
-      order: [['name', 'ASC']]
+      order: [['moduleName', 'ASC']]
     });
 
     return {
@@ -208,9 +190,9 @@ class ModuleService {
   // Get active modules
   static async getActiveModules() {
     return await Module.findAll({
-      where: { isActive: true },
-      order: [['displayOrder', 'ASC']],
-      attributes: ['id', 'name', 'description', 'icon', 'route', 'displayOrder']
+      where: { active: true },
+      order: [['priority', 'ASC']],
+      attributes: ['id', 'moduleName', 'priority', 'active']
     });
   }
 
@@ -220,7 +202,7 @@ class ModuleService {
     if (!module) return null;
 
     await module.update({
-      isActive: true,
+      active: true,
       updatedBy
     });
 
@@ -233,7 +215,7 @@ class ModuleService {
     if (!module) return null;
 
     await module.update({
-      isActive: false,
+      active: false,
       updatedBy
     });
 
@@ -249,7 +231,7 @@ class ModuleService {
       modulesWithPermissions
     ] = await Promise.all([
       Module.count(),
-      Module.count({ where: { isActive: true } }),
+      Module.count({ where: { active: true } }),
       Module.count({
         include: [{
           model: Topic,
@@ -269,7 +251,7 @@ class ModuleService {
     const topicCounts = await Module.findAll({
       attributes: [
         'id',
-        'name',
+        'moduleName',
         [Module.sequelize.fn('COUNT', Module.sequelize.col('topics.id')), 'topicCount']
       ],
       include: [{
@@ -285,7 +267,7 @@ class ModuleService {
     const permissionCounts = await Module.findAll({
       attributes: [
         'id',
-        'name',
+        'moduleName',
         [Module.sequelize.fn('COUNT', Module.sequelize.col('permissions.id')), 'permissionCount']
       ],
       include: [{
@@ -308,12 +290,12 @@ class ModuleService {
       modulesWithoutPermissions: totalModules - modulesWithPermissions,
       topicCounts: topicCounts.map(module => ({
         id: module.id,
-        name: module.name,
+        moduleName: module.moduleName,
         topicCount: parseInt(module.dataValues.topicCount) || 0
       })),
       permissionCounts: permissionCounts.map(module => ({
         id: module.id,
-        name: module.name,
+        moduleName: module.moduleName,
         permissionCount: parseInt(module.dataValues.permissionCount) || 0
       }))
     };
@@ -502,6 +484,54 @@ class ModuleService {
   static async getNextDisplayOrder() {
     const maxOrder = await Module.max('displayOrder');
     return (maxOrder || 0) + 1;
+  }
+
+  // Get all active modules - only ID and Name ordered by name
+  static async getAllModule() {
+    return await Module.findAll({
+      where: { active: true },
+      attributes: ['id', 'moduleName'],
+      order: [['moduleName', 'ASC']]
+    });
+  }
+
+  // Get active modules by priority (used for performance statistics form generation)
+  static async findByPriority(subMenuId = null) {
+    const whereClause = { active: true };
+    
+    if (subMenuId) {
+      whereClause.subMenuId = subMenuId;
+    }
+
+    return await Module.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: Topic,
+          as: 'topics',
+          where: { active: true },
+          required: false,
+          include: [
+            {
+              model: SubTopic,
+              as: 'subTopics',
+              where: { active: true },
+              required: false,
+              order: [['priority', 'ASC']]
+            },
+            {
+              model: Question,
+              as: 'questions',
+              where: { active: true },
+              required: false,
+              order: [['priority', 'ASC']]
+            }
+          ],
+          order: [['priority', 'ASC']]
+        }
+      ],
+      order: [['priority', 'ASC']]
+    });
   }
 
 }

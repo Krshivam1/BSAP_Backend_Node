@@ -12,7 +12,9 @@ router.get('/status/active', authenticate, topicController.active);
 // Search and module relations
 router.get('/search/:searchTerm', authenticate, validatePagination, topicController.search);
 router.get('/by-module/:moduleId', authenticate, validatePagination, topicController.byModule);
+router.get('/module/:moduleId', authenticate, topicController.byModuleForForm);
 router.get('/:id/sub-topics', authenticate, validateId, validatePagination, topicController.subTopics);
+router.get('/:id/form-config', authenticate, validateId, topicController.formConfig);
 
 // Reorder and order update
 router.put('/reorder', authenticate, validateReorder, topicController.reorder);

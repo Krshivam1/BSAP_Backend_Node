@@ -15,7 +15,7 @@ async function list(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'name', 
+      sortBy = 'priority', 
       sortOrder = 'ASC',
       search,
       moduleId,
@@ -34,6 +34,8 @@ async function list(req, res) {
 
     const result = await TopicService.getAllTopics(options);
     
+    const totalPages = Math.ceil(result.total / options.limit);
+    
     res.json({
       status: 'SUCCESS',
       message: 'Topics retrieved successfully',
@@ -42,7 +44,9 @@ async function list(req, res) {
         total: result.total,
         page: options.page,
         limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
+        totalPages: totalPages,
+        hasNextPage: options.page < totalPages,
+        hasPrevPage: options.page > 1
       }
     });
   } catch (error) {
@@ -185,7 +189,7 @@ async function byModule(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'displayOrder', 
+      sortBy = 'priority', 
       sortOrder = 'ASC',
       status 
     } = req.query;
@@ -200,6 +204,8 @@ async function byModule(req, res) {
 
     const result = await TopicService.getTopicsByModule(moduleId, options);
     
+    const totalPages = Math.ceil(result.total / options.limit);
+    
     res.json({
       status: 'SUCCESS',
       message: 'Topics retrieved successfully',
@@ -208,7 +214,9 @@ async function byModule(req, res) {
         total: result.total,
         page: options.page,
         limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
+        totalPages: totalPages,
+        hasNextPage: options.page < totalPages,
+        hasPrevPage: options.page > 1
       }
     });
   } catch (error) {
@@ -235,6 +243,8 @@ async function subTopics(req, res) {
 
     const result = await TopicService.getSubTopicsByTopic(id, options);
     
+    const totalPages = Math.ceil(result.total / options.limit);
+    
     res.json({
       status: 'SUCCESS',
       message: 'Sub-topics retrieved successfully',
@@ -243,7 +253,9 @@ async function subTopics(req, res) {
         total: result.total,
         page: options.page,
         limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
+        totalPages: totalPages,
+        hasNextPage: options.page < totalPages,
+        hasPrevPage: options.page > 1
       }
     });
   } catch (error) {
@@ -271,6 +283,8 @@ async function search(req, res) {
 
     const result = await TopicService.searchTopics(options);
     
+    const totalPages = Math.ceil(result.total / options.limit);
+    
     res.json({
       status: 'SUCCESS',
       message: 'Topics search completed',
@@ -279,7 +293,9 @@ async function search(req, res) {
         total: result.total,
         page: options.page,
         limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
+        totalPages: totalPages,
+        hasNextPage: options.page < totalPages,
+        hasPrevPage: options.page > 1
       }
     });
   } catch (error) {
@@ -294,8 +310,7 @@ async function search(req, res) {
 // GET /api/topics/active - Get all active topics
 async function active(req, res) {
   try {
-    const { moduleId } = req.query;
-    const topics = await TopicService.getActiveTopics(moduleId);
+    const topics = await TopicService.getActiveTopics();
     
     res.json({
       status: 'SUCCESS',
@@ -369,18 +384,18 @@ async function deactivate(req, res) {
 async function updateOrder(req, res) {
   try {
     const { id } = req.params;
-    const { displayOrder } = req.body;
+    const { priority } = req.body;
     
-    if (typeof displayOrder !== 'number') {
+    if (typeof priority !== 'number') {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Display order must be a number'
+        message: 'Priority must be a number'
       });
     }
 
     // Service doesn't provide single update order; reuse reorderTopics for a single item
     const updated = await TopicService.reorderTopics([
-      { id: parseInt(id, 10), displayOrder }
+      { id: parseInt(id, 10), priority }
     ], req.user.id);
     const topic = updated && updated.length ? updated.find(t => t.id === parseInt(id, 10)) : null;
     
@@ -505,6 +520,53 @@ async function reorder(req, res) {
   }
 }
 
+// GET /api/topics/module/:moduleId - Get topics by module ID for form generation
+async function byModuleForForm(req, res) {
+  try {
+    const { moduleId } = req.params;
+    const topics = await TopicService.findTopicByModuleId(moduleId);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Topics for module retrieved successfully',
+      data: topics
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve topics for module',
+      error: error.message
+    });
+  }
+}
+
+// GET /api/topics/:id/form-config - Get topic with form configuration
+async function formConfig(req, res) {
+  try {
+    const { id } = req.params;
+    const topic = await TopicService.getTopicWithFormConfig(id);
+    
+    if (!topic) {
+      return res.status(404).json({
+        status: 'ERROR',
+        message: 'Topic not found'
+      });
+    }
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Topic form configuration retrieved successfully',
+      data: topic
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve topic form configuration',
+      error: error.message
+    });
+  }
+}
+
 module.exports = {
   list,
   detail,
@@ -520,5 +582,7 @@ module.exports = {
   updateOrder,
   stats,
   clone,
-  reorder
+  reorder,
+  byModuleForForm,
+  formConfig
 };

@@ -34,6 +34,12 @@ const Question = sequelize.define('Question', {
     allowNull: true,
     defaultValue: 0
   },
+  // displayOrder: {
+  //   type: DataTypes.INTEGER,
+  //   field: 'display_order',
+  //   allowNull: true,
+  //   defaultValue: 0
+  // },
   type: {
     type: DataTypes.STRING,
     allowNull: true

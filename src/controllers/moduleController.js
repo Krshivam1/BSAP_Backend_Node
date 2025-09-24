@@ -6,15 +6,19 @@ async function list(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'name', 
+      sortBy = 'priority', 
       sortOrder = 'ASC',
       search,
       status 
     } = req.query;
 
+    // Validate and sanitize pagination parameters
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit))); // Cap at 100 items per page
+
     const options = {
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page: pageNum,
+      limit: limitNum,
       sortBy,
       sortOrder: sortOrder.toUpperCase(),
       search,
@@ -31,7 +35,9 @@ async function list(req, res) {
         total: result.total,
         page: options.page,
         limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
+        totalPages: Math.ceil(result.total / options.limit),
+        hasNextPage: options.page < Math.ceil(result.total / options.limit),
+        hasPrevPage: options.page > 1
       }
     });
   } catch (error) {
@@ -70,6 +76,25 @@ async function detail(req, res) {
   }
 }
 
+// GET /api/modules/all - Get all active modules (ID and Name only)
+async function getAllModule(req, res) {
+  try {
+    const modules = await ModuleService.getAllModule();
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Active modules retrieved successfully',
+      data: modules
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve active modules',
+      error: error.message
+    });
+  }
+}
+
 // POST /api/modules - Create new module
 async function create(req, res) {
   try {
@@ -87,6 +112,7 @@ async function create(req, res) {
       data: module
     });
   } catch (error) {
+    console.log(error);
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({
         status: 'ERROR',
@@ -434,9 +460,68 @@ async function clone(req, res) {
   }
 }
 
+// GET /api/modules/priority/:subMenuId? - Get modules by priority for form generation
+async function byPriority(req, res) {
+  try {
+    const { subMenuId } = req.params;
+    const modules = await ModuleService.findByPriority(subMenuId);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Modules retrieved by priority successfully',
+      data: modules
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve modules by priority',
+      error: error.message
+    });
+  }
+}
+
+// PATCH /api/modules/:id/status - Toggle module status (backward compatibility)
+async function toggleStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const { active } = req.body;
+    
+    if (typeof active !== 'boolean') {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'Active status must be a boolean value'
+      });
+    }
+
+    const module = active 
+      ? await ModuleService.activateModule(id, req.user.id)
+      : await ModuleService.deactivateModule(id, req.user.id);
+    
+    if (!module) {
+      return res.status(404).json({
+        status: 'ERROR',
+        message: 'Module not found'
+      });
+    }
+
+    res.json({
+      status: 'SUCCESS',
+      message: `Module ${active ? 'activated' : 'deactivated'} successfully`,
+      data: module
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: `Failed to ${req.body.active ? 'activate' : 'deactivate'} module`,
+      error: error.message
+    });
+  }
+}
+
 module.exports = {
   list,
   detail,
+  getAllModule,
   create,
   update,
   remove,
@@ -445,8 +530,10 @@ module.exports = {
   active,
   activate,
   deactivate,
+  toggleStatus,
   stats,
   updateOrder,
   permissions,
-  clone
+  clone,
+  byPriority
 };

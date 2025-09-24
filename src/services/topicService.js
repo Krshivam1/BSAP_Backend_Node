@@ -1,5 +1,6 @@
-const { Topic, Module, SubTopic, Question, User } = require('../models');
+const { Topic, Module, SubTopic, Question, User, SubMenu } = require('../models');
 const { Op } = require('sequelize');
+const sequelize = require('../config/database'); // Add sequelize for transactions
 
 class TopicService {
   
@@ -8,7 +9,7 @@ class TopicService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'displayOrder',
+      sortBy = 'priority',
       sortOrder = 'ASC',
       search,
       moduleId,
@@ -18,10 +19,25 @@ class TopicService {
     const offset = (page - 1) * limit;
     const whereClause = {};
 
+    // Validate and map sort field
+    const validSortFields = {
+      'id': 'id',
+      'topicName': 'topicName', 
+      'subName': 'subName',
+      'priority': 'priority',
+      'active': 'active',
+      'formType': 'formType',
+      'isShowPrevious': 'isShowPrevious',
+      'isShowCummulative': 'isShowCummulative',
+      'moduleName': ['module', 'moduleName'] // For joined field
+    };
+
+    const validatedSortBy = validSortFields[sortBy] || 'priority';
+
     if (search) {
       whereClause[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } }
+        { topicName: { [Op.like]: `%${search}%` } },
+        { subName: { [Op.like]: `%${search}%` } }
       ];
     }
 
@@ -30,7 +46,17 @@ class TopicService {
     }
 
     if (isActive !== undefined) {
-      whereClause.isActive = isActive;
+      whereClause.active = isActive; // Fix: use 'active' not 'isActive'
+    }
+
+    // Build order clause based on sort field
+    let orderClause;
+    if (Array.isArray(validatedSortBy)) {
+      // For joined fields like ['module', 'moduleName']
+      orderClause = [[...validatedSortBy, sortOrder]];
+    } else {
+      // For direct fields
+      orderClause = [[validatedSortBy, sortOrder]];
     }
 
     const { count, rows } = await Topic.findAndCountAll({
@@ -39,49 +65,41 @@ class TopicService {
         {
           model: Module,
           as: 'module',
-          attributes: ['id', 'name']
-        },
-        {
-          model: SubTopic,
-          as: 'subTopics',
-          attributes: ['id', 'name', 'isActive'],
-          required: false
-        },
-        {
-          model: Question,
-          as: 'questions',
-          attributes: ['id', 'question', 'isActive'],
-          required: false
+          attributes: ['id', 'moduleName'] // Fix: use 'moduleName' not 'name'
         }
       ],
       limit,
       offset,
-      order: [[sortBy, sortOrder]]
+      order: orderClause
     });
 
     return {
-      topics: rows.map(topic => ({
-        ...topic.toJSON(),
-        subTopicCount: topic.subTopics ? topic.subTopics.length : 0,
-        questionCount: topic.questions ? topic.questions.length : 0
-      })),
+      topics: rows.map(topic => {
+        const topicJson = topic.toJSON();
+        return {
+          ...topicJson,
+          moduleName: topicJson.module ? topicJson.module.moduleName : null,
+          moduleId: topicJson.moduleId, // Keep moduleId for reference
+          module: undefined // Remove nested module object
+        };
+      }),
       total: count
     };
   }
 
   // Get topic by ID
   static async getTopicById(id) {
-    return await Topic.findByPk(id, {
+    const topic = await Topic.findByPk(id, {
       include: [
         {
           model: Module,
           as: 'module',
-          attributes: ['id', 'name', 'description']
+          attributes: ['id', 'moduleName', 'description']
         },
         {
           model: SubTopic,
           as: 'subTopics',
-          attributes: ['id', 'name', 'description', 'isActive', 'displayOrder'],
+          attributes: ['id', 'name', 'description', 'active', 'displayOrder'],
           order: [['displayOrder', 'ASC']]
         },
         {
@@ -92,11 +110,64 @@ class TopicService {
         }
       ]
     });
+
+    if (!topic) return null;
+
+    const topicJson = topic.toJSON();
+    return {
+      ...topicJson,
+      moduleName: topicJson.module ? topicJson.module.moduleName : null,
+      moduleDescription: topicJson.module ? topicJson.module.description : null,
+      moduleId: topicJson.moduleId, // Keep moduleId for reference
+      module: undefined // Remove nested module object
+    };
   }
 
   // Create new topic
   static async createTopic(topicData) {
-    return await Topic.create(topicData);
+    const transaction = await sequelize.transaction();
+    
+    try {
+      // Step 1: Find module by moduleId to get submenu_id
+      const module = await Module.findByPk(topicData.moduleId, { transaction });
+      if (!module) {
+        throw new Error(`Module with ID ${topicData.moduleId} not found`);
+      }
+
+      // Step 2: Add submenu_id to topic data
+      const topicPayload = {
+        ...topicData,
+        subMenuId: module.subMenuId // Set submenu_id from module
+      };
+
+      // Step 3: Create the topic
+      const newTopic = await Topic.create(topicPayload, { transaction });
+
+      // Step 4: Create submenu entry
+      const subMenuData = {
+        menuId: 5, // Fixed value as per requirement
+        menuName: topicData.topicName,
+        subMenuId: module.subMenuId,
+        menuUrl: `/performance?module=${topicData.moduleId}&topic=${newTopic.id}`,
+        priority: topicData.priority || 0,
+        active: topicData.active !== undefined ? topicData.active : true,
+        createdBy: topicData.createdBy,
+        updatedBy: topicData.createdBy
+      };
+
+      await SubMenu.create(subMenuData, { transaction });
+
+      // Commit transaction if all operations succeed
+      await transaction.commit();
+
+      // Return the created topic with flattened module data
+      return newTopic.toJSON();
+
+    } catch (error) {
+      // Rollback transaction on any error
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   // Update topic
@@ -175,8 +246,8 @@ class TopicService {
     const offset = (page - 1) * limit;
     const whereClause = {
       [Op.or]: [
-        { name: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } }
+        { topicName: { [Op.like]: `%${search}%` } },
+        { subName: { [Op.like]: `%${search}%` } }
       ]
     };
 
@@ -185,7 +256,7 @@ class TopicService {
     }
 
     if (isActive !== undefined) {
-      whereClause.isActive = isActive;
+      whereClause.active = isActive;
     }
 
     const { count, rows } = await Topic.findAndCountAll({
@@ -193,15 +264,23 @@ class TopicService {
       include: [{
         model: Module,
         as: 'module',
-        attributes: ['id', 'name']
+        attributes: ['id', 'moduleName']
       }],
       limit,
       offset,
-      order: [['name', 'ASC']]
+      order: [['topicName', 'ASC']]
     });
 
     return {
-      topics: rows,
+      topics: rows.map(topic => {
+        const topicJson = topic.toJSON();
+        return {
+          ...topicJson,
+          moduleName: topicJson.module ? topicJson.module.moduleName : null,
+          moduleId: topicJson.moduleId,
+          module: undefined
+        };
+      }),
       total: count
     };
   }
@@ -255,21 +334,23 @@ class TopicService {
   }
 
   // Get active topics
-  static async getActiveTopics(moduleId = null) {
-    const whereClause = { isActive: true };
-    if (moduleId) {
-      whereClause.moduleId = moduleId;
-    }
+  static async getActiveTopics() {
+    const whereClause = { active: true };
 
-    return await Topic.findAll({
+    const topics = await Topic.findAll({
       where: whereClause,
-      include: [{
-        model: Module,
-        as: 'module',
-        attributes: ['id', 'name']
-      }],
-      order: [['displayOrder', 'ASC']],
-      attributes: ['id', 'name', 'description', 'moduleId', 'displayOrder']
+      order: [['topicName', 'ASC']],
+      attributes: ['id', 'topicName']
+    });
+
+    return topics.map(topic => {
+      const topicJson = topic.toJSON();
+      return {
+        ...topicJson,
+        moduleName: topicJson.module ? topicJson.module.moduleName : null,
+        moduleId: topicJson.moduleId,
+        module: undefined
+      };
     });
   }
 
@@ -279,7 +360,7 @@ class TopicService {
     if (!topic) return null;
 
     await topic.update({
-      isActive: true,
+      active: true,
       updatedBy
     });
 
@@ -292,7 +373,7 @@ class TopicService {
     if (!topic) return null;
 
     await topic.update({
-      isActive: false,
+      active: false,
       updatedBy
     });
 
@@ -313,7 +394,7 @@ class TopicService {
       topicsWithQuestions
     ] = await Promise.all([
       Topic.count({ where: whereClause }),
-      Topic.count({ where: { ...whereClause, isActive: true } }),
+      Topic.count({ where: { ...whereClause, active: true } }),
       Topic.count({
         where: whereClause,
         include: [{
@@ -336,7 +417,7 @@ class TopicService {
       where: whereClause,
       attributes: [
         'id',
-        'name',
+        'topicName',
         [Topic.sequelize.fn('COUNT', Topic.sequelize.col('subTopics.id')), 'subTopicCount']
       ],
       include: [{
@@ -353,7 +434,7 @@ class TopicService {
       where: whereClause,
       attributes: [
         'id',
-        'name',
+        'topicName',
         [Topic.sequelize.fn('COUNT', Topic.sequelize.col('questions.id')), 'questionCount']
       ],
       include: [{
@@ -376,20 +457,20 @@ class TopicService {
       topicsWithoutQuestions: totalTopics - topicsWithQuestions,
       subTopicCounts: subTopicCounts.map(topic => ({
         id: topic.id,
-        name: topic.name,
+        name: topic.topicName,
         subTopicCount: parseInt(topic.dataValues.subTopicCount) || 0
       })),
       questionCounts: questionCounts.map(topic => ({
         id: topic.id,
-        name: topic.name,
+        name: topic.topicName,
         questionCount: parseInt(topic.dataValues.questionCount) || 0
       }))
     };
   }
 
   // Check if topic name exists in module
-  static async isNameExists(name, moduleId, excludeId = null) {
-    const whereClause = { name, moduleId };
+  static async isNameExists(topicName, moduleId, excludeId = null) {
+    const whereClause = { topicName, moduleId };
     if (excludeId) {
       whereClause.id = { [Op.ne]: excludeId };
     }
@@ -400,9 +481,9 @@ class TopicService {
 
   // Reorder topics within module
   static async reorderTopics(topicOrders, updatedBy) {
-    const promises = topicOrders.map(({ id, displayOrder }) => 
+    const promises = topicOrders.map(({ id, priority }) => 
       Topic.update(
-        { displayOrder, updatedBy },
+        { priority, updatedBy },
         { where: { id } }
       )
     );
@@ -411,38 +492,38 @@ class TopicService {
     
     return await Topic.findAll({
       where: { id: { [Op.in]: topicOrders.map(t => t.id) } },
-      order: [['displayOrder', 'ASC']],
-      attributes: ['id', 'name', 'displayOrder', 'moduleId']
+      order: [['priority', 'ASC']],
+      attributes: ['id', 'topicName', 'priority', 'moduleId']
     });
   }
 
   // Get topics for dropdown
   static async getTopicsForDropdown(moduleId = null) {
-    const whereClause = { isActive: true };
+    const whereClause = { active: true };
     if (moduleId) {
       whereClause.moduleId = moduleId;
     }
 
     return await Topic.findAll({
       where: whereClause,
-      attributes: ['id', 'name', 'displayOrder', 'moduleId'],
-      order: [['displayOrder', 'ASC']]
+      attributes: ['id', 'topicName', 'priority', 'moduleId'],
+      order: [['priority', 'ASC']]
     });
   }
 
   // Get topic hierarchy (with module, subtopics, and questions)
   static async getTopicHierarchy(topicId) {
-    return await Topic.findByPk(topicId, {
+    const topic = await Topic.findByPk(topicId, {
       include: [
         {
           model: Module,
           as: 'module',
-          attributes: ['id', 'name', 'description']
+          attributes: ['id', 'moduleName', 'description']
         },
         {
           model: SubTopic,
           as: 'subTopics',
-          where: { isActive: true },
+          where: { active: true },
           required: false,
           order: [['displayOrder', 'ASC']],
           include: [{
@@ -464,6 +545,17 @@ class TopicService {
         }
       ]
     });
+
+    if (!topic) return null;
+
+    const topicJson = topic.toJSON();
+    return {
+      ...topicJson,
+      moduleName: topicJson.module ? topicJson.module.moduleName : null,
+      moduleDescription: topicJson.module ? topicJson.module.description : null,
+      moduleId: topicJson.moduleId,
+      module: undefined
+    };
   }
 
   // Bulk update topics
@@ -478,14 +570,24 @@ class TopicService {
     await Promise.all(promises);
     
     const updatedIds = updates.map(u => u.id);
-    return await Topic.findAll({
+    const topics = await Topic.findAll({
       where: { id: { [Op.in]: updatedIds } },
       include: [{
         model: Module,
         as: 'module',
-        attributes: ['id', 'name']
+        attributes: ['id', 'moduleName']
       }],
-      order: [['displayOrder', 'ASC']]
+      order: [['priority', 'ASC']]
+    });
+
+    return topics.map(topic => {
+      const topicJson = topic.toJSON();
+      return {
+        ...topicJson,
+        moduleName: topicJson.module ? topicJson.module.moduleName : null,
+        moduleId: topicJson.moduleId,
+        module: undefined
+      };
     });
   }
 
@@ -496,13 +598,13 @@ class TopicService {
       whereClause.moduleId = moduleId;
     }
 
-    return await Topic.findAll({
+    const topics = await Topic.findAll({
       where: whereClause,
       attributes: [
         'id',
-        'name',
-        'isActive',
-        'displayOrder',
+        'topicName',
+        'active',
+        'priority',
         [Topic.sequelize.fn('COUNT', Topic.sequelize.col('subTopics.id')), 'subTopicCount'],
         [Topic.sequelize.fn('COUNT', Topic.sequelize.col('questions.id')), 'questionCount']
       ],
@@ -510,7 +612,7 @@ class TopicService {
         {
           model: Module,
           as: 'module',
-          attributes: ['name']
+          attributes: ['moduleName']
         },
         {
           model: SubTopic,
@@ -526,13 +628,23 @@ class TopicService {
         }
       ],
       group: ['Topic.id', 'module.id'],
-      order: [['displayOrder', 'ASC']]
+      order: [['priority', 'ASC']]
+    });
+
+    return topics.map(topic => {
+      const topicJson = topic.toJSON();
+      return {
+        ...topicJson,
+        moduleName: topicJson.module ? topicJson.module.moduleName : null,
+        moduleId: topicJson.moduleId,
+        module: undefined
+      };
     });
   }
 
   // Get next display order within module
-  static async getNextDisplayOrder(moduleId) {
-    const maxOrder = await Topic.max('displayOrder', { where: { moduleId } });
+  static async getNextPriority(moduleId) {
+    const maxOrder = await Topic.max('priority', { where: { moduleId } });
     return (maxOrder || 0) + 1;
   }
 
@@ -541,14 +653,21 @@ class TopicService {
     const topic = await this.getTopicById(topicId);
     if (!topic) return null;
 
-    const newDisplayOrder = await this.getNextDisplayOrder(targetModuleId);
+    const newPriority = await this.getNextPriority(targetModuleId);
     
     const newTopic = await Topic.create({
-      name: `${topic.name} (Copy)`,
-      description: topic.description,
+      topicName: `${topic.topicName} (Copy)`,
+      subName: topic.subName,
       moduleId: targetModuleId,
-      displayOrder: newDisplayOrder,
-      isActive: topic.isActive,
+      priority: newPriority,
+      formType: topic.formType,
+      subMenuId: topic.subMenuId,
+      isShowCummulative: topic.isShowCummulative,
+      isShowPrevious: topic.isShowPrevious,
+      isStartJan: topic.isStartJan,
+      startMonth: topic.startMonth,
+      endMonth: topic.endMonth,
+      active: topic.active,
       createdBy: updatedBy,
       updatedBy: updatedBy
     });
@@ -572,6 +691,69 @@ class TopicService {
     }
 
     return await this.getTopicById(newTopic.id);
+  }
+
+  // Get active topics by module ID (used for performance statistics form generation)
+  static async findTopicByModuleId(moduleId) {
+    return await Topic.findAll({
+      where: { 
+        moduleId,
+        active: true 
+      },
+      include: [
+        {
+          model: Module,
+          as: 'module',
+          attributes: ['id', 'moduleName', 'priority']
+        },
+        {
+          model: SubTopic,
+          as: 'subTopics',
+          where: { active: true },
+          required: false,
+          order: [['priority', 'ASC']]
+        },
+        {
+          model: Question,
+          as: 'questions',
+          where: { active: true },
+          required: false,
+          order: [['priority', 'ASC']]
+        }
+      ],
+      order: [['priority', 'ASC']]
+    });
+  }
+
+  // Get topic with form configuration for dynamic form generation
+  static async getTopicWithFormConfig(topicId) {
+    return await Topic.findByPk(topicId, {
+      include: [
+        {
+          model: SubTopic,
+          as: 'subTopics',
+          where: { active: true },
+          required: false,
+          include: [
+            {
+              model: Question,
+              as: 'questions',
+              where: { active: true },
+              required: false,
+              order: [['priority', 'ASC']]
+            }
+          ],
+          order: [['priority', 'ASC']]
+        },
+        {
+          model: Question,
+          as: 'questions',
+          where: { active: true },
+          required: false,
+          order: [['priority', 'ASC']]
+        }
+      ]
+    });
   }
 
 }

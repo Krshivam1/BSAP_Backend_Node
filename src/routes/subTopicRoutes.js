@@ -8,10 +8,12 @@ const { validatePagination, validateId, validateSubTopicCreate, validateSubTopic
 // Stats and active
 router.get('/stats/overview', authenticate, subTopicController.stats);
 router.get('/status/active', authenticate, subTopicController.active);
+router.get('/active', authenticate, subTopicController.activeSubTopics);
 
 // Search and relations
 router.get('/search/:searchTerm', authenticate, validatePagination, subTopicController.search);
 router.get('/by-topic/:topicId', authenticate, validatePagination, subTopicController.byTopic);
+router.get('/topic/:topicId', authenticate, subTopicController.byTopicForForm);
 router.get('/:id/questions', authenticate, validateId, validatePagination, subTopicController.questions);
 router.get('/:id/performance-statistics', authenticate, validateId, validatePagination, subTopicController.performanceStatistics);
 

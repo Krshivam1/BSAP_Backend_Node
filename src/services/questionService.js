@@ -8,7 +8,7 @@ class QuestionService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'displayOrder',
+      sortBy = 'priority',
       sortOrder = 'ASC',
       search,
       topicId,
@@ -48,18 +48,18 @@ class QuestionService {
       {
         model: Topic,
         as: 'topic',
-        attributes: ['id', 'name', 'moduleId'],
+        attributes: ['id', 'topicName', 'moduleId'],
         include: [{
           model: Module,
           as: 'module',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'moduleName'],
           ...(moduleId && { where: { id: moduleId } })
         }]
       },
       {
         model: SubTopic,
         as: 'subTopic',
-        attributes: ['id', 'name'],
+        attributes: ['id', 'subTopicName'],
         required: false
       }
     ];
@@ -85,17 +85,17 @@ class QuestionService {
         {
           model: Topic,
           as: 'topic',
-          attributes: ['id', 'name', 'description'],
+          attributes: ['id', 'topicName', 'subName'],
           include: [{
             model: Module,
             as: 'module',
-            attributes: ['id', 'name', 'description']
+            attributes: ['id', 'moduleName']
           }]
         },
         {
           model: SubTopic,
           as: 'subTopic',
-          attributes: ['id', 'name', 'description'],
+          attributes: ['id', 'subTopicName'],
           required: false
         }
       ]
@@ -142,7 +142,7 @@ class QuestionService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'displayOrder',
+      sortBy = 'priority',
       sortOrder = 'ASC',
       isActive,
       questionType,
@@ -169,7 +169,7 @@ class QuestionService {
       include: [{
         model: SubTopic,
         as: 'subTopic',
-        attributes: ['id', 'name'],
+        attributes: ['id', 'subTopicName'],
         required: false
       }],
       limit,
@@ -188,7 +188,7 @@ class QuestionService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'displayOrder',
+      sortBy = 'priority',
       sortOrder = 'ASC',
       isActive,
       questionType
@@ -259,18 +259,18 @@ class QuestionService {
       {
         model: Topic,
         as: 'topic',
-        attributes: ['id', 'name'],
+        attributes: ['id', 'topicName'],
         include: [{
           model: Module,
           as: 'module',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'moduleName'],
           ...(moduleId && { where: { id: moduleId } })
         }]
       },
       {
         model: SubTopic,
         as: 'subTopic',
-        attributes: ['id', 'name'],
+        attributes: ['id', 'subTopicName'],
         required: false
       }
     ];
@@ -307,13 +307,13 @@ class QuestionService {
         model: Topic,
         as: 'topic',
         where: { moduleId },
-        attributes: ['id', 'name']
+        attributes: ['id', 'topicName']
       });
     } else if (!topicId) {
       includeClause.push({
         model: Topic,
         as: 'topic',
-        attributes: ['id', 'name']
+        attributes: ['id', 'topicName']
       });
     }
 
@@ -524,17 +524,17 @@ class QuestionService {
         {
           model: Topic,
           as: 'topic',
-          attributes: ['id', 'name', 'description'],
+          attributes: ['id', 'topicName', 'subName'],
           include: [{
             model: Module,
             as: 'module',
-            attributes: ['id', 'name', 'description']
+            attributes: ['id', 'moduleName']
           }]
         },
         {
           model: SubTopic,
           as: 'subTopic',
-          attributes: ['id', 'name', 'description'],
+          attributes: ['id', 'subTopicName'],
           required: false
         }
       ]
@@ -559,12 +559,12 @@ class QuestionService {
         {
           model: Topic,
           as: 'topic',
-          attributes: ['id', 'name']
+          attributes: ['id', 'topicName']
         },
         {
           model: SubTopic,
           as: 'subTopic',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'subTopicName'],
           required: false
         }
       ],
@@ -632,17 +632,17 @@ class QuestionService {
         {
           model: Topic,
           as: 'topic',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'topicName'],
           include: [{
             model: Module,
             as: 'module',
-            attributes: ['id', 'name']
+            attributes: ['id', 'moduleName']
           }]
         },
         {
           model: SubTopic,
           as: 'subTopic',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'subTopicName'],
           required: false
         }
       ]
@@ -657,7 +657,7 @@ class QuestionService {
       },
       topic: {
         id: question.topic.id,
-        name: question.topic.name
+        name: question.topic.topicName
       },
       question: {
         id: question.id,
@@ -668,7 +668,7 @@ class QuestionService {
     if (question.subTopic) {
       breadcrumb.subTopic = {
         id: question.subTopic.id,
-        name: question.subTopic.name
+        name: question.subTopic.subTopicName
       };
     }
 
@@ -691,7 +691,7 @@ class QuestionService {
         model: Topic,
         as: 'topic',
         where: { moduleId },
-        attributes: ['id', 'name']
+        attributes: ['id', 'topicName']
       }],
       limit,
       offset,
@@ -750,6 +750,142 @@ class QuestionService {
       maxScore: 0,
       responseCount: 0
     };
+  }
+
+  // Get questions with formula dependencies for a topic
+  static async getQuestionsWithFormulas(topicId) {
+    return await Question.findAll({
+      where: { 
+        topicId,
+        active: true,
+        formula: { [Op.not]: null }
+      },
+      include: [
+        {
+          model: Topic,
+          as: 'topic',
+          attributes: ['id', 'topicName', 'formType']
+        },
+        {
+          model: SubTopic,
+          as: 'subTopic',
+          attributes: ['id', 'subTopicName'],
+          required: false
+        }
+      ],
+      order: [['priority', 'ASC']]
+    });
+  }
+
+  // Get questions for formula builder (to reference other questions)
+  static async getQuestionsForFormula(topicId, excludeQuestionId = null) {
+    const whereClause = { 
+      topicId,
+      active: true
+    };
+
+    if (excludeQuestionId) {
+      whereClause.id = { [Op.not]: excludeQuestionId };
+    }
+
+    return await Question.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: SubTopic,
+          as: 'subTopic',
+          attributes: ['id', 'subTopicName'],
+          required: false
+        }
+      ],
+      attributes: ['id', 'question', 'priority', 'subTopicId'],
+      order: [['priority', 'ASC']]
+    });
+  }
+
+  // Validate question types and default values
+  static validateQuestionType(type, defaultVal, defaultTo) {
+    const validTypes = ['Text', 'Date', 'Number', 'Price', 'MultiChoice'];
+    const validDefaultSources = ['NONE', 'PREVIOUS', 'QUESTION', 'PS', 'SUB', 'CIRCLE', 'PSOP'];
+
+    if (!validTypes.includes(type)) {
+      throw new Error(`Invalid question type: ${type}. Valid types are: ${validTypes.join(', ')}`);
+    }
+
+    if (defaultTo && !validDefaultSources.includes(defaultTo)) {
+      throw new Error(`Invalid default source: ${defaultTo}. Valid sources are: ${validDefaultSources.join(', ')}`);
+    }
+
+    // Type-specific validations
+    if (type === 'Number' || type === 'Price') {
+      if (defaultVal && isNaN(parseFloat(defaultVal))) {
+        throw new Error(`Default value for ${type} must be a valid number`);
+      }
+    }
+
+    if (type === 'Date') {
+      if (defaultVal && !Date.parse(defaultVal)) {
+        throw new Error('Default value for Date must be a valid date');
+      }
+    }
+
+    return true;
+  }
+
+  // Parse and validate formula
+  static validateFormula(formula, availableQuestions) {
+    if (!formula) return true;
+
+    // Basic formula validation
+    const formulaRegex = /^[\d+\-*/()\s]+$/;
+    const questionRefRegex = /Q(\d+)/g;
+
+    // Extract question references
+    let match;
+    const referencedQuestions = [];
+    while ((match = questionRefRegex.exec(formula)) !== null) {
+      referencedQuestions.push(parseInt(match[1]));
+    }
+
+    // Validate that referenced questions exist
+    const availableIds = availableQuestions.map(q => q.id);
+    for (const refId of referencedQuestions) {
+      if (!availableIds.includes(refId)) {
+        throw new Error(`Formula references question ID ${refId} which does not exist or is not available`);
+      }
+    }
+
+    return true;
+  }
+
+  // Get questions by topic and subtopic for form generation
+  static async getQuestionsForForm(topicId, subTopicId = null) {
+    const whereClause = { 
+      topicId,
+      active: true
+    };
+
+    if (subTopicId) {
+      whereClause.subTopicId = subTopicId;
+    }
+
+    return await Question.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: Topic,
+          as: 'topic',
+          attributes: ['id', 'topicName', 'formType', 'isShowCummulative', 'isShowPrevious']
+        },
+        {
+          model: SubTopic,
+          as: 'subTopic',
+          attributes: ['id', 'subTopicName'],
+          required: false
+        }
+      ],
+      order: [['priority', 'ASC']]
+    });
   }
 
 }

@@ -6,7 +6,7 @@ async function list(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'name', 
+      sortBy = 'subTopicName', 
       sortOrder = 'ASC',
       search,
       topicId,
@@ -14,13 +14,13 @@ async function list(req, res) {
     } = req.query;
 
     const options = {
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page: Math.max(1, parseInt(page)), // Ensure page is at least 1
+      limit: Math.min(100, Math.max(1, parseInt(limit))), // Limit between 1 and 100
       sortBy,
       sortOrder: sortOrder.toUpperCase(),
       search,
-      topicId,
-      status
+      topicId: topicId ? parseInt(topicId) : undefined,
+      isActive: status ? (status === 'true' || status === '1') : undefined
     };
 
     const result = await SubTopicService.getAllSubTopics(options);
@@ -33,7 +33,11 @@ async function list(req, res) {
         total: result.total,
         page: options.page,
         limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
+        totalPages: Math.ceil(result.total / options.limit),
+        hasNextPage: options.page < Math.ceil(result.total / options.limit),
+        hasPrevPage: options.page > 1,
+        startIndex: result.total === 0 ? 0 : (options.page - 1) * options.limit + 1,
+        endIndex: Math.min(options.page * options.limit, result.total)
       }
     });
   } catch (error) {
@@ -173,23 +177,23 @@ async function remove(req, res) {
 async function byTopic(req, res) {
   try {
     const { topicId } = req.params;
-    const { 
-      page = 1, 
-      limit = 10, 
-      sortBy = 'displayOrder', 
-      sortOrder = 'ASC',
-      status 
-    } = req.query;
+    // const { 
+    //   page = 1, 
+    //   limit = 10, 
+    //   sortBy = 'displayOrder', 
+    //   sortOrder = 'ASC',
+    //   status 
+    // } = req.query;
     
-    const options = {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      sortBy,
-      sortOrder: sortOrder.toUpperCase(),
-      status
-    };
+    // const options = {
+    //   page: parseInt(page),
+    //   limit: parseInt(limit),
+    //   sortBy,
+    //   sortOrder: sortOrder.toUpperCase(),
+    //   status
+    // };
 
-    const result = await SubTopicService.getSubTopicsByTopic(topicId, options);
+    const result = await SubTopicService.getSubTopicsByTopic(topicId);
     
     res.json({
       status: 'SUCCESS',
@@ -531,6 +535,46 @@ async function performanceStatistics(req, res) {
   }
 }
 
+// GET /api/sub-topics/topic/:topicId - Get subtopics by topic ID for form generation
+async function byTopicForForm(req, res) {
+  try {
+    const { topicId } = req.params;
+    const subTopics = await SubTopicService.findByTopicId(topicId);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Subtopics for topic retrieved successfully',
+      data: subTopics
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve subtopics for topic',
+      error: error.message
+    });
+  }
+}
+
+// GET /api/sub-topics/active - Get all active subtopics
+async function activeSubTopics(req, res) {
+  try {
+    const { topicId } = req.query;
+    const subTopics = await SubTopicService.getActiveSubTopics(topicId);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Active subtopics retrieved successfully',
+      data: subTopics
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve active subtopics',
+      error: error.message
+    });
+  }
+}
+
 module.exports = {
   list,
   detail,
@@ -547,5 +591,7 @@ module.exports = {
   stats,
   clone,
   reorder,
-  performanceStatistics
+  performanceStatistics,
+  byTopicForForm,
+  activeSubTopics
 };

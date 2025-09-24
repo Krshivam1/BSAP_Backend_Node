@@ -15,7 +15,7 @@ async function list(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'displayOrder', 
+      sortBy = 'priority', 
       sortOrder = 'ASC',
       search,
       topicId,
@@ -191,7 +191,7 @@ async function bySubTopic(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'displayOrder', 
+      sortBy = 'priority', 
       sortOrder = 'ASC',
       type,
       status 
@@ -235,7 +235,7 @@ async function byType(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'displayOrder', 
+      sortBy = 'priority', 
       sortOrder = 'ASC',
       topicId,
       subTopicId,
@@ -648,6 +648,98 @@ async function updateMetadata(req, res) {
   }
 }
 
+// GET /api/questions/topic/:topicId/formulas - Get questions with formulas for a topic
+async function withFormulas(req, res) {
+  try {
+    const { topicId } = req.params;
+    const questions = await QuestionService.getQuestionsWithFormulas(topicId);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Questions with formulas retrieved successfully',
+      data: questions
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve questions with formulas',
+      error: error.message
+    });
+  }
+}
+
+// GET /api/questions/topic/:topicId/for-formula - Get questions for formula builder
+async function forFormula(req, res) {
+  try {
+    const { topicId } = req.params;
+    const { excludeQuestionId } = req.query;
+    const questions = await QuestionService.getQuestionsForFormula(topicId, excludeQuestionId);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Questions for formula retrieved successfully',
+      data: questions
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve questions for formula',
+      error: error.message
+    });
+  }
+}
+
+// GET /api/questions/topic/:topicId/form - Get questions for form generation
+async function forForm(req, res) {
+  try {
+    const { topicId } = req.params;
+    const { subTopicId } = req.query;
+    const questions = await QuestionService.getQuestionsForForm(topicId, subTopicId);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Questions for form retrieved successfully',
+      data: questions
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve questions for form',
+      error: error.message
+    });
+  }
+}
+
+// POST /api/questions/validate-formula - Validate question formula
+async function validateFormula(req, res) {
+  try {
+    const { formula, topicId } = req.body;
+    
+    if (!formula) {
+      return res.json({
+        status: 'SUCCESS',
+        message: 'No formula to validate',
+        data: { valid: true }
+      });
+    }
+
+    const availableQuestions = await QuestionService.getQuestionsForFormula(topicId);
+    const isValid = QuestionService.validateFormula(formula, availableQuestions);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Formula validation completed',
+      data: { valid: isValid }
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'ERROR',
+      message: 'Formula validation failed',
+      error: error.message
+    });
+  }
+}
+
 module.exports = {
   list,
   detail,
@@ -667,5 +759,9 @@ module.exports = {
   reorder,
   bulkCreate,
   performanceStatistics,
-  updateMetadata
+  updateMetadata,
+  withFormulas,
+  forFormula,
+  forForm,
+  validateFormula
 };

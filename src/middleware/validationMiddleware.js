@@ -135,55 +135,185 @@ const rangeUpdateSchema = Joi.object({
 
 // Module validation schemas
 const moduleCreateSchema = Joi.object({
-  name: Joi.string().min(2).max(100).required(),
-  description: Joi.string().max(500).optional(),
-  icon: Joi.string().max(50).optional(),
-  route: Joi.string().max(100).optional(),
-  displayOrder: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional().default(true)
+  moduleName: Joi.string().min(2).max(100).required().messages({
+    'string.base': 'Module name must be a string',
+    'string.empty': 'Module name is required',
+    'string.min': 'Module name must be at least 2 characters long',
+    'string.max': 'Module name cannot exceed 100 characters',
+    'any.required': 'Module name is required'
+  }),
+  priority: Joi.number().integer().min(1).optional().messages({
+    'number.base': 'Priority must be a number',
+    'number.integer': 'Priority must be an integer',
+    'number.min': 'Priority must be at least 1'
+  }),
+  subMenuId: Joi.number().integer().positive().optional().messages({
+    'number.base': 'Sub menu ID must be a number',
+    'number.integer': 'Sub menu ID must be an integer',
+    'number.positive': 'Sub menu ID must be positive'
+  }),
+  active: Joi.boolean().optional().default(true).messages({
+    'boolean.base': 'Active status must be true or false'
+  }),
+  createdBy: Joi.number().integer().positive().optional().messages({
+    'number.base': 'Created by must be a number',
+    'number.integer': 'Created by must be an integer',
+    'number.positive': 'Created by must be positive'
+  })
 });
 
 const moduleUpdateSchema = Joi.object({
-  name: Joi.string().min(2).max(100).optional(),
-  description: Joi.string().max(500).optional(),
-  icon: Joi.string().max(50).optional(),
-  route: Joi.string().max(100).optional(),
-  displayOrder: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional()
+  moduleName: Joi.string().min(2).max(100).optional().messages({
+    'string.base': 'Module name must be a string',
+    'string.min': 'Module name must be at least 2 characters long',
+    'string.max': 'Module name cannot exceed 100 characters'
+  }),
+  priority: Joi.number().integer().min(1).optional().messages({
+    'number.base': 'Priority must be a number',
+    'number.integer': 'Priority must be an integer',
+    'number.min': 'Priority must be at least 1'
+  }),
+  subMenuId: Joi.number().integer().positive().optional().messages({
+    'number.base': 'Sub menu ID must be a number',
+    'number.integer': 'Sub menu ID must be an integer',
+    'number.positive': 'Sub menu ID must be positive'
+  }),
+  active: Joi.boolean().optional().messages({
+    'boolean.base': 'Active status must be true or false'
+  }),
+  updatedBy: Joi.number().integer().positive().optional().messages({
+    'number.base': 'Updated by must be a number',
+    'number.integer': 'Updated by must be an integer',
+    'number.positive': 'Updated by must be positive'
+  })
 });
 
 // Topic validation schemas
 const topicCreateSchema = Joi.object({
-  name: Joi.string().min(2).max(100).required(),
-  description: Joi.string().max(500).optional(),
-  moduleId: Joi.number().integer().positive().required(),
-  displayOrder: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional().default(true)
+  topicName: Joi.string().min(2).max(100).required().messages({
+    'string.base': 'Topic name must be a string',
+    'string.min': 'Topic name must be at least 2 characters long',
+    'string.max': 'Topic name cannot exceed 100 characters',
+    'any.required': 'Topic name is required'
+  }),
+  subName: Joi.string().max(500).optional().allow('').messages({
+    'string.base': 'Sub name must be a string',
+    'string.max': 'Sub name cannot exceed 500 characters'
+  }),
+  moduleId: Joi.number().integer().positive().required().messages({
+    'number.base': 'Module ID must be a number',
+    'number.integer': 'Module ID must be an integer',
+    'number.positive': 'Module ID must be positive',
+    'any.required': 'Module ID is required'
+  }),
+  priority: Joi.number().integer().min(0).optional().default(0).messages({
+    'number.base': 'Priority must be a number',
+    'number.integer': 'Priority must be an integer',
+    'number.min': 'Priority must be at least 0'
+  }),
+  formType: Joi.string().valid('NORMAL', 'Q/ST', 'SPECIAL').optional().messages({
+    'string.base': 'Form type must be a string',
+    'any.only': 'Form type must be one of: NORMAL, Q/ST, SPECIAL'
+  }),
+  isShowCummulative: Joi.boolean().optional().default(false).messages({
+    'boolean.base': 'Show cumulative must be true or false'
+  }),
+  isShowPrevious: Joi.boolean().optional().default(false).messages({
+    'boolean.base': 'Show previous must be true or false'
+  }),
+  isStartJan: Joi.boolean().optional().default(false).messages({
+    'boolean.base': 'Start Jan must be true or false'
+  }),
+  startMonth: Joi.number().integer().min(1).max(12).optional().default(1).messages({
+    'number.base': 'Start month must be a number',
+    'number.integer': 'Start month must be an integer',
+    'number.min': 'Start month must be between 1 and 12',
+    'number.max': 'Start month must be between 1 and 12'
+  }),
+  endMonth: Joi.number().integer().min(1).max(12).optional().default(12).messages({
+    'number.base': 'End month must be a number',
+    'number.integer': 'End month must be an integer',
+    'number.min': 'End month must be between 1 and 12',
+    'number.max': 'End month must be between 1 and 12'
+  }),
+  active: Joi.boolean().optional().default(true).messages({
+    'boolean.base': 'Active status must be true or false'
+  }),
+  createdBy: Joi.number().integer().positive().optional().messages({
+    'number.base': 'Created by must be a number',
+    'number.integer': 'Created by must be an integer',
+    'number.positive': 'Created by must be positive'
+  })
 });
 
 const topicUpdateSchema = Joi.object({
-  name: Joi.string().min(2).max(100).optional(),
-  description: Joi.string().max(500).optional(),
-  moduleId: Joi.number().integer().positive().optional(),
-  displayOrder: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional()
+  topicName: Joi.string().min(2).max(100).optional().messages({
+    'string.base': 'Topic name must be a string',
+    'string.min': 'Topic name must be at least 2 characters long',
+    'string.max': 'Topic name cannot exceed 100 characters'
+  }),
+  subName: Joi.string().max(500).optional().allow('').messages({
+    'string.base': 'Sub name must be a string',
+    'string.max': 'Sub name cannot exceed 500 characters'
+  }),
+  moduleId: Joi.number().integer().positive().optional().messages({
+    'number.base': 'Module ID must be a number',
+    'number.integer': 'Module ID must be an integer',
+    'number.positive': 'Module ID must be positive'
+  }),
+  priority: Joi.number().integer().min(0).optional().messages({
+    'number.base': 'Priority must be a number',
+    'number.integer': 'Priority must be an integer',
+    'number.min': 'Priority must be at least 0'
+  }),
+  formType: Joi.string().valid('NORMAL', 'Q/ST', 'SPECIAL').optional().messages({
+    'string.base': 'Form type must be a string',
+    'any.only': 'Form type must be one of: NORMAL, Q/ST, SPECIAL'
+  }),
+  isShowCummulative: Joi.boolean().optional().messages({
+    'boolean.base': 'Show cumulative must be true or false'
+  }),
+  isShowPrevious: Joi.boolean().optional().messages({
+    'boolean.base': 'Show previous must be true or false'
+  }),
+  isStartJan: Joi.boolean().optional().messages({
+    'boolean.base': 'Start Jan must be true or false'
+  }),
+  startMonth: Joi.number().integer().min(1).max(12).optional().messages({
+    'number.base': 'Start month must be a number',
+    'number.integer': 'Start month must be an integer',
+    'number.min': 'Start month must be between 1 and 12',
+    'number.max': 'Start month must be between 1 and 12'
+  }),
+  endMonth: Joi.number().integer().min(1).max(12).optional().messages({
+    'number.base': 'End month must be a number',
+    'number.integer': 'End month must be an integer',
+    'number.min': 'End month must be between 1 and 12',
+    'number.max': 'End month must be between 1 and 12'
+  }),
+  active: Joi.boolean().optional().messages({
+    'boolean.base': 'Active status must be true or false'
+  }),
+  updatedBy: Joi.number().integer().positive().optional().messages({
+    'number.base': 'Updated by must be a number',
+    'number.integer': 'Updated by must be an integer',
+    'number.positive': 'Updated by must be positive'
+  })
 });
 
 // SubTopic validation schemas
 const subTopicCreateSchema = Joi.object({
-  name: Joi.string().min(2).max(100).required(),
-  description: Joi.string().max(500).optional(),
+  subTopicName: Joi.string().min(2).max(100).required(),
   topicId: Joi.number().integer().positive().required(),
-  displayOrder: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional().default(true)
+  priority: Joi.number().integer().positive().optional(),
+  active: Joi.boolean().optional().default(true)
 });
 
 const subTopicUpdateSchema = Joi.object({
-  name: Joi.string().min(2).max(100).optional(),
-  description: Joi.string().max(500).optional(),
+  subTopicName: Joi.string().min(2).max(100).optional(),
   topicId: Joi.number().integer().positive().optional(),
-  displayOrder: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional()
+  priority: Joi.number().integer().positive().optional(),
+  active: Joi.boolean().optional()
 });
 
 // Question validation schemas
@@ -280,20 +410,53 @@ const createValidationMiddleware = (schema, source = 'body') => {
     const { error, value } = schema.validate(data, {
       abortEarly: false,
       stripUnknown: true,
-      convert: true
+      convert: true,
+      errors: {
+        wrap: {
+          label: ''
+        }
+      }
     });
 
     if (error) {
-      const errorMessage = error.details.map(detail => detail.message).join(', ');
-      logger.warn('Validation error:', errorMessage);
+      const errorDetails = error.details.map(detail => {
+        let message = detail.message;
+        
+        // Custom error messages for common validation types
+        if (detail.type === 'any.required') {
+          message = `${detail.path.join('.')} is required`;
+        } else if (detail.type === 'string.min') {
+          message = `${detail.path.join('.')} must be at least ${detail.context.limit} characters long`;
+        } else if (detail.type === 'string.max') {
+          message = `${detail.path.join('.')} cannot exceed ${detail.context.limit} characters`;
+        } else if (detail.type === 'string.email') {
+          message = `${detail.path.join('.')} must be a valid email address`;
+        } else if (detail.type === 'number.positive') {
+          message = `${detail.path.join('.')} must be a positive number`;
+        } else if (detail.type === 'number.integer') {
+          message = `${detail.path.join('.')} must be an integer`;
+        } else if (detail.type === 'boolean.base') {
+          message = `${detail.path.join('.')} must be true or false`;
+        }
+
+        return {
+          field: detail.path.join('.'),
+          message: message,
+          type: detail.type
+        };
+      });
+
+      logger.warn('Validation error:', {
+        source,
+        errors: errorDetails,
+        data: JSON.stringify(data)
+      });
       
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Validation failed',
-        errors: error.details.map(detail => ({
-          field: detail.path.join('.'),
-          message: detail.message
-        }))
+        message: 'Validation failed. Please check the provided data.',
+        errors: errorDetails,
+        timestamp: new Date().toISOString()
       });
     }
 
@@ -493,15 +656,60 @@ module.exports = {
         if (existingRecord) {
           return res.status(400).json({
             status: 'ERROR',
-            message: `${nameField} already exists`
+            message: `A record with this ${nameField.replace(/([A-Z])/g, ' $1').toLowerCase()} already exists`,
+            field: nameField,
+            timestamp: new Date().toISOString()
           });
         }
         
         next();
       } catch (error) {
-        next(error);
+        logger.error('Error in validateUniqueName middleware:', error);
+        return res.status(500).json({
+          status: 'ERROR',
+          message: 'Internal server error during validation',
+          timestamp: new Date().toISOString()
+        });
       }
     };
+  },
+
+  // Specific validation for module name uniqueness
+  validateUniqueModuleName: async (req, res, next) => {
+    try {
+      const { moduleName } = req.body;
+      const { id } = req.params;
+      
+      if (!moduleName) return next();
+
+      const Module = require('../models/Module');
+      const whereClause = { moduleName };
+      
+      // Exclude current record for updates
+      if (id) {
+        whereClause.id = { [require('sequelize').Op.ne]: id };
+      }
+      
+      const existingModule = await Module.findOne({ where: whereClause });
+      
+      if (existingModule) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'A module with this name already exists',
+          field: 'moduleName',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      next();
+    } catch (error) {
+      logger.error('Error in validateUniqueModuleName middleware:', error);
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Internal server error during module name validation',
+        timestamp: new Date().toISOString()
+      });
+    }
   },
 
   validateParentExists: (parentModel, parentField) => {
