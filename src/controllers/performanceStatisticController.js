@@ -608,6 +608,174 @@ async function successCountByUserDate(req, res) {
   }
 }
 
+/**
+ * @route GET /api/performance-statistics/performance
+ * @desc Get performance form with modules and topics
+ * @access Private
+ */
+async function getPerformanceForm(req, res) {
+  try {
+    console.log('getPerformanceForm', req.query);
+    const { module: moduleParam = 0, topic: topicParam = 1 } = req.query;
+    const userId = req.user.id;
+    console.log('ModuleParam:', moduleParam, 'TopicParam:', topicParam, 'UserId:', userId);
+
+    const performanceData = await performanceStatisticService.getPerformanceForm({
+      modulePathId: parseInt(moduleParam),
+      topicPathId: parseInt(topicParam),
+      userId
+    });
+
+    res.json({
+      status: 'SUCCESS',
+      message: 'Performance form data retrieved successfully',
+      data: performanceData
+    });
+
+  } catch (error) {
+    logger.error('Error getting performance form:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve performance form',
+      error: error.message
+    });
+  }
+}
+
+/**
+ * @route GET /api/performance-statistics/performance/module/:moduleId/topic/:topicId
+ * @desc Get performance form by specific module and topic IDs
+ * @access Private
+ */
+async function getPerformanceFormByModuleTopic(req, res) {
+  try {
+    const { moduleId, topicId } = req.params;
+    const userId = req.user.id;
+
+    const performanceData = await performanceStatisticService.getPerformanceForm({
+      modulePathId: parseInt(moduleId),
+      topicPathId: parseInt(topicId),
+      userId
+    });
+
+    res.json({
+      status: 'SUCCESS',
+      message: 'Performance form data retrieved successfully',
+      data: performanceData
+    });
+
+  } catch (error) {
+    logger.error('Error getting performance form by module/topic:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve performance form',
+      error: error.message
+    });
+  }
+}
+
+/**
+ * @route POST /api/performance-statistics/save-statistics
+ * @desc Save performance statistics data
+ * @access Private
+ */
+async function saveStatistics(req, res) {
+  try {
+    const { performanceStatistics } = req.body;
+    const userId = req.user.id;
+
+    if (!performanceStatistics || !Array.isArray(performanceStatistics)) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'Performance statistics array is required'
+      });
+    }
+
+    const result = await performanceStatisticService.saveStatistics({
+      performanceStatistics,
+      userId
+    });
+
+    res.json({
+      status: 'SUCCESS',
+      message: 'Performance statistics saved successfully',
+      data: result
+    });
+
+  } catch (error) {
+    logger.error('Error saving performance statistics:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to save performance statistics',
+      error: error.message
+    });
+  }
+}
+
+/**
+ * @route POST /api/performance-statistics/sent-otp
+ * @desc Send OTP for verification
+ * @access Private
+ */
+async function sentOTP(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const result = await performanceStatisticService.sendOTP(userId);
+
+    res.json({
+      status: 'SUCCESS',
+      message: 'OTP sent successfully',
+      data: result
+    });
+
+  } catch (error) {
+    logger.error('Error sending OTP:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to send OTP',
+      error: error.message
+    });
+  }
+}
+
+/**
+ * @route POST /api/performance-statistics/verify-otp
+ * @desc Verify OTP and complete submission
+ * @access Private
+ */
+async function verifyOTP(req, res) {
+  try {
+    const { otp } = req.body;
+    const userId = req.user.id;
+
+    if (!otp) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'OTP is required'
+      });
+    }
+
+    const result = await performanceStatisticService.verifyOTP({
+      userId,
+      otp
+    });
+
+    res.json({
+      status: 'SUCCESS',
+      message: 'OTP verified successfully',
+      data: result
+    });
+
+  } catch (error) {
+    logger.error('Error verifying OTP:', error);
+    res.status(400).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+}
+
 module.exports = {
   list,
   detail,
@@ -623,5 +791,10 @@ module.exports = {
   labelsFilter,
   reportValues,
   countByUserDate,
-  successCountByUserDate
+  successCountByUserDate,
+  getPerformanceForm,
+  getPerformanceFormByModuleTopic,
+  saveStatistics,
+  sentOTP,
+  verifyOTP
 };
