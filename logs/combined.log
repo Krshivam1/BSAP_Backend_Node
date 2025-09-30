@@ -777,3 +777,212 @@
 {"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-24 13:57:41"}
 {"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-24 13:57:41"}
 {"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-24 13:57:42"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-27 11:42:45"}
+{"level":"error","message":"Unable to start server: Failed to open the referenced table 'sub_topics'","name":"SequelizeDatabaseError","original":{"code":"ER_FK_CANNOT_OPEN_PARENT","errno":1824,"sql":"CREATE TABLE IF NOT EXISTS `question` (`id` INTEGER auto_increment , `topic_id` INTEGER NOT NULL, `sub_topic_id` INTEGER, `question` TEXT NOT NULL, `priority` INTEGER DEFAULT 0, `type` VARCHAR(255), `default_val` VARCHAR(255), `default_que` INTEGER, `default_sub` INTEGER, `default_to` VARCHAR(255), `default_formula` TEXT, `que_formula` TEXT, `is_previous` TINYINT(1) DEFAULT true, `is_cumulative` TINYINT(1) DEFAULT true, `created_by` INTEGER, `updated_by` INTEGER, `active` TINYINT(1) DEFAULT true, `created_date` DATETIME NOT NULL, `updated_date` DATETIME NOT NULL, PRIMARY KEY (`id`), FOREIGN KEY (`topic_id`) REFERENCES `topics` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (`sub_topic_id`) REFERENCES `sub_topics` (`id`) ON DELETE SET NULL ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;","sqlMessage":"Failed to open the referenced table 'sub_topics'","sqlState":"HY000"},"parameters":{},"parent":{"code":"ER_FK_CANNOT_OPEN_PARENT","errno":1824,"sql":"CREATE TABLE IF NOT EXISTS `question` (`id` INTEGER auto_increment , `topic_id` INTEGER NOT NULL, `sub_topic_id` INTEGER, `question` TEXT NOT NULL, `priority` INTEGER DEFAULT 0, `type` VARCHAR(255), `default_val` VARCHAR(255), `default_que` INTEGER, `default_sub` INTEGER, `default_to` VARCHAR(255), `default_formula` TEXT, `que_formula` TEXT, `is_previous` TINYINT(1) DEFAULT true, `is_cumulative` TINYINT(1) DEFAULT true, `created_by` INTEGER, `updated_by` INTEGER, `active` TINYINT(1) DEFAULT true, `created_date` DATETIME NOT NULL, `updated_date` DATETIME NOT NULL, PRIMARY KEY (`id`), FOREIGN KEY (`topic_id`) REFERENCES `topics` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (`sub_topic_id`) REFERENCES `sub_topics` (`id`) ON DELETE SET NULL ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;","sqlMessage":"Failed to open the referenced table 'sub_topics'","sqlState":"HY000"},"service":"performance-statistics-api","sql":"CREATE TABLE IF NOT EXISTS `question` (`id` INTEGER auto_increment , `topic_id` INTEGER NOT NULL, `sub_topic_id` INTEGER, `question` TEXT NOT NULL, `priority` INTEGER DEFAULT 0, `type` VARCHAR(255), `default_val` VARCHAR(255), `default_que` INTEGER, `default_sub` INTEGER, `default_to` VARCHAR(255), `default_formula` TEXT, `que_formula` TEXT, `is_previous` TINYINT(1) DEFAULT true, `is_cumulative` TINYINT(1) DEFAULT true, `created_by` INTEGER, `updated_by` INTEGER, `active` TINYINT(1) DEFAULT true, `created_date` DATETIME NOT NULL, `updated_date` DATETIME NOT NULL, PRIMARY KEY (`id`), FOREIGN KEY (`topic_id`) REFERENCES `topics` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (`sub_topic_id`) REFERENCES `sub_topics` (`id`) ON DELETE SET NULL ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;","stack":"Error\n    at Query.run (D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\dialects\\mysql\\query.js:52:25)\n    at D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async MySQLQueryInterface.createTable (D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\dialects\\abstract\\query-interface.js:98:12)\n    at async Question.sync (D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\model.js:942:7)\n    at async Sequelize.sync (D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\sequelize.js:377:9)\n    at async startServer (D:\\BSAP\\BSAP_Backend_Node\\app.js:156:7)","timestamp":"2025-09-27 11:42:45"}
+{"level":"error","message":"Unable to start server: Unknown database 'performancestatisticdb'","name":"SequelizeConnectionError","original":{"code":"ER_BAD_DB_ERROR","errno":1049,"sqlMessage":"Unknown database 'performancestatisticdb'","sqlState":"42000"},"parent":{"code":"ER_BAD_DB_ERROR","errno":1049,"sqlMessage":"Unknown database 'performancestatisticdb'","sqlState":"42000"},"service":"performance-statistics-api","stack":"SequelizeConnectionError: Unknown database 'performancestatisticdb'\n    at ConnectionManager.connect (D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\dialects\\mysql\\connection-manager.js:102:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async ConnectionManager._connect (D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\dialects\\abstract\\connection-manager.js:222:24)\n    at async D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\dialects\\abstract\\connection-manager.js:174:32\n    at async ConnectionManager.getConnection (D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\dialects\\abstract\\connection-manager.js:197:7)\n    at async D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\sequelize.js:305:26\n    at async Sequelize.authenticate (D:\\BSAP\\BSAP_Backend_Node\\node_modules\\sequelize\\lib\\sequelize.js:457:5)\n    at async startServer (D:\\BSAP\\BSAP_Backend_Node\\app.js:150:5)","timestamp":"2025-09-27 11:43:41"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-27 11:44:18"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-27 11:44:19"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-27 11:44:19"}
+{"level":"info","message":"User prem@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-09-27 11:44:29"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 22:20:46"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 22:20:47"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 22:20:47"}
+{"level":"info","message":"User prem@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-09-29 22:22:07"}
+{"level":"info","message":"User prem@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-09-29 22:24:55"}
+{"data":"{\"id\":\"user \"}","errors":[{"field":"id","message":"id must be a number","type":"number.base"}],"level":"warn","message":"Validation error:","service":"performance-statistics-api","source":"params","timestamp":"2025-09-29 22:33:37"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 22:53:24"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 22:53:24"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 22:53:24"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 22:57:36"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 22:57:36"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 22:57:36"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 22:58:22"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 22:58:22"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 22:58:23"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 22:58:43"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 22:58:43"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 22:58:43"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 22:59:10"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 22:59:10"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 22:59:10"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:00:53"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:00:53"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:00:53"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:01:51"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:01:51"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:01:51"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:04:52"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:04:52"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:04:52"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:15:58"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:15:58"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:15:58"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:16:21"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:16:21"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:16:53"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:16:53"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:16:53"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:20:16"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:20:16"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:20:16"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:23:14"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:23:14"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:23:14"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:52:52"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:52:52"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:52:52"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:53:03"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:53:03"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:53:03"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:53:32"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:53:33"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:53:33"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:54:37"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:54:37"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:54:37"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:54:58"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:54:58"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:54:58"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:55:20"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:55:20"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:55:20"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:57:42"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:57:43"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:57:43"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:58:01"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:58:01"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:58:01"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-29 23:58:23"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-29 23:58:23"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-29 23:58:23"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 00:02:48"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 00:02:48"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 00:02:48"}
+{"level":"info","message":"User prem@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-09-30 00:10:35"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 00:15:33"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 00:15:33"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 00:15:33"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 00:16:31"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 00:16:31"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 00:16:31"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 00:16:58"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 00:16:59"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 00:16:59"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 00:19:56"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 00:19:57"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 00:19:57"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 00:22:49"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 00:22:49"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 00:22:49"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 00:24:14"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 00:24:14"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 00:24:14"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:17:47"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:17:47"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:17:47"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:20:51"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:20:51"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:20:51"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:04"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:04"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:04"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:17"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:17"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:17"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:41"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:41"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:21:41"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:22:55"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:22:55"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:22:55"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:05"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:05"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:05"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:07"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:07"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:07"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:49"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:50"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:23:50"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:24:13"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:24:13"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:24:13"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:25:00"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:25:00"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:25:00"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:25:19"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:25:20"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:25:20"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 09:27:54"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 09:27:54"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 09:27:54"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:11"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:11"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:11"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:20"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:20"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:20"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:42"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:42"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:08:42"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:09:11"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:09:12"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:09:12"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:09:37"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:09:37"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:09:37"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:00"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:01"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:01"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:33"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:33"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:33"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:55"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:55"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:10:55"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:11:38"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:11:39"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:11:39"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:04"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:04"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:04"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:24"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:24"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:24"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:42"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:42"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:12:42"}
+{"level":"info","message":"SIGINT received. Shutting down gracefully...","service":"performance-statistics-api","timestamp":"2025-09-30 11:42:08"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 11:42:14"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 11:42:14"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 11:42:14"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 12:07:03"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 12:07:03"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 12:07:03"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 12:08:28"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 12:08:28"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 12:08:28"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 12:11:00"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 12:11:00"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 12:11:00"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 12:12:30"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 12:12:30"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 12:12:30"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 12:13:42"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 12:13:42"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 12:13:42"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 12:24:38"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 12:24:38"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 12:24:38"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 12:24:53"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 12:24:53"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 12:24:53"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:00"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:00"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:00"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:33"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:33"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:33"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:45"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:45"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-09-30 13:02:45"}

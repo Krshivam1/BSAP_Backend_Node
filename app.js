@@ -27,6 +27,9 @@ const cidRoutes = require('./src/routes/cidRoutes');
 const reportRoutes = require('./src/routes/reportRoutes');
 const fileRoutes = require('./src/routes/fileRoutes');
 const menuRoutes = require('./src/routes/menuRoutes');
+const subMenuRoutes = require('./src/routes/subMenuRoutes');
+const roleRoutes = require('./src/routes/roleRoutes');
+const permissionRoutes = require('./src/routes/permissionRoutes');
 const moduleRoutes = require('./src/routes/moduleRoutes');
 const topicRoutes = require('./src/routes/topicRoutes');
 const subTopicRoutes = require('./src/routes/subTopicRoutes');
@@ -111,10 +114,13 @@ app.use('/api/cid', cidRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/menus', menuRoutes);
+app.use('/api/sub-menus', subMenuRoutes);
+app.use('/api/roles', roleRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/topics', topicRoutes);
 app.use('/api/sub-topics', subTopicRoutes);
 app.use('/api/questions', questionRoutes);
+app.use('/api/permissions', permissionRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

@@ -5,7 +5,7 @@ const router = express.Router();
 console.log('🔧 Loading route modules...');
 
 let authRoutes, userRoutes, performanceStatisticRoutes, communicationRoutes, reportRoutes, cidRoutes, adminRoutes;
-let stateRoutes, districtRoutes, rangeRoutes, moduleRoutes, topicRoutes, subTopicRoutes, questionRoutes, menuRoutes, fileRoutes;
+let stateRoutes, districtRoutes, rangeRoutes, moduleRoutes, topicRoutes, subTopicRoutes, questionRoutes, menuRoutes,subMenuRoutes,roleRoutes,permissionRoutes, fileRoutes;
 
 try {
   authRoutes = require('./authRoutes');
@@ -125,6 +125,30 @@ try {
 } catch (error) {
   console.error('❌ Failed to load menuRoutes:', error.message);
   menuRoutes = express.Router();
+}
+
+try {
+  subMenuRoutes = require('./subMenuRoutes');
+  console.log('✅ subMenuRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load subMenuRoutes:', error.message);
+  subMenuRoutes = express.Router();
+}
+
+try {
+  roleRoutes = require('./roleRoutes');
+  console.log('✅ roleRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load roleRoutes:', error.message);
+  roleRoutes = express.Router();
+}
+
+try {
+  permissionRoutes = require('./permissionRoutes');
+  console.log('✅ permissionRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load permissionRoutes:', error.message);
+  permissionRoutes = express.Router();
 }
 
 try {
@@ -426,7 +450,56 @@ router.get('/docs', (req, res) => {
           'POST /:id/permissions - Assign menu permissions',
           'DELETE /:id/permissions/:roleId - Remove menu permission'
         ]
-      }
+      },
+      subMenuRoutes: {
+  prefix: '/api/sub-menus',
+  description: 'Sub-menu management endpoints',
+  endpoints: [
+    'GET / - Get all sub-menus',
+    'GET /:id - Get sub-menu by ID',
+    'POST / - Create new sub-menu',
+    'PUT /:id - Update sub-menu',
+    'DELETE /:id - Delete sub-menu',
+    'GET /active - Get active sub-menus',
+    'GET /search/:searchTerm - Search sub-menus',
+    'GET /by-menu/:menuId - Get sub-menus by menu',
+    'GET /by-parent/:parentId - Get sub-menus by parent',
+    'POST /:id/activate - Activate sub-menu',
+    'POST /:id/deactivate - Deactivate sub-menu',
+    'PUT /:id/order - Update sub-menu priority'
+  ]
+},
+roles: {
+  prefix: '/api/roles',
+  description: 'Role management endpoints',
+  endpoints: [
+    'GET / - Get all roles',
+    'GET /:id - Get role by ID',
+    'POST / - Create new role',
+    'PUT /:id - Update role',
+    'DELETE /:id - Delete role',
+    'GET /active - Get active roles',
+    'GET /search/:searchTerm - Search roles',
+    'POST /:id/activate - Activate role',
+    'POST /:id/deactivate - Deactivate role'
+  ]
+},
+permissions: {
+  prefix: '/api/permissions',
+  description: 'Permission management endpoints',
+  endpoints: [
+    'GET / - Get all permissions',
+    'GET /:id - Get permission by ID',
+    'POST / - Create new permission',
+    'PUT /:id - Update permission',
+    'DELETE /:id - Delete permission',
+    'GET /active - Get active permissions',
+    'GET /search/:searchTerm - Search permissions',
+    'GET /by-code/:code - Get permission by code',
+    'POST /:id/activate - Activate permission',
+    'POST /:id/deactivate - Deactivate permission'
+  ]
+}
     }
   });
 });
@@ -459,10 +532,16 @@ router.use('/topics', topicRoutes);
 console.log('✅ /topics mounted');
 router.use('/sub-topics', subTopicRoutes);
 console.log('✅ /sub-topics mounted');
+router.use('/roles', roleRoutes);
+console.log('✅ /roles mounted');
+router.use('/permissions', permissionRoutes);
+console.log('✅ /permissions mounted');
 router.use('/questions', questionRoutes);
 console.log('✅ /questions mounted');
 router.use('/menus', menuRoutes);
 console.log('✅ /menus mounted');
+router.use('/sub-menus', subMenuRoutes);
+console.log('✅ /sub-menus mounted');
 router.use('/files', fileRoutes);
 console.log('✅ /files mounted');
 console.log('🎉 All route modules mounted successfully');
