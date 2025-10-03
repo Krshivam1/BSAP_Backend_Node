@@ -1,390 +1,342 @@
-const { User, Role, State, Range, District } = require('../models');
-const { hashPassword, getPagination, getPagingData } = require('../utils/helpers');
-const logger = require('../utils/logger');
+const { User, State, Role, District, Range } = require('../models');
 const { Op } = require('sequelize');
+const bcrypt = require('bcryptjs');
 
 class UserService {
-  /**
-   * Get all users with pagination and filtering
-   * @param {Object} filters - Filtering options
-   * @returns {Object} Paginated users data
-   */
-  async getAllUsers(filters = {}) {
-    const { page, size, stateId, rangeId, districtId, roleId, search, active = true } = filters;
-    const { limit, offset } = getPagination(page, size);
+  
+  static async getAllUsers(options = {}) {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        sortBy = 'firstName',
+        sortOrder = 'ASC',
+        search,
+        status,
+        roleId,
+        stateId
+      } = options;
 
-    const whereCondition = { active };
-    
-    if (stateId) whereCondition.stateId = stateId;
-    if (rangeId) whereCondition.rangeId = rangeId;
-    if (districtId) whereCondition.districtId = districtId;
-    if (roleId) whereCondition.roleId = roleId;
+      const offset = (page - 1) * limit;
+      const whereClause = {};
 
-    // Add search functionality
-    if (search) {
-      whereCondition[Op.or] = [
-        { firstName: { [Op.like]: `%${search}%` } },
-        { lastName: { [Op.like]: `%${search}%` } },
-        { email: { [Op.like]: `%${search}%` } },
-        { mobileNo: { [Op.like]: `%${search}%` } }
+      if (search) {
+        whereClause[Op.or] = [
+          { firstName: { [Op.like]: `%${search}%` } },
+          { lastName: { [Op.like]: `%${search}%` } },
+          { email: { [Op.like]: `%${search}%` } },
+          { mobileNo: { [Op.like]: `%${search}%` } }
+        ];
+      }
+
+      if (status) {
+        whereClause.active = status === 'active';
+      }
+
+      if (roleId) {
+        whereClause.roleId = roleId;
+      }
+
+      if (stateId) {
+        whereClause.stateId = stateId;
+      }
+
+      const include = [
+        {
+          model: State,
+          as: 'state', 
+          attributes: ['id', 'stateName'],
+          required: false
+        },
+        {
+          model: Role,
+          as: 'role',
+          attributes: ['id', 'roleName'],
+          required: false
+        },
+        {
+          model: District,
+          as: 'district', 
+          attributes: ['id', 'districtName'],
+          required: false
+        },
+        {
+          model: Range,
+          as: 'range', 
+          attributes: ['id', 'rangeName'],
+          required: false
+        }
       ];
+
+      const { count, rows } = await User.findAndCountAll({
+        where: whereClause,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        order: [[sortBy, sortOrder]],
+        include: include,
+        attributes: { exclude: ['password', 'token', 'otp'] } 
+      });
+
+      return {
+        users: rows,
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit)
+      };
+    } catch (error) {
+      console.error('Error in getAllUsers:', error);
+      throw error;
     }
-
-    const users = await User.findAndCountAll({
-      where: whereCondition,
-      include: [
-        { model: Role, as: 'role' },
-        { model: State, as: 'state' },
-        { model: Range, as: 'range' },
-        { model: District, as: 'district' }
-      ],
-      limit,
-      offset,
-      order: [['createdAt', 'DESC']],
-      attributes: { exclude: ['password', 'token', 'otp'] }
-    });
-
-    return getPagingData(users, page, limit);
   }
 
-  /**
-   * Get user by ID
-   * @param {number} userId - User ID
-   * @returns {Object} User data
-   */
-  async getUserById(userId) {
-    const user = await User.findByPk(userId, {
-      include: [
-        { model: Role, as: 'role' },
-        { model: State, as: 'state' },
-        { model: Range, as: 'range' },
-        { model: District, as: 'district' }
-      ],
-      attributes: { exclude: ['password', 'token', 'otp'] }
-    });
+  // Get user by ID
+  static async getUserById(id) {
+    try {
+      const include = [
+        {
+          model: State,
+          as: 'state',
+          attributes: ['id', 'stateName'],
+          required: false
+        },
+        {
+          model: Role,
+          as: 'role',
+          attributes: ['id', 'roleName'],
+          required: false
+        },
+        {
+          model: District,
+          as: 'district',
+          attributes: ['id', 'districtName'],
+          required: false
+        },
+        {
+          model: Range,
+          as: 'range',
+          attributes: ['id', 'rangeName'], 
+          required: false
+        }
+      ];
 
-    if (!user || !user.active) {
-      throw new Error('User not found');
+      return await User.findByPk(id, {
+        include: include,
+        attributes: { exclude: ['password', 'token', 'otp'] }
+      });
+    } catch (error) {
+      console.error('Error in getUserById:', error);
+      throw error;
     }
-
-    return user;
   }
 
-  /**
-   * Create new user
-   * @param {Object} userData - User data
-   * @param {number} createdBy - ID of user creating this user
-   * @returns {Object} Created user
-   */
-  async createUser(userData, createdBy) {
-    const { 
-      email, 
-      firstName, 
-      lastName, 
-      mobileNo, 
-      roleId, 
-      stateId, 
-      rangeId, 
-      districtId, 
-      password = 'password123' 
-    } = userData;
+  // Get user by email 
+  static async getUserByEmail(email) {
+    try {
+      const include = [
+        {
+          model: Role,
+          as: 'role',
+          attributes: ['id', 'roleName', 'permissions'],
+          required: false
+        }
+      ];
 
-    // Validation
-    if (!email || !firstName || !lastName || !mobileNo || !roleId) {
-      throw new Error('Email, first name, last name, mobile number and role are required');
+      return await User.findOne({
+        where: { email },
+        include: include
+      });
+    } catch (error) {
+      console.error('Error in getUserByEmail:', error);
+      throw error;
     }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      throw new Error('User with this email already exists');
-    }
-
-    // Hash password
-    const hashedPassword = await hashPassword(password);
-
-    const user = await User.create({
-      email,
-      firstName,
-      lastName,
-      mobileNo,
-      roleId,
-      stateId,
-      rangeId,
-      districtId,
-      password: hashedPassword,
-      verified: true,
-      isFirst: true,
-      active: true,
-      createdBy
-    });
-
-    // Fetch user with associations
-    const createdUser = await this.getUserById(user.id);
-
-    logger.info(`User ${email} created by user ID ${createdBy}`);
-    return createdUser;
   }
 
-  /**
-   * Update user
-   * @param {number} userId - User ID
-   * @param {Object} updateData - Update data
-   * @param {number} updatedBy - ID of user making the update
-   * @returns {Object} Updated user
-   */
-  async updateUser(userId, updateData, updatedBy) {
-    const user = await User.findByPk(userId);
-    if (!user || !user.active) {
-      throw new Error('User not found');
-    }
+  // Create new user
+  static async createUser(userData) {
+    try {
+      if (!userData.firstName || userData.firstName.trim() === '') {
+        throw new Error('First name is required');
+      }
 
-    // If email is being updated, check for conflicts
-    if (updateData.email && updateData.email !== user.email) {
-      const existingUser = await User.findOne({ where: { email: updateData.email } });
+      if (!userData.lastName || userData.lastName.trim() === '') {
+        throw new Error('Last name is required');
+      }
+
+      if (!userData.email || userData.email.trim() === '') {
+        throw new Error('Email is required');
+      }
+
+      if (!userData.password || userData.password.trim() === '') {
+        throw new Error('Password is required');
+      }
+
+      if (!userData.mobileNo || userData.mobileNo.trim() === '') {
+        throw new Error('Mobile number is required');
+      }
+
+      if (!userData.roleId) {
+        throw new Error('Role is required');
+      }
+
+      const existingUser = await User.findOne({ where: { email: userData.email } });
       if (existingUser) {
         throw new Error('User with this email already exists');
       }
-    }
 
-    // Hash password if provided
-    if (updateData.password) {
-      updateData.password = await hashPassword(updateData.password);
-      updateData.isFirst = false;
-    }
-
-    updateData.updatedBy = updatedBy;
-
-    await user.update(updateData);
-
-    // Fetch updated user with associations
-    const updatedUser = await this.getUserById(userId);
-
-    logger.info(`User ${user.email} updated by user ID ${updatedBy}`);
-    return updatedUser;
-  }
-
-  /**
-   * Delete user (soft delete)
-   * @param {number} userId - User ID
-   * @param {number} deletedBy - ID of user performing the deletion
-   * @returns {Object} Response
-   */
-  async deleteUser(userId, deletedBy) {
-    const user = await User.findByPk(userId);
-    if (!user || !user.active) {
-      throw new Error('User not found');
-    }
-
-    await user.update({
-      active: false,
-      updatedBy: deletedBy
-    });
-
-    logger.info(`User ${user.email} deleted by user ID ${deletedBy}`);
-    
-    return {
-      success: true,
-      message: 'User deleted successfully'
-    };
-  }
-
-  /**
-   * Get users by role
-   * @param {number} roleId - Role ID
-   * @returns {Array} Users with specified role
-   */
-  async getUsersByRole(roleId) {
-    const users = await User.findAll({
-      where: { 
-        roleId,
-        active: true 
-      },
-      include: [
-        { model: Role, as: 'role' },
-        { model: State, as: 'state' },
-        { model: Range, as: 'range' },
-        { model: District, as: 'district' }
-      ],
-      attributes: { exclude: ['password', 'token', 'otp'] },
-      order: [['firstName', 'ASC'], ['lastName', 'ASC']]
-    });
-
-    return users;
-  }
-
-  /**
-   * Get users by location
-   * @param {Object} location - Location filters
-   * @returns {Array} Users in specified location
-   */
-  async getUsersByLocation(location) {
-    const { stateId, rangeId, districtId } = location;
-    
-    const whereCondition = { active: true };
-    if (stateId) whereCondition.stateId = stateId;
-    if (rangeId) whereCondition.rangeId = rangeId;
-    if (districtId) whereCondition.districtId = districtId;
-
-    const users = await User.findAll({
-      where: whereCondition,
-      include: [
-        { model: Role, as: 'role' },
-        { model: State, as: 'state' },
-        { model: Range, as: 'range' },
-        { model: District, as: 'district' }
-      ],
-      attributes: { exclude: ['password', 'token', 'otp'] },
-      order: [['firstName', 'ASC'], ['lastName', 'ASC']]
-    });
-
-    return users;
-  }
-
-  /**
-   * Search users
-   * @param {string} searchTerm - Search term
-   * @param {Object} filters - Additional filters
-   * @returns {Array} Matching users
-   */
-  async searchUsers(searchTerm, filters = {}) {
-    const whereCondition = { 
-      active: true,
-      [Op.or]: [
-        { firstName: { [Op.like]: `%${searchTerm}%` } },
-        { lastName: { [Op.like]: `%${searchTerm}%` } },
-        { email: { [Op.like]: `%${searchTerm}%` } },
-        { mobileNo: { [Op.like]: `%${searchTerm}%` } }
-      ]
-    };
-
-    // Apply additional filters
-    if (filters.roleId) whereCondition.roleId = filters.roleId;
-    if (filters.stateId) whereCondition.stateId = filters.stateId;
-    if (filters.rangeId) whereCondition.rangeId = filters.rangeId;
-    if (filters.districtId) whereCondition.districtId = filters.districtId;
-
-    const users = await User.findAll({
-      where: whereCondition,
-      include: [
-        { model: Role, as: 'role' },
-        { model: State, as: 'state' },
-        { model: Range, as: 'range' },
-        { model: District, as: 'district' }
-      ],
-      attributes: { exclude: ['password', 'token', 'otp'] },
-      order: [['firstName', 'ASC'], ['lastName', 'ASC']],
-      limit: 50 // Limit search results
-    });
-
-    return users;
-  }
-
-  /**
-   * Get user statistics
-   * @returns {Object} User statistics
-   */
-  async getUserStatistics() {
-    const totalUsers = await User.count({ where: { active: true } });
-    const verifiedUsers = await User.count({ where: { active: true, verified: true } });
-    const unverifiedUsers = await User.count({ where: { active: true, verified: false } });
-    
-    // Users by role
-    const usersByRole = await User.findAll({
-      where: { active: true },
-      include: [{ model: Role, as: 'role' }],
-      attributes: ['roleId', [User.sequelize.fn('COUNT', User.sequelize.col('User.id')), 'count']],
-      group: ['roleId', 'role.id'],
-      raw: true
-    });
-
-    // Recent users (last 30 days)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const recentUsers = await User.count({
-      where: {
-        active: true,
-        createdAt: { [Op.gte]: thirtyDaysAgo }
+      if (userData.password) {
+        userData.password = await bcrypt.hash(userData.password, 12);
       }
-    });
 
-    return {
-      totalUsers,
-      verifiedUsers,
-      unverifiedUsers,
-      recentUsers,
-      usersByRole
-    };
-  }
+      userData.firstName = userData.firstName.trim();
+      userData.lastName = userData.lastName.trim();
+      userData.email = userData.email.trim().toLowerCase();
+      userData.mobileNo = userData.mobileNo.trim();
 
-  /**
-   * Activate/Deactivate user
-   * @param {number} userId - User ID
-   * @param {boolean} status - Active status
-   * @param {number} updatedBy - ID of user making the change
-   * @returns {Object} Response
-   */
-  async toggleUserStatus(userId, status, updatedBy) {
-    const user = await User.findByPk(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    await user.update({
-      active: status,
-      updatedBy
-    });
-
-    const action = status ? 'activated' : 'deactivated';
-    logger.info(`User ${user.email} ${action} by user ID ${updatedBy}`);
-
-    return {
-      success: true,
-      message: `User ${action} successfully`
-    };
-  }
-
-  /**
-   * Bulk operations on users
-   * @param {Array} userIds - Array of user IDs
-   * @param {string} operation - Operation type (activate, deactivate, delete)
-   * @param {number} performedBy - ID of user performing the operation
-   * @returns {Object} Response
-   */
-  async bulkUserOperation(userIds, operation, performedBy) {
-    if (!Array.isArray(userIds) || userIds.length === 0) {
-      throw new Error('User IDs array is required');
-    }
-
-    const updateData = { updatedBy: performedBy };
-    
-    switch (operation) {
-      case 'activate':
-        updateData.active = true;
-        break;
-      case 'deactivate':
-        updateData.active = false;
-        break;
-      case 'delete':
-        updateData.active = false;
-        break;
-      default:
-        throw new Error('Invalid operation');
-    }
-
-    const [updatedCount] = await User.update(updateData, {
-      where: {
-        id: { [Op.in]: userIds }
+      if (userData.contactNo) {
+        userData.contactNo = userData.contactNo.trim();
       }
-    });
 
-    logger.info(`Bulk ${operation} performed on ${updatedCount} users by user ID ${performedBy}`);
+      return await User.create(userData);
+    } catch (error) {
+      console.error('Error in createUser:', error);
+      throw error;
+    }
+  }
 
-    return {
-      success: true,
-      message: `${operation} performed on ${updatedCount} users`,
-      affectedCount: updatedCount
-    };
+  static async updateUser(id, userData) {
+    try {
+      const user = await User.findByPk(id);
+      if (!user) return null;
+
+      if (userData.email && userData.email !== user.email) {
+        const existingUser = await User.findOne({ where: { email: userData.email } });
+        if (existingUser) {
+          throw new Error('User with this email already exists');
+        }
+      }
+
+      if (userData.password) {
+        userData.password = await bcrypt.hash(userData.password, 12);
+      }
+
+      if (userData.firstName) userData.firstName = userData.firstName.trim();
+      if (userData.lastName) userData.lastName = userData.lastName.trim();
+      if (userData.email) userData.email = userData.email.trim().toLowerCase();
+      if (userData.mobileNo) userData.mobileNo = userData.mobileNo.trim();
+      if (userData.contactNo) userData.contactNo = userData.contactNo.trim();
+
+      await user.update(userData);
+      return await this.getUserById(id); 
+    } catch (error) {
+      console.error('Error in updateUser:', error);
+      throw error;
+    }
+  }
+
+  static async deleteUser(id) {
+    try {
+      const user = await User.findByPk(id);
+      if (!user) return false;
+
+      await user.destroy();
+      return true;
+    } catch (error) {
+      console.error('Error in deleteUser:', error);
+      throw error;
+    }
+  }
+
+  static async getActiveUsers() {
+    try {
+      const include = [
+        {
+          model: Role,
+          as: 'role',
+          attributes: ['id', 'roleName'],
+          required: false
+        }
+      ];
+
+      return await User.findAll({
+        where: { active: true },
+        order: [['firstName', 'ASC']],
+        include: include,
+        attributes: { exclude: ['password', 'token', 'otp'] }
+      });
+    } catch (error) {
+      console.error('Error in getActiveUsers:', error);
+      throw error;
+    }
+  }
+
+  static async toggleUserStatus(id, active) {
+    try {
+      const user = await User.findByPk(id);
+      if (!user) return null;
+
+      await user.update({ active });
+      return await this.getUserById(id);
+    } catch (error) {
+      console.error('Error in toggleUserStatus:', error);
+      throw error;
+    }
+  }
+
+  static async verifyUser(id) {
+    try {
+      const user = await User.findByPk(id);
+      if (!user) return null;
+
+      await user.update({ verified: true });
+      return await this.getUserById(id);
+    } catch (error) {
+      console.error('Error in verifyUser:', error);
+      throw error;
+    }
+  }
+
+  static async updatePassword(id, newPassword) {
+    try {
+      const user = await User.findByPk(id);
+      if (!user) return null;
+
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      await user.update({ password: hashedPassword, isFirst: false });
+      return true;
+    } catch (error) {
+      console.error('Error in updatePassword:', error);
+      throw error;
+    }
+  }
+
+  static async getUserStatistics() {
+    try {
+      const [
+        totalUsers,
+        activeUsers,
+        verifiedUsers
+      ] = await Promise.all([
+        User.count(),
+        User.count({ where: { active: true } }),
+        User.count({ where: { verified: true } })
+      ]);
+
+      return {
+        totalUsers,
+        activeUsers,
+        inactiveUsers: totalUsers - activeUsers,
+        verifiedUsers,
+        unverifiedUsers: totalUsers - verifiedUsers
+      };
+    } catch (error) {
+      console.error('Error in getUserStatistics:', error);
+      throw error;
+    }
+  }
+
+  static async validatePassword(plainPassword, hashedPassword) {
+    return await bcrypt.compare(plainPassword, hashedPassword);
   }
 }
 
-module.exports = new UserService();
+module.exports = UserService;

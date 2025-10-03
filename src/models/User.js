@@ -7,6 +7,76 @@ const User = sequelize.define('User', {
     primaryKey: true,
     autoIncrement: true
   },
+  firstName: {
+    type: DataTypes.STRING(50),
+    field: 'first_name',
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'First name is required'
+      },
+      len: {
+        args: [1, 50],
+        msg: 'First name must be between 1 and 50 characters'
+      }
+    }
+  },
+  lastName: {
+    type: DataTypes.STRING(50),
+    field: 'last_name',
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'Last name is required'
+      },
+      len: {
+        args: [1, 50],
+        msg: 'Last name must be between 1 and 50 characters'
+      }
+    }
+  },
+  email: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: {
+        msg: 'Please provide a valid email address'
+      },
+      notEmpty: {
+        msg: 'Email is required'
+      }
+    }
+  },
+  password: {
+    type: DataTypes.STRING(500),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'Password is required'
+      }
+    }
+  },
+  mobileNo: {
+    type: DataTypes.STRING(20),
+    field: 'mobile_no',
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'Mobile number is required'
+      }
+    }
+  },
+  contactNo: {
+    type: DataTypes.STRING(20),
+    field: 'contact_no',
+    allowNull: true
+  },
+  userImage: {
+    type: DataTypes.STRING(500),
+    field: 'user_image',
+    allowNull: true
+  },
   stateId: {
     type: DataTypes.INTEGER,
     field: 'state_id',
@@ -21,7 +91,7 @@ const User = sequelize.define('User', {
     field: 'range_id',
     allowNull: true,
     references: {
-      model: 'ranges',
+      model: 'zones', 
       key: 'id'
     }
   },
@@ -34,80 +104,17 @@ const User = sequelize.define('User', {
       key: 'id'
     }
   },
-  firstName: {
-    type: DataTypes.STRING,
-    field: 'first_name',
-    allowNull: true
-  },
-  lastName: {
-    type: DataTypes.STRING,
-    field: 'last_name',
-    allowNull: true
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    unique: true,
-    validate: {
-      isEmail: true
+  roleId: {
+    type: DataTypes.INTEGER,
+    field: 'role_id',
+    allowNull: false,
+    references: {
+      model: 'roles',
+      key: 'id'
     }
   },
-  mobileNo: {
-    type: DataTypes.STRING,
-    field: 'mobile_no',
-    allowNull: true
-  },
-  contactNo: {
-    type: DataTypes.STRING,
-    field: 'contact_no',
-    allowNull: true
-  },
-  userImage: {
-    type: DataTypes.STRING,
-    field: 'user_image',
-    allowNull: true
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  isFirst: {
-    type: DataTypes.BOOLEAN,
-    field: 'is_first',
-    defaultValue: true
-  },
-  joiningDate: {
-    type: DataTypes.STRING,
-    field: 'joining_date',
-    allowNull: true
-  },
-  endDate: {
-    type: DataTypes.STRING,
-    field: 'end_date',
-    allowNull: true
-  },
-  numberSubdivision: {
-    type: DataTypes.INTEGER,
-    field: 'number_subdivision',
-    allowNull: true
-  },
-  numberCircle: {
-    type: DataTypes.INTEGER,
-    field: 'number_cirlce',
-    allowNull: true
-  },
-  numberPs: {
-    type: DataTypes.INTEGER,
-    field: 'number_ps',
-    allowNull: true
-  },
-  numberOp: {
-    type: DataTypes.INTEGER,
-    field: 'number_op',
-    allowNull: true
-  },
   token: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING(500),
     allowNull: true
   },
   tokenValidity: {
@@ -115,17 +122,12 @@ const User = sequelize.define('User', {
     field: 'token_validity',
     defaultValue: DataTypes.NOW
   },
-  roleId: {
-    type: DataTypes.INTEGER,
-    field: 'role_id',
-    allowNull: true,
-    references: {
-      model: 'roles',
-      key: 'id'
-    }
+  verified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   },
   otp: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(10),
     allowNull: true
   },
   otpValidity: {
@@ -133,9 +135,44 @@ const User = sequelize.define('User', {
     field: 'otp_validity',
     defaultValue: DataTypes.NOW
   },
-  verified: {
+  isFirst: {
     type: DataTypes.BOOLEAN,
-    defaultValue: false
+    field: 'is_first',
+    defaultValue: true
+  },
+  joiningDate: {
+    type: DataTypes.STRING(250),
+    field: 'joining_date',
+    allowNull: true
+  },
+  endDate: {
+    type: DataTypes.STRING(250),
+    field: 'end_date',
+    allowNull: true
+  },
+  numberSubdivision: {
+    type: DataTypes.INTEGER,
+    field: 'number_subdivision',
+    allowNull: true,
+    defaultValue: 0
+  },
+  numberCircle: {
+    type: DataTypes.INTEGER,
+    field: 'number_cirlce', // Note: Typo in database field name
+    allowNull: true,
+    defaultValue: 0
+  },
+  numberPs: {
+    type: DataTypes.INTEGER,
+    field: 'number_ps',
+    allowNull: true,
+    defaultValue: 0
+  },
+  numberOp: {
+    type: DataTypes.INTEGER,
+    field: 'number_op',
+    allowNull: true,
+    defaultValue: 0
   },
   createdBy: {
     type: DataTypes.INTEGER,
@@ -148,14 +185,31 @@ const User = sequelize.define('User', {
     allowNull: true
   },
   active: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BOOLEAN,
     defaultValue: true
   }
 }, {
   tableName: 'user',
   timestamps: true,
   createdAt: 'created_date',
-  updatedAt: 'updated_date'
+  updatedAt: 'updated_date',
+  indexes: [
+    {
+      fields: ['email']
+    },
+    {
+      fields: ['mobile_no']
+    },
+    {
+      fields: ['state_id']
+    },
+    {
+      fields: ['role_id']
+    },
+    {
+      fields: ['active']
+    }
+  ]
 });
 
 module.exports = User;
