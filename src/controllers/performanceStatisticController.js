@@ -236,8 +236,10 @@ async function detail(req, res) {
  */
 async function create(req, res) {
   try {
-    const statisticData = req.body;
-    const createdBy = req.user.id;
+    const statisticData = {
+      ...req.body,
+      userId: req.user.id
+    };
 
     const statistic = await performanceStatisticService.create(statisticData);
 
@@ -683,6 +685,7 @@ async function saveStatistics(req, res) {
   try {
     const { performanceStatistics } = req.body;
     const userId = req.user.id;
+    console.log(req.user)
 
     if (!performanceStatistics || !Array.isArray(performanceStatistics)) {
       return res.status(400).json({

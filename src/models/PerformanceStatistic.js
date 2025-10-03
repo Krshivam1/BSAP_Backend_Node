@@ -84,8 +84,12 @@ const PerformanceStatistic = sequelize.define('PerformanceStatistic', {
       key: 'id'
     }
   },
-  answer: {
-    type: DataTypes.TEXT,
+  value: {
+    type: DataTypes.STRING(250),
+    allowNull: true
+  },
+  status: {
+    type: DataTypes.STRING(50),
     allowNull: true
   },
   createdBy: {

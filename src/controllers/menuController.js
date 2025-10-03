@@ -6,11 +6,11 @@ async function list(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'displayOrder', 
+      sortBy = 'priority',  // CHANGE: 'displayOrder' → 'priority'
       sortOrder = 'ASC',
       search,
-      status,
-      parentId 
+      status
+      // REMOVE: parentId (line 8)
     } = req.query;
 
     const options = {
@@ -19,10 +19,9 @@ async function list(req, res) {
       sortBy,
       sortOrder: sortOrder.toUpperCase(),
       search,
-      status,
-      parentId
+      status
+      // REMOVE: parentId (line 18)
     };
-
     const result = await MenuService.getAllMenus(options);
     
     res.json({
@@ -76,7 +75,10 @@ async function detail(req, res) {
 async function create(req, res) {
   try {
     const menuData = {
-      ...req.body,
+      menuName: req.body.menu_name || req.body.menuName,  
+      menuUrl: req.body.menu_url || req.body.menuUrl,   
+      priority: req.body.priority || 0,
+      active: req.body.active !== undefined ? req.body.active : true,
       createdBy: req.user.id,
       updatedBy: req.user.id
     };
@@ -110,7 +112,7 @@ async function update(req, res) {
     const { id } = req.params;
     const menuData = {
       ...req.body,
-      updatedBy: req.user.id
+      updated_by: req.user.id  // CHANGE: updatedBy → updated_by
     };
 
     const menu = await MenuService.updateMenu(id, menuData);
@@ -170,6 +172,8 @@ async function remove(req, res) {
 }
 
 // GET /api/menus/hierarchy - Get menu hierarchy
+// COMMENTED OUT: requires associations
+/*
 async function hierarchy(req, res) {
   try {
     const { status } = req.query;
@@ -188,6 +192,7 @@ async function hierarchy(req, res) {
     });
   }
 }
+*/
 
 // GET /api/menus/user/:userId - Get user-specific menus
 async function userMenus(req, res) {
@@ -212,8 +217,8 @@ async function userMenus(req, res) {
 // GET /api/menus/user - Get menus for current authenticated user
 async function userMenusSelf(req, res) {
   try {
-    const userId = req.user.id;
-    const menus = await MenuService.getUserMenus(userId);
+    const roleId = req.user.roleId;  // CHANGE: userId → roleId
+    const menus = await MenuService.getUserMenus(roleId);
     res.json({
       status: 'SUCCESS',
       message: 'Current user menus retrieved successfully',
@@ -229,6 +234,8 @@ async function userMenusSelf(req, res) {
 }
 
 // GET /api/menus/role/:roleId - Get role-specific menus
+// COMMENTED OUT: requires associations
+/*
 async function roleMenus(req, res) {
   try {
     const { roleId } = req.params;
@@ -247,6 +254,7 @@ async function roleMenus(req, res) {
     });
   }
 }
+*/
 
 // GET /api/menus/parent/:parentId - Get child menus
 async function children(req, res) {
@@ -255,7 +263,7 @@ async function children(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'displayOrder', 
+      sortBy = 'priority',  // CHANGE: 'displayOrder' → 'priority'
       sortOrder = 'ASC' 
     } = req.query;
     
@@ -289,6 +297,8 @@ async function children(req, res) {
 }
 
 // GET /api/menus/root - Get root menus
+// COMMENTED OUT: requires associations
+/*
 async function root(req, res) {
   try {
     const { status } = req.query;
@@ -307,6 +317,7 @@ async function root(req, res) {
     });
   }
 }
+*/
 
 // GET /api/menus/search/:searchTerm - Search menus
 async function search(req, res) {
@@ -348,7 +359,7 @@ async function search(req, res) {
 async function active(req, res) {
   try {
     const { roleId, parentId } = req.query;
-    const menus = await MenuService.getActiveMenus(roleId, parentId);
+    const menus = await MenuService.getActiveMenus();
     
     res.json({
       status: 'SUCCESS',
@@ -422,16 +433,16 @@ async function deactivate(req, res) {
 async function updateOrder(req, res) {
   try {
     const { id } = req.params;
-    const { displayOrder } = req.body;
+    const { priority } = req.body;  // CHANGE: displayOrder → priority
     
-    if (typeof displayOrder !== 'number') {
+    if (typeof priority !== 'number') {  // CHANGE: displayOrder → priority
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Display order must be a number'
+        message: 'Priority must be a number'  // CHANGE message
       });
     }
 
-    const menu = await MenuService.updateMenuOrder(id, displayOrder, req.user.id);
+    const menu = await MenuService.updateMenuOrder(id, priority, req.user.id);  // CHANGE: displayOrder → priority
     
     if (!menu) {
       return res.status(404).json({
@@ -442,7 +453,7 @@ async function updateOrder(req, res) {
 
     res.json({
       status: 'SUCCESS',
-      message: 'Menu order updated successfully',
+      message: 'Menu priority updated successfully',  // CHANGE message
       data: menu
     });
   } catch (error) {
@@ -455,6 +466,8 @@ async function updateOrder(req, res) {
 }
 
 // PUT /api/menus/reorder - Reorder menus
+// COMMENTED OUT: requires associations
+/*
 async function reorder(req, res) {
   try {
     const { parentId, menuOrders } = req.body;
@@ -481,8 +494,11 @@ async function reorder(req, res) {
     });
   }
 }
+*/
 
 // GET /api/menus/sidebar/:userId - Get sidebar menu for user
+// COMMENTED OUT: requires associations
+/*
 async function sidebar(req, res) {
   try {
     const { userId } = req.params;
@@ -501,8 +517,11 @@ async function sidebar(req, res) {
     });
   }
 }
+*/
 
 // GET /api/menus/breadcrumb/:menuId - Get breadcrumb for menu
+// COMMENTED OUT: requires associations
+/*
 async function breadcrumb(req, res) {
   try {
     const { menuId } = req.params;
@@ -521,8 +540,11 @@ async function breadcrumb(req, res) {
     });
   }
 }
+*/
 
 // GET /api/menus/statistics - Get menu statistics
+// COMMENTED OUT: requires associations
+/*
 async function stats(req, res) {
   try {
     const statistics = await MenuService.getMenuStatistics();
@@ -540,8 +562,11 @@ async function stats(req, res) {
     });
   }
 }
+*/
 
 // POST /api/menus/:id/permissions - Assign permissions to menu
+// COMMENTED OUT: requires associations
+/*
 async function assignPermissions(req, res) {
   try {
     const { id } = req.params;
@@ -569,8 +594,11 @@ async function assignPermissions(req, res) {
     });
   }
 }
+*/
 
 // DELETE /api/menus/:id/permissions/:roleId - Remove menu permission
+// COMMENTED OUT: requires associations
+/*
 async function removePermission(req, res) {
   try {
     const { id, roleId } = req.params;
@@ -595,6 +623,7 @@ async function removePermission(req, res) {
     });
   }
 }
+*/
 
 module.exports = {
   list,
@@ -602,21 +631,21 @@ module.exports = {
   create,
   update,
   remove,
-  hierarchy,
+  // hierarchy,          // COMMENTED OUT: requires associations
   userMenus,
   userMenusSelf,
-  roleMenus,
+  // roleMenus,          // COMMENTED OUT: requires associations
   children,
-  root,
+  // root,               // COMMENTED OUT: requires associations
   search,
   active,
   activate,
   deactivate,
   updateOrder,
-  reorder,
-  sidebar,
-  breadcrumb,
-  stats,
-  assignPermissions,
-  removePermission
+  // reorder,            // COMMENTED OUT: requires associations
+  // sidebar,            // COMMENTED OUT: requires associations
+  // breadcrumb,         // COMMENTED OUT: requires associations
+  // stats,              // COMMENTED OUT: requires associations
+  // assignPermissions,  // COMMENTED OUT: requires associations
+  // removePermission    // COMMENTED OUT: requires associations
 };

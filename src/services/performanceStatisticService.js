@@ -521,6 +521,8 @@ class PerformanceStatisticService {
       value,
       monthYear,
       status,
+      createdBy: userId,
+      updatedBy: userId,
       active: true
     });
 
@@ -753,9 +755,9 @@ class PerformanceStatisticService {
         console.log(`Selected topic at index ${topicPathId}: ${currentTopic.id}: ${currentTopic.topicName}`);
         const topics = [currentTopic]; // Keep array format for compatibility
 
-        // Check topic navigation
-        const nextTopics = topicPathId < allTopics.length ? [allTopics[topicPathId]] : [];
-        const prevTopics = topicPathId > 1 ? [allTopics[topicPathId - 2]] : [];
+        // Check topic navigation (topicPathId is 1-based)
+        const hasNextTopic = topicPathId < allTopics.length;
+        const hasPrevTopic = topicPathId > 1;
 
         const topicData = [];
 
@@ -813,8 +815,8 @@ class PerformanceStatisticService {
               subTopicName: st.subTopicName,
               isDisabled: false
             })),
-            nextTopic: nextTopics.length > 0,
-            prevTopic: prevTopics.length > 0
+            nextTopic: hasNextTopic,
+            prevTopic: hasPrevTopic
           });
         }
 
@@ -827,14 +829,14 @@ class PerformanceStatisticService {
         });
       }
 
-      // Find current topic for navigation flags
-      let currentTopicData = null;
+      // Calculate global navigation flags
+      let globalHasNextTopic = false;
+      let globalHasPrevTopic = false;
+      
       if (moduleData.length > 0 && moduleData[0].topicDTOs.length > 0) {
-        // Get the topic based on topicPathId (1-based index)
-        const currentModule = moduleData[0]; // Current module based on modulePathId
-        if (currentModule.topicDTOs.length >= topicPathId) {
-          currentTopicData = currentModule.topicDTOs[topicPathId - 1]; // Convert to 0-based index
-        }
+        const currentTopicData = moduleData[0].topicDTOs[0]; // Current topic data
+        globalHasNextTopic = currentTopicData.nextTopic;
+        globalHasPrevTopic = currentTopicData.prevTopic;
       }
 
       return {
@@ -844,8 +846,8 @@ class PerformanceStatisticService {
         isSuccess: false, // Will be calculated based on completion status
         nextModule: nextModules.length > 0,
         prevModule: prevModules.length > 0,
-        nextTopic: currentTopicData?.nextTopic || false,
-        prevTopic: currentTopicData?.prevTopic || false
+        nextTopic: globalHasNextTopic,
+        prevTopic: globalHasPrevTopic
       };
 
     } catch (error) {
@@ -1091,6 +1093,8 @@ class PerformanceStatisticService {
         districtId: user.district?.id || null,
         rangeId: user.rangeId || null,
         stateId: user.stateId || null,
+        createdBy: userId,
+        updatedBy: userId,
         active: true
       }));
 
@@ -1107,7 +1111,10 @@ class PerformanceStatisticService {
         });
 
         if (existing) {
-          await existing.update(stat);
+          await existing.update({
+            ...stat,
+            updatedBy: userId
+          });
           results.push(existing);
         } else {
           const newStat = await PerformanceStatistic.create(stat);

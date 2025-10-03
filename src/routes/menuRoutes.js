@@ -15,32 +15,32 @@ router.get('/test', (req, res) => {
 });
 
 // Statistics and structure
-router.get('/stats/overview', authenticate, menuController.stats);
-router.get('/structure/hierarchy', authenticate, menuController.hierarchy);
-router.get('/level/root', authenticate, menuController.root);
+// router.get('/stats/overview', authenticate, menuController.stats);                    // COMMENTED OUT: requires associations
+// router.get('/structure/hierarchy', authenticate, menuController.hierarchy);          // COMMENTED OUT: requires associations
+// router.get('/level/root', authenticate, menuController.root);                        // COMMENTED OUT: requires associations
 router.get('/status/active', authenticate, menuController.active);
 
 // User/role based
-// router.get('/user', authenticate, menuController.userMenusSelf);
-router.get('/user', authenticate, menuController.userMenus) 
-router.get('/role/:roleId', authenticate, menuController.roleMenus);
+router.get('/user', authenticate, menuController.userMenusSelf);
+router.get('/user/:userId', authenticate, menuController.userMenus);
+// router.get('/role/:roleId', authenticate, menuController.roleMenus);                 // COMMENTED OUT: requires associations
 
 // Search and children
 router.get('/search/:searchTerm', authenticate, validatePagination, menuController.search);
 router.get('/parent/:parentId', authenticate, validatePagination, menuController.children);
 
 // Sidebar and breadcrumb
-router.get('/sidebar/:userId', authenticate, menuController.sidebar);
-router.get('/breadcrumb/:menuId', authenticate, menuController.breadcrumb);
+// router.get('/sidebar/:userId', authenticate, menuController.sidebar);                // COMMENTED OUT: requires associations
+// router.get('/breadcrumb/:menuId', authenticate, menuController.breadcrumb);          // COMMENTED OUT: requires associations
 
 // Reorder and order update
-router.put('/reorder', authenticate, menuController.reorder);
+// router.put('/reorder', authenticate, menuController.reorder);                        // COMMENTED OUT: requires associations
 router.put('/:id/order', authenticate, validateId, menuController.updateOrder);
 
 // Permissions
-router.post('/:id/permissions', authenticate, validateId, menuController.assignPermissions);
+// router.post('/:id/permissions', authenticate, validateId, menuController.assignPermissions);     // COMMENTED OUT: requires associations
 // Do not use validateId here (two params); controller will validate both
-router.delete('/:id/permissions/:roleId', authenticate, menuController.removePermission);
+// router.delete('/:id/permissions/:roleId', authenticate, menuController.removePermission);        // COMMENTED OUT: requires associations
 
 // CRUD
 router.get('/', authenticate, validatePagination, menuController.list);
