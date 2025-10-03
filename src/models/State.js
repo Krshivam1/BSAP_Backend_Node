@@ -8,10 +8,19 @@ const State = sequelize.define('State', {
     autoIncrement: true
   },
   stateName: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(250),
     field: 'state_name',
     allowNull: false,
-    unique: true
+    unique: true,
+    validate: {
+      notEmpty: {
+        msg: 'State name is required'
+      },
+      len: {
+        args: [2, 250],
+        msg: 'State name must be between 2 and 250 characters'
+      }
+    }
   },
   stateDescription: {
     type: DataTypes.TEXT,
@@ -36,7 +45,15 @@ const State = sequelize.define('State', {
   tableName: 'state',
   timestamps: true,
   createdAt: 'created_date',
-  updatedAt: 'updated_date'
+  updatedAt: 'updated_date',
+  indexes: [
+    {
+      fields: ['state_name']
+    },
+    {
+      fields: ['active']
+    }
+  ]
 });
 
 module.exports = State;
