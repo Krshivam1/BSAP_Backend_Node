@@ -5,6 +5,7 @@ const {
 	create,
 	update,
 	remove,
+	byTopic,
 	bySubTopic,
 	byType,
 	search,
@@ -45,6 +46,7 @@ router.get('/topic/:topicId/formulas', authenticate, withFormulas);
 router.get('/topic/:topicId/for-formula', authenticate, forFormula);
 router.get('/topic/:topicId/form', authenticate, forForm);
 
+
 // Collections
 router.get('/', authenticate, validatePagination, list);
 router.post('/', authenticate, validateQuestionCreate, create);
@@ -53,6 +55,7 @@ router.put('/reorder', authenticate, validateReorder, reorder);
 
 // Search and filters
 router.get('/search/:searchTerm', authenticate, validatePagination, search);
+router.get('/by-topic/:topicId', authenticate, byTopic);
 router.get('/by-sub-topic/:subTopicId', authenticate, validatePagination, bySubTopic);
 router.get('/by-type/:type', authenticate, validatePagination, byType);
 router.get('/status/active', authenticate, active);

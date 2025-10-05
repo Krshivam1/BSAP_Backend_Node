@@ -148,7 +148,7 @@ class TopicService {
         menuId: 5, // Fixed value as per requirement
         menuName: topicData.topicName,
         subMenuId: module.subMenuId,
-        menuUrl: `/performance?module=${topicData.moduleId}&topic=${newTopic.id}`,
+        menuUrl: `/performance?module=${module.priority}&topic=${newTopic.priority}`,
         priority: topicData.priority || 0,
         active: topicData.active !== undefined ? topicData.active : true,
         createdBy: topicData.createdBy,

@@ -140,8 +140,8 @@ class QuestionService {
   // Get questions by topic
   static async getQuestionsByTopic(topicId, options = {}) {
     const {
-      page = 1,
-      limit = 10,
+      page,
+      limit,
       sortBy = 'priority',
       sortOrder = 'ASC',
       isActive,
@@ -149,7 +149,6 @@ class QuestionService {
       excludeSubTopicQuestions = false
     } = options;
 
-    const offset = (page - 1) * limit;
     const whereClause = { topicId };
 
     if (isActive !== undefined) {
@@ -164,7 +163,30 @@ class QuestionService {
       whereClause.subTopicId = null;
     }
 
-    const { count, rows } = await Question.findAndCountAll({
+    // If pagination is requested, use findAndCountAll with limit/offset
+    if (page && limit) {
+      const offset = (page - 1) * limit;
+      const { count, rows } = await Question.findAndCountAll({
+        where: whereClause,
+        include: [{
+          model: SubTopic,
+          as: 'subTopic',
+          attributes: ['id', 'subTopicName'],
+          required: false
+        }],
+        limit,
+        offset,
+        order: [[sortBy, sortOrder]]
+      });
+
+      return {
+        questions: rows,
+        total: count
+      };
+    }
+
+    // If no pagination, return all questions
+    const questions = await Question.findAll({
       where: whereClause,
       include: [{
         model: SubTopic,
@@ -172,14 +194,12 @@ class QuestionService {
         attributes: ['id', 'subTopicName'],
         required: false
       }],
-      limit,
-      offset,
       order: [[sortBy, sortOrder]]
     });
 
     return {
-      questions: rows,
-      total: count
+      questions,
+      total: questions.length
     };
   }
 

@@ -184,6 +184,43 @@ async function remove(req, res) {
   }
 }
 
+// GET /api/questions/by-topic/:topicId - Get questions by topic
+async function byTopic(req, res) {
+  try {
+    const { topicId } = req.params;
+    const { 
+      sortBy = 'priority', 
+      sortOrder = 'ASC',
+      type,
+      status,
+      excludeSubTopicQuestions = false
+    } = req.query;
+    
+    const options = {
+      sortBy,
+      sortOrder: sortOrder.toUpperCase(),
+      questionType: type,
+      isActive: parseIsActive(status),
+      excludeSubTopicQuestions: excludeSubTopicQuestions === 'true'
+    };
+
+    const result = await QuestionService.getQuestionsByTopic(topicId, options);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'Questions retrieved successfully',
+      data: result.questions,
+      total: result.total
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve questions',
+      error: error.message
+    });
+  }
+}
+
 // GET /api/questions/by-sub-topic/:subTopicId - Get questions by sub-topic
 async function bySubTopic(req, res) {
   try {
@@ -746,6 +783,7 @@ module.exports = {
   create,
   update,
   remove,
+  byTopic,
   bySubTopic,
   byType,
   search,
