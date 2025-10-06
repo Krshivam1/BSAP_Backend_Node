@@ -34,10 +34,12 @@ const moduleRoutes = require('./src/routes/moduleRoutes');
 const topicRoutes = require('./src/routes/topicRoutes');
 const subTopicRoutes = require('./src/routes/subTopicRoutes');
 const questionRoutes = require('./src/routes/questionRoutes');
+const battalionRoutes = require('./src/routes/battalionRoutes');
 
 // Import middleware
 const errorHandler = require('./src/middleware/errorHandler');
 const logger = require('./src/utils/logger');
+const { Battalion } = require('./src/models');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -48,7 +50,7 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:4200', 'http://localhost:5000' ,'http://164.52.217.93:9070'],
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:4200', 'http://localhost:5000' ,'http://164.52.217.93:4000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -121,6 +123,7 @@ app.use('/api/topics', topicRoutes);
 app.use('/api/sub-topics', subTopicRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/permissions', permissionRoutes);
+app.use('/api/battalions', battalionRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

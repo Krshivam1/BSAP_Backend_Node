@@ -5,7 +5,7 @@ const router = express.Router();
 console.log('🔧 Loading route modules...');
 
 let authRoutes, userRoutes, performanceStatisticRoutes, communicationRoutes, reportRoutes, cidRoutes, adminRoutes;
-let stateRoutes, districtRoutes, rangeRoutes, moduleRoutes, topicRoutes, subTopicRoutes, questionRoutes, menuRoutes,subMenuRoutes,roleRoutes,permissionRoutes, fileRoutes;
+let stateRoutes, districtRoutes, rangeRoutes, battalionRoutes, moduleRoutes, topicRoutes, subTopicRoutes, questionRoutes, menuRoutes,subMenuRoutes,roleRoutes,permissionRoutes, fileRoutes;
 
 try {
   authRoutes = require('./authRoutes');
@@ -85,6 +85,14 @@ try {
 } catch (error) {
   console.error('❌ Failed to load rangeRoutes:', error.message);
   rangeRoutes = express.Router();
+}
+
+try {
+  battalionRoutes = require('./battalionRoutes');
+  console.log('✅ battalionRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load battalionRoutes:', error.message);
+  battalionRoutes = express.Router();
 }
 
 try {
@@ -526,6 +534,8 @@ router.use('/districts', districtRoutes);
 console.log('✅ /districts mounted');
 router.use('/ranges', rangeRoutes);
 console.log('✅ /ranges mounted');
+router.use('/battalions', battalionRoutes);
+console.log('✅ /battalions mounted');
 router.use('/modules', moduleRoutes);
 console.log('✅ /modules mounted');
 router.use('/topics', topicRoutes);

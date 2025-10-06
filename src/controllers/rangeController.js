@@ -311,8 +311,8 @@ async function policeStations(req, res) {
 // GET /api/ranges/active - Get all active ranges
 async function active(req, res) {
   try {
-    const { districtId, stateId } = req.query;
-    const ranges = await RangeService.getActiveRanges(districtId, stateId);
+   
+    const ranges = await RangeService.getActiveRanges();
     
     res.json({
       status: 'SUCCESS',

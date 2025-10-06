@@ -208,24 +208,19 @@ class RangeService {
   }
 
   // Get active ranges
-  static async getActiveRanges(districtId = null, stateId = null) {
-    const whereClause = { isActive: true };
-    if (districtId) {
-      whereClause.districtId = districtId;
-    }
-
-    const includeClause = [{
-      model: District,
-      as: 'district',
-      attributes: ['id', 'name'],
-      ...(stateId && { where: { stateId } })
-    }];
+  static async getActiveRanges() {
+    const whereClause = { active: true };
+    // const includeClause = [{
+    //   model: District,
+    //   as: 'district',
+    //   attributes: ['id', 'name'],
+    //   ...(stateId && { where: { stateId } })
+    // }];
 
     return await Range.findAll({
       where: whereClause,
-      include: includeClause,
-      order: [['name', 'ASC']],
-      attributes: ['id', 'name', 'code', 'districtId']
+      order: [['rangeName', 'ASC']],
+      attributes: ['id', 'rangeName']
     });
   }
 

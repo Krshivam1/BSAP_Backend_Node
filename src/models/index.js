@@ -3,6 +3,7 @@ const Role = require('./Role');
 const State = require('./State');
 const District = require('./District');
 const Range = require('./Range');
+const Battalion = require('./Battalion');
 const Menu = require('./Menu');
 const SubMenu = require('./SubMenu');
 const Permission = require('./Permission');
@@ -37,7 +38,6 @@ User.belongsTo(District, {
   foreignKey: 'districtId',
   as: 'district'
 });
-
 // Role associations
 Role.hasMany(User, {
   foreignKey: 'roleId',
@@ -123,25 +123,35 @@ Range.belongsTo(State, {
   as: 'state'
 });
 
-Range.hasMany(District, {
-  foreignKey: 'rangeId',
-  as: 'districts'
-});
+// Range.hasMany(District, {
+//   foreignKey: 'rangeId',
+//   as: 'districts'
+// });
 
 Range.hasMany(User, {
   foreignKey: 'rangeId',
   as: 'users'
 });
 
-// District associations
-District.belongsTo(Range, {
+// Battalion associations
+Battalion.belongsTo(Range, {
   foreignKey: 'rangeId',
   as: 'range'
 });
 
-District.hasMany(User, {
+Battalion.belongsTo(District, {
   foreignKey: 'districtId',
-  as: 'users'
+  as: 'district'
+});
+
+Range.hasMany(Battalion, {
+  foreignKey: 'rangeId',
+  as: 'battalions'
+});
+
+District.hasMany(Battalion, {
+  foreignKey: 'districtId',
+  as: 'battalions'
 });
 
 // Module associations
@@ -214,11 +224,6 @@ PerformanceStatistic.belongsTo(Range, {
   as: 'range'
 });
 
-PerformanceStatistic.belongsTo(District, {
-  foreignKey: 'districtId',
-  as: 'district'
-});
-
 PerformanceStatistic.belongsTo(Module, {
   foreignKey: 'moduleId',
   as: 'module'
@@ -256,6 +261,7 @@ module.exports = {
   State,
   District,
   Range,
+  Battalion,
   Menu,
   SubMenu,
   Permission,

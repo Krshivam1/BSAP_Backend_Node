@@ -224,21 +224,12 @@ class DistrictService {
   }
 
   // Get active districts
-  static async getActiveDistricts(stateId = null) {
-    const whereClause = { isActive: true };
-    if (stateId) {
-      whereClause.stateId = stateId;
-    }
-
+  static async getActiveDistricts() {
+    const whereClause = { active: true };
     return await District.findAll({
       where: whereClause,
-      include: [{
-        model: State,
-        as: 'state',
-        attributes: ['id', 'name']
-      }],
-      order: [['name', 'ASC']],
-      attributes: ['id', 'name', 'code', 'stateId']
+      order: [['districtName', 'ASC']],
+      attributes: ['id', 'districtName']
     });
   }
 

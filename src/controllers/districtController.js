@@ -306,8 +306,7 @@ async function subDivisions(req, res) {
 // GET /api/districts/active - Get all active districts
 async function active(req, res) {
   try {
-    const { stateId } = req.query;
-    const districts = await DistrictService.getActiveDistricts(stateId);
+    const districts = await DistrictService.getActiveDistricts();
     
     res.json({
       status: 'SUCCESS',
