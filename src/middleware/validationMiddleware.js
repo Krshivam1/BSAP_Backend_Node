@@ -117,20 +117,67 @@ const districtUpdateSchema = Joi.object({
 });
 
 // Range validation schemas
+// Range validation schemas
 const rangeCreateSchema = Joi.object({
-  name: Joi.string().min(2).max(100).required(),
-  code: Joi.string().min(2).max(20).required(),
-  description: Joi.string().max(500).optional(),
-  districtId: Joi.number().integer().positive().required(),
-  isActive: Joi.boolean().optional().default(true)
+  stateId: Joi.number().integer().positive().required().messages({
+    'number.base': 'stateId must be a number',
+    'number.integer': 'stateId must be an integer',
+    'number.positive': 'stateId must be a positive number',
+    'any.required': 'stateId is required'
+  }),
+  rangeName: Joi.string().min(2).max(250).required().messages({
+    'string.base': 'rangeName must be a string',
+    'string.min': 'rangeName must be at least 2 characters',
+    'string.max': 'rangeName must not exceed 250 characters',
+    'any.required': 'rangeName is required'
+  }),
+  rangeHead: Joi.string().min(2).max(250).required().messages({
+    'string.base': 'rangeHead must be a string',
+    'string.min': 'rangeHead must be at least 2 characters',
+    'string.max': 'rangeHead must not exceed 250 characters',
+    'any.required': 'rangeHead is required'
+  }),
+  rangeContactNo: Joi.string().max(20).required().messages({
+    'string.base': 'rangeContactNo must be a string',
+    'string.max': 'rangeContactNo must not exceed 20 characters',
+    'any.required': 'rangeContactNo is required'
+  }),
+  rangeMobileNo: Joi.string().max(20).required().messages({
+    'string.base': 'rangeMobileNo must be a string',
+    'string.max': 'rangeMobileNo must not exceed 20 characters',
+    'any.required': 'rangeMobileNo is required'
+  }),
+  rangeEmail: Joi.string().email().max(50).required().messages({
+    'string.base': 'rangeEmail must be a string',
+    'string.email': 'rangeEmail must be a valid email address',
+    'string.max': 'rangeEmail must not exceed 50 characters',
+    'any.required': 'rangeEmail is required'
+  }),
+  rangeDescription: Joi.string().optional().allow('', null),
+  // rangeImage: Joi.string().max(250).required().messages({
+  //   'string.base': 'rangeImage must be a string',
+  //   'string.max': 'rangeImage must not exceed 250 characters',
+  //   'any.required': 'rangeImage is required'
+  // }),
+  // rangePersonImage: Joi.string().max(250).required().messages({
+  //   'string.base': 'rangePersonImage must be a string',
+  //   'string.max': 'rangePersonImage must not exceed 250 characters',
+  //   'any.required': 'rangePersonImage is required'
+  // }),
+  active: Joi.boolean().optional().default(true)
 });
 
 const rangeUpdateSchema = Joi.object({
-  name: Joi.string().min(2).max(100).optional(),
-  code: Joi.string().min(2).max(20).optional(),
-  description: Joi.string().max(500).optional(),
-  districtId: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional()
+  stateId: Joi.number().integer().positive().optional(),
+  rangeName: Joi.string().min(2).max(250).optional(),
+  rangeHead: Joi.string().min(2).max(250).optional(),
+  rangeContactNo: Joi.string().max(20).optional(),
+  rangeMobileNo: Joi.string().max(20).optional(),
+  rangeEmail: Joi.string().email().max(50).optional(),
+  rangeDescription: Joi.string().optional().allow('', null),
+  // rangeImage: Joi.string().max(250).optional(),
+  // rangePersonImage: Joi.string().max(250).optional(),
+  active: Joi.boolean().optional()
 });
 
 // Module validation schemas
