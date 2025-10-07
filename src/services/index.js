@@ -5,6 +5,7 @@ const communicationService = require('./communicationService');
 const reportService = require('./reportService');
 const cidCrimeDataService = require('./cidCrimeDataService');
 const battalionService = require('./battalionService');
+const rangeService = require('./rangeService');
 
 module.exports = {
   authService,
@@ -13,5 +14,6 @@ module.exports = {
   communicationService,
   reportService,
   cidCrimeDataService,
-  battalionService
+  battalionService,
+  rangeService
 };

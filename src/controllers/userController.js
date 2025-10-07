@@ -15,7 +15,7 @@ async function search(req, res) {
       roleId: roleId ? parseInt(roleId) : undefined,
       stateId: stateId ? parseInt(stateId) : undefined,
       sortBy: sortBy || 'firstName',
-      sortOrder: sortOrder || 'ASC'
+      sortOrder: sortOrder || 'ASC' 
     };
 
     const result = await UserService.getAllUsers(options);

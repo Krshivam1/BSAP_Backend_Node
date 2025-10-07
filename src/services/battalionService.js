@@ -56,26 +56,24 @@ class BattalionService {
         }
       ];
 
-      const battalions = await Battalion.findAndCountAll({
+      const { count, rows } = await Battalion.findAndCountAll({
         where: whereClause,
         include,
-        offset,
+        offset: parseInt(offset),
         limit: parseInt(limit),
         order: [[sortBy, sortOrder]],
         distinct: true
       });
 
       return {
-        data: battalions.rows,
-        pagination: {
-          currentPage: parseInt(page),
-          totalPages: Math.ceil(battalions.count / limit),
-          totalItems: battalions.count,
-          itemsPerPage: parseInt(limit)
-        }
+        battalions: rows,
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit)
       };
     } catch (error) {
-      throw new Error(`Error fetching battalions: ${error.message}`);
+      console.error('Error in getAllBattalions:', error);
+      throw error;
     }
   }
 
