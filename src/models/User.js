@@ -95,14 +95,14 @@ const User = sequelize.define('User', {
       key: 'id'
     }
   },
-  districtId: {
+  battalionId: {
     type: DataTypes.INTEGER,
-    field: 'district_id',
+    field: 'battalion_id',
     allowNull: true,
-    // references: {
-    //   model: 'districts',
-    //   key: 'id'
-    // }
+    references: {
+      model: 'battalions',
+      key: 'id'
+    }
   },
   roleId: {
     type: DataTypes.INTEGER,

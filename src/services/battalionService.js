@@ -66,10 +66,13 @@ class BattalionService {
       });
 
       return {
-        battalions: rows,
-        total: count,
-        page: parseInt(page),
-        limit: parseInt(limit)
+        data: rows,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(count / limit),
+          totalItems: count,
+          itemsPerPage: parseInt(limit)
+        }
       };
     } catch (error) {
       console.error('Error in getAllBattalions:', error);

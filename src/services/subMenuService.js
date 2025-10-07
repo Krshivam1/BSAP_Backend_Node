@@ -1,4 +1,4 @@
-const { SubMenu } = require('../models');
+const { SubMenu, Menu } = require('../models');
 const { Op } = require('sequelize');
 
 class SubMenuService {
@@ -43,15 +43,36 @@ class SubMenuService {
         whereClause.subMenuId = parentId === 'null' ? null : parentId;
       }
 
+      const include = [
+        {
+          model: Menu,
+          as: 'menu',
+          attributes: ['id', 'menuName'],
+          required: false
+        }
+      ];
+
       const { count, rows } = await SubMenu.findAndCountAll({
         where: whereClause,
+        include,
         limit,
         offset,
-        order: [[sortBy, sortOrder]]
+        order: [[sortBy, sortOrder]],
+        distinct: true
+      });
+
+      // Transform the data to include parentMenu
+      const transformedRows = rows.map(subMenu => {
+        const subMenuData = subMenu.toJSON();
+        return {
+          ...subMenuData,
+          parentMenu: subMenuData.menu ? subMenuData.menu.menuName : null,
+          menu: undefined // Remove the menu object since we're using parentMenu
+        };
       });
 
       return {
-        subMenus: rows,
+        subMenus: transformedRows,
         total: count
       };
     } catch (error) {
@@ -63,7 +84,26 @@ class SubMenuService {
   // Get sub-menu by ID
   static async getSubMenuById(id) {
     try {
-      return await SubMenu.findByPk(id);
+      const include = [
+        {
+          model: Menu,
+          as: 'menu',
+          attributes: ['id', 'menuName'],
+          required: false
+        }
+      ];
+
+      const subMenu = await SubMenu.findByPk(id, { include });
+      
+      if (!subMenu) return null;
+
+      // Transform the data to include parentMenu
+      const subMenuData = subMenu.toJSON();
+      return {
+        ...subMenuData,
+        parentMenu: subMenuData.menu ? subMenuData.menu.menuName : null,
+        menu: undefined // Remove the menu object since we're using parentMenu
+      };
     } catch (error) {
       console.error('Error in getSubMenuById:', error);
       throw error;
@@ -132,9 +172,29 @@ class SubMenuService {
         whereClause.subMenuId = parentId === 'null' ? null : parentId;
       }
 
-      return await SubMenu.findAll({
+      const include = [
+        {
+          model: Menu,
+          as: 'menu',
+          attributes: ['id', 'menuName'],
+          required: false
+        }
+      ];
+
+      const subMenus = await SubMenu.findAll({
         where: whereClause,
+        include,
         order: [['priority', 'ASC']]
+      });
+
+      // Transform the data to include parentMenu
+      return subMenus.map(subMenu => {
+        const subMenuData = subMenu.toJSON();
+        return {
+          ...subMenuData,
+          parentMenu: subMenuData.menu ? subMenuData.menu.menuName : null,
+          menu: undefined // Remove the menu object since we're using parentMenu
+        };
       });
     } catch (error) {
       console.error('Error in getActiveSubMenus:', error);
@@ -174,15 +234,36 @@ class SubMenuService {
         whereClause.subMenuId = parentId === 'null' ? null : parentId;
       }
 
+      const include = [
+        {
+          model: Menu,
+          as: 'menu',
+          attributes: ['id', 'menuName'],
+          required: false
+        }
+      ];
+
       const { count, rows } = await SubMenu.findAndCountAll({
         where: whereClause,
+        include,
         limit,
         offset,
-        order: [['menuName', 'ASC']]
+        order: [['menuName', 'ASC']],
+        distinct: true
+      });
+
+      // Transform the data to include parentMenu
+      const transformedRows = rows.map(subMenu => {
+        const subMenuData = subMenu.toJSON();
+        return {
+          ...subMenuData,
+          parentMenu: subMenuData.menu ? subMenuData.menu.menuName : null,
+          menu: undefined // Remove the menu object since we're using parentMenu
+        };
       });
 
       return {
-        subMenus: rows,
+        subMenus: transformedRows,
         total: count
       };
     } catch (error) {
@@ -209,15 +290,36 @@ class SubMenuService {
         whereClause.active = status === 'active';
       }
 
+      const include = [
+        {
+          model: Menu,
+          as: 'menu',
+          attributes: ['id', 'menuName'],
+          required: false
+        }
+      ];
+
       const { count, rows } = await SubMenu.findAndCountAll({
         where: whereClause,
+        include,
         limit,
         offset,
-        order: [[sortBy, sortOrder]]
+        order: [[sortBy, sortOrder]],
+        distinct: true
+      });
+
+      // Transform the data to include parentMenu
+      const transformedRows = rows.map(subMenu => {
+        const subMenuData = subMenu.toJSON();
+        return {
+          ...subMenuData,
+          parentMenu: subMenuData.menu ? subMenuData.menu.menuName : null,
+          menu: undefined // Remove the menu object since we're using parentMenu
+        };
       });
 
       return {
-        subMenus: rows,
+        subMenus: transformedRows,
         total: count
       };
     } catch (error) {
@@ -244,15 +346,36 @@ class SubMenuService {
         whereClause.active = status === 'active';
       }
 
+      const include = [
+        {
+          model: Menu,
+          as: 'menu',
+          attributes: ['id', 'menuName'],
+          required: false
+        }
+      ];
+
       const { count, rows } = await SubMenu.findAndCountAll({
         where: whereClause,
+        include,
         limit,
         offset,
-        order: [[sortBy, sortOrder]]
+        order: [[sortBy, sortOrder]],
+        distinct: true
+      });
+
+      // Transform the data to include parentMenu
+      const transformedRows = rows.map(subMenu => {
+        const subMenuData = subMenu.toJSON();
+        return {
+          ...subMenuData,
+          parentMenu: subMenuData.menu ? subMenuData.menu.menuName : null,
+          menu: undefined // Remove the menu object since we're using parentMenu
+        };
       });
 
       return {
-        subMenus: rows,
+        subMenus: transformedRows,
         total: count
       };
     } catch (error) {

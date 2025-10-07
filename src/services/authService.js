@@ -93,8 +93,8 @@ class AuthService {
       role: user.role,
       stateId: user.stateId,
       rangeId: user.rangeId,
-      districtId: user.districtId,
       isFirst: user.isFirst,
+      battalion: user.battalionId,
       verified: user.verified,
       permissions
     };

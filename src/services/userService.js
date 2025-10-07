@@ -1,4 +1,4 @@
-const { User, State, Role, District, Range } = require('../models');
+const { User, State, Role, District, Range, Battalion } = require('../models');
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 
@@ -55,9 +55,9 @@ class UserService {
           required: false
         },
         {
-          model: District,
-          as: 'district', 
-          attributes: ['id', 'districtName'],
+          model: Battalion,
+          as: 'battalion',
+          attributes: ['id', 'battalionName'],
           required: false
         },
         {
@@ -106,9 +106,9 @@ class UserService {
           required: false
         },
         {
-          model: District,
-          as: 'district',
-          attributes: ['id', 'districtName'],
+          model: Battalion,
+          as: 'battalion',
+          attributes: ['id', 'battalionName'],
           required: false
         },
         {

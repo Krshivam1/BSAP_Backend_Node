@@ -14,10 +14,10 @@ router.get('/test', (req, res) => {
 router.get('/', authenticate, validatePagination, battalionController.getAllBattalions);
 
 // GET /api/battalions/by-range/:rangeId - Get battalions by range
-router.get('/by-range/:rangeId', authenticate, validateId, battalionController.getBattalionsByRange);
+router.get('/by-range/:rangeId', authenticate, battalionController.getBattalionsByRange);
 
 // GET /api/battalions/by-district/:districtId - Get battalions by district  
-router.get('/by-district/:districtId', authenticate, validateId, battalionController.getBattalionsByDistrict);
+router.get('/by-district/:districtId', authenticate, battalionController.getBattalionsByDistrict);
 
 // GET /api/battalions/:id - Get battalion by ID
 router.get('/:id', authenticate, validateId, battalionController.getBattalionById);

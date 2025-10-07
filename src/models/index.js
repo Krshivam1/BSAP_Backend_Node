@@ -34,15 +34,20 @@ User.belongsTo(Range, {
   as: 'range'
 });
 
-User.belongsTo(District, {
-  foreignKey: 'districtId',
-  as: 'district'
+// User.belongsTo(District, {
+//   foreignKey: 'districtId',
+//   as: 'district'
+// });
+User.belongsTo(Battalion, {
+  foreignKey: 'battalionId',
+  as: 'battalion'
 });
 // Role associations
 Role.hasMany(User, {
   foreignKey: 'roleId',
   as: 'users'
 });
+
 
 Role.belongsToMany(Permission, {
   through: RolePermission,
