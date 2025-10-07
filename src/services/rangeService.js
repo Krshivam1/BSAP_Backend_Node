@@ -1,4 +1,4 @@
-const { Range, District, State, CIDPoliceStation, User } = require('../models');
+const { Range, State, User } = require('../models');
 const { Op } = require('sequelize');
 
 class RangeService {
@@ -8,10 +8,9 @@ class RangeService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'name',
+      sortBy = 'range_name',
       sortOrder = 'ASC',
       search,
-      districtId,
       stateId
     } = options;
 
@@ -20,33 +19,25 @@ class RangeService {
 
     if (search) {
       whereClause[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { code: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } }
+        { rangeName: { [Op.like]: `%${search}%` } },
+        { rangeHead: { [Op.like]: `%${search}%` } },
+        { rangeEmail: { [Op.like]: `%${search}%` } }
       ];
     }
 
-    if (districtId) {
-      whereClause.districtId = districtId;
+    if (stateId) {
+      whereClause.stateId = stateId;
     }
-
-    const includeClause = [
-      {
-        model: District,
-        as: 'district',
-        attributes: ['id', 'name', 'code'],
-        include: [{
-          model: State,
-          as: 'state',
-          attributes: ['id', 'name', 'code'],
-          ...(stateId && { where: { id: stateId } })
-        }]
-      }
-    ];
 
     const { count, rows } = await Range.findAndCountAll({
       where: whereClause,
-      include: includeClause,
+      include: [
+        {
+          model: State,
+          as: 'state',
+          attributes: ['id', 'stateName']
+        }
+      ],
       limit,
       offset,
       order: [[sortBy, sortOrder]]
@@ -63,21 +54,9 @@ class RangeService {
     return await Range.findByPk(id, {
       include: [
         {
-          model: District,
-          as: 'district',
-          attributes: ['id', 'name', 'code'],
-          include: [{
-            model: State,
-            as: 'state',
-            attributes: ['id', 'name', 'code']
-          }]
-        },
-        {
-          model: CIDPoliceStation,
-          as: 'policeStations',
-          attributes: ['id', 'name', 'code', 'isActive'],
-          required: false,
-          order: [['name', 'ASC']]
+          model: State,
+          as: 'state',
+          attributes: ['id', 'stateName']
         }
       ]
     });
@@ -102,29 +81,28 @@ class RangeService {
     const range = await Range.findByPk(id);
     if (!range) return false;
 
-    // Check if range has police stations
-    const policeStationCount = await CIDPoliceStation.count({ where: { rangeId: id } });
-    if (policeStationCount > 0) {
-      throw new Error('Cannot delete range with existing police stations');
-    }
-
     await range.destroy();
     return true;
   }
 
-  // Get ranges by district
-  static async getRangesByDistrict(districtId, options = {}) {
+  // Get ranges by state
+  static async getRangesByState(stateId, options = {}) {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'name',
+      sortBy = 'range_name',
       sortOrder = 'ASC'
     } = options;
 
     const offset = (page - 1) * limit;
 
     const { count, rows } = await Range.findAndCountAll({
-      where: { districtId },
+      where: { stateId },
+      include: [{
+        model: State,
+        as: 'state',
+        attributes: ['id', 'stateName']
+      }],
       limit,
       offset,
       order: [[sortBy, sortOrder]]
@@ -142,41 +120,32 @@ class RangeService {
       page = 1,
       limit = 10,
       search,
-      districtId,
       stateId
     } = options;
 
     const offset = (page - 1) * limit;
     const whereClause = {
       [Op.or]: [
-        { name: { [Op.like]: `%${search}%` } },
-        { code: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } }
+        { rangeName: { [Op.like]: `%${search}%` } },
+        { rangeHead: { [Op.like]: `%${search}%` } },
+        { rangeEmail: { [Op.like]: `%${search}%` } }
       ]
     };
 
-    if (districtId) {
-      whereClause.districtId = districtId;
+    if (stateId) {
+      whereClause.stateId = stateId;
     }
-
-    const includeClause = [{
-      model: District,
-      as: 'district',
-      attributes: ['id', 'name'],
-      include: [{
-        model: State,
-        as: 'state',
-        attributes: ['id', 'name'],
-        ...(stateId && { where: { id: stateId } })
-      }]
-    }];
 
     const { count, rows } = await Range.findAndCountAll({
       where: whereClause,
-      include: includeClause,
+      include: [{
+        model: State,
+        as: 'state',
+        attributes: ['id', 'stateName']
+      }],
       limit,
       offset,
-      order: [['name', 'ASC']]
+      order: [['rangeName', 'ASC']]
     });
 
     return {
@@ -185,42 +154,12 @@ class RangeService {
     };
   }
 
-  // Get police stations by range
-  static async getPoliceStationsByRange(rangeId, options = {}) {
-    const {
-      page = 1,
-      limit = 10
-    } = options;
-
-    const offset = (page - 1) * limit;
-
-    const { count, rows } = await CIDPoliceStation.findAndCountAll({
-      where: { rangeId },
-      limit,
-      offset,
-      order: [['name', 'ASC']]
-    });
-
-    return {
-      policeStations: rows,
-      total: count
-    };
-  }
-
   // Get active ranges
   static async getActiveRanges() {
-    const whereClause = { active: true };
-    // const includeClause = [{
-    //   model: District,
-    //   as: 'district',
-    //   attributes: ['id', 'name'],
-    //   ...(stateId && { where: { stateId } })
-    // }];
-
     return await Range.findAll({
-      where: whereClause,
+      where: { active: true },
       order: [['rangeName', 'ASC']],
-      attributes: ['id', 'rangeName']
+      attributes: ['id', 'rangeName', 'stateId']
     });
   }
 
@@ -230,7 +169,7 @@ class RangeService {
     if (!range) return null;
 
     await range.update({
-      isActive: true,
+      active: true,
       updatedBy
     });
 
@@ -243,7 +182,7 @@ class RangeService {
     if (!range) return null;
 
     await range.update({
-      isActive: false,
+      active: false,
       updatedBy
     });
 
@@ -251,296 +190,79 @@ class RangeService {
   }
 
   // Get range statistics
-  static async getRangeStatistics(districtId = null, stateId = null) {
+  static async getRangeStatistics(stateId = null) {
     const whereClause = {};
-    const includeClause = [];
 
-    if (districtId) {
-      whereClause.districtId = districtId;
-    }
-
-    if (stateId && !districtId) {
-      includeClause.push({
-        model: District,
-        as: 'district',
-        where: { stateId },
-        attributes: []
-      });
+    if (stateId) {
+      whereClause.stateId = stateId;
     }
 
     const [
       totalRanges,
-      activeRanges,
-      rangesWithPoliceStations
+      activeRanges
     ] = await Promise.all([
-      Range.count({ 
-        where: whereClause,
-        ...(includeClause.length && { include: includeClause })
-      }),
-      Range.count({ 
-        where: { ...whereClause, isActive: true },
-        ...(includeClause.length && { include: includeClause })
-      }),
-      Range.count({
-        where: whereClause,
-        include: [
-          ...includeClause,
-          {
-            model: CIDPoliceStation,
-            as: 'policeStations',
-            required: true
-          }
-        ]
-      })
+      Range.count({ where: whereClause }),
+      Range.count({ where: { ...whereClause, active: true } })
     ]);
-
-    const policeStationCounts = await Range.findAll({
-      where: whereClause,
-      attributes: [
-        'id',
-        'name',
-        [Range.sequelize.fn('COUNT', Range.sequelize.col('policeStations.id')), 'policeStationCount']
-      ],
-      include: [
-        ...(includeClause.length ? includeClause : []),
-        {
-          model: CIDPoliceStation,
-          as: 'policeStations',
-          attributes: [],
-          required: false
-        }
-      ],
-      group: ['Range.id'],
-      order: [[Range.sequelize.literal('policeStationCount'), 'DESC']]
-    });
 
     return {
       totalRanges,
       activeRanges,
-      inactiveRanges: totalRanges - activeRanges,
-      rangesWithPoliceStations,
-      rangesWithoutPoliceStations: totalRanges - rangesWithPoliceStations,
-      policeStationCounts: policeStationCounts.map(range => ({
-        id: range.id,
-        name: range.name,
-        policeStationCount: parseInt(range.dataValues.policeStationCount) || 0
-      }))
+      inactiveRanges: totalRanges - activeRanges
     };
   }
 
-  // Get range by code
-  static async getRangeByCode(code, districtId = null) {
-    const whereClause = { code };
-    if (districtId) {
-      whereClause.districtId = districtId;
-    }
-
-    return await Range.findOne({
-      where: whereClause,
-      include: [{
-        model: District,
-        as: 'district',
-        attributes: ['id', 'name', 'code'],
-        include: [{
-          model: State,
-          as: 'state',
-          attributes: ['id', 'name', 'code']
-        }]
-      }]
-    });
-  }
-
-  // Check if range code exists in district
-  static async isCodeExists(code, districtId, excludeId = null) {
-    const whereClause = { code, districtId };
-    if (excludeId) {
-      whereClause.id = { [Op.ne]: excludeId };
-    }
-
-    const count = await Range.count({ where: whereClause });
-    return count > 0;
-  }
-
-  // Check if range name exists in district
-  static async isNameExists(name, districtId, excludeId = null) {
-    const whereClause = { name, districtId };
-    if (excludeId) {
-      whereClause.id = { [Op.ne]: excludeId };
-    }
-
-    const count = await Range.count({ where: whereClause });
-    return count > 0;
-  }
-
-  // Get ranges with user count
-  static async getRangesWithUserCount(districtId = null, stateId = null) {
-    const whereClause = {};
-    const includeClause = [];
-
-    if (districtId) {
-      whereClause.districtId = districtId;
-    }
-
-    if (stateId && !districtId) {
-      includeClause.push({
-        model: District,
-        as: 'district',
-        where: { stateId },
-        attributes: ['name']
-      });
-    } else {
-      includeClause.push({
-        model: District,
-        as: 'district',
-        attributes: ['name']
-      });
-    }
-
-    return await Range.findAll({
-      where: whereClause,
-      attributes: [
-        'id',
-        'name',
-        'code',
-        [Range.sequelize.fn('COUNT', Range.sequelize.col('users.id')), 'userCount']
-      ],
-      include: [
-        ...includeClause,
-        {
-          model: User,
-          as: 'users',
-          attributes: [],
-          required: false
-        }
-      ],
-      group: ['Range.id', 'district.id'],
-      order: [['name', 'ASC']]
-    });
-  }
-
-  // Bulk update ranges
-  static async bulkUpdateRanges(updates, updatedBy) {
-    const promises = updates.map(({ id, ...data }) => 
-      Range.update(
-        { ...data, updatedBy },
-        { where: { id } }
-      )
-    );
-
-    await Promise.all(promises);
-    
-    const updatedIds = updates.map(u => u.id);
-    return await Range.findAll({
-      where: { id: { [Op.in]: updatedIds } },
-      include: [{
-        model: District,
-        as: 'district',
-        attributes: ['id', 'name']
-      }]
-    });
-  }
-
-  // Get ranges for dropdown
-  static async getRangesForDropdown(districtId = null, stateId = null) {
-    const whereClause = { isActive: true };
-    const includeClause = [];
-
-    if (districtId) {
-      whereClause.districtId = districtId;
-    }
-
-    if (stateId && !districtId) {
-      includeClause.push({
-        model: District,
-        as: 'district',
-        where: { stateId },
-        attributes: []
-      });
-    }
-
-    return await Range.findAll({
-      where: whereClause,
-      ...(includeClause.length && { include: includeClause }),
-      attributes: ['id', 'name', 'code', 'districtId'],
-      order: [['name', 'ASC']]
-    });
-  }
-
-  // Get range hierarchy (with district and state)
-  static async getRangeHierarchy(rangeId) {
-    return await Range.findByPk(rangeId, {
-      include: [
-        {
-          model: District,
-          as: 'district',
-          attributes: ['id', 'name', 'code'],
-          include: [{
-            model: State,
-            as: 'state',
-            attributes: ['id', 'name', 'code']
-          }]
-        },
-        {
-          model: CIDPoliceStation,
-          as: 'policeStations',
-          attributes: ['id', 'name', 'code'],
-          where: { isActive: true },
-          required: false,
-          order: [['name', 'ASC']]
-        }
-      ]
-    });
-  }
-
-  // Get ranges by state
-  static async getRangesByState(stateId, options = {}) {
+  // Get users by range
+  static async getUsersByRange(rangeId, options = {}) {
     const {
       page = 1,
-      limit = 10,
-      sortBy = 'name',
-      sortOrder = 'ASC'
+      limit = 10
     } = options;
 
     const offset = (page - 1) * limit;
 
-    const { count, rows } = await Range.findAndCountAll({
-      include: [{
-        model: District,
-        as: 'district',
-        where: { stateId },
-        attributes: ['id', 'name']
-      }],
+    const { count, rows } = await User.findAndCountAll({
+      where: { rangeId },
       limit,
       offset,
-      order: [[sortBy, sortOrder]]
+      order: [['name', 'ASC']]
     });
 
     return {
-      ranges: rows,
+      users: rows,
       total: count
     };
   }
 
-  // Get range distribution by district
-  static async getRangeDistributionByDistrict(stateId = null) {
-    const includeClause = [{
-      model: District,
-      as: 'district',
-      attributes: ['id', 'name'],
-      ...(stateId && { where: { stateId } })
-    }];
+  // Check if range name exists in state
+  static async isNameExists(rangeName, stateId, excludeId = null) {
+    const whereClause = { 
+      rangeName, 
+      stateId 
+    };
+    
+    if (excludeId) {
+      whereClause.id = { [Op.ne]: excludeId };
+    }
 
-    return await Range.findAll({
-      attributes: [
-        'districtId',
-        [Range.sequelize.fn('COUNT', Range.sequelize.col('Range.id')), 'rangeCount']
-      ],
-      include: includeClause,
-      group: ['districtId', 'district.id'],
-      order: [[Range.sequelize.literal('rangeCount'), 'DESC']]
-    });
+    const count = await Range.count({ where: whereClause });
+    return count > 0;
   }
 
+  // Get ranges for dropdown
+  static async getRangesForDropdown(stateId = null) {
+    const whereClause = { active: true };
+
+    if (stateId) {
+      whereClause.stateId = stateId;
+    }
+
+    return await Range.findAll({
+      where: whereClause,
+      attributes: ['id', 'rangeName', 'stateId'],
+      order: [['rangeName', 'ASC']]
+    });
+  }
 }
 
 module.exports = RangeService;

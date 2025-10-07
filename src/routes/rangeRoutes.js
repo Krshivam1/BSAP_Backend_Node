@@ -11,9 +11,7 @@ router.get('/status/active', authenticate, rangeController.active);
 
 // Search and relations
 router.get('/search/:searchTerm', authenticate, validatePagination, rangeController.search);
-router.get('/by-district/:districtId', authenticate, validatePagination, rangeController.byDistrict);
 router.get('/by-state/:stateId', authenticate, validatePagination, rangeController.byState);
-router.get('/:id/police-stations', authenticate, validateId, validatePagination, rangeController.policeStations);
 router.get('/:id/users', authenticate, validateId, validatePagination, rangeController.users);
 
 // CRUD

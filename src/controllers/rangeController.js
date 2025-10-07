@@ -6,10 +6,9 @@ async function list(req, res) {
     const { 
       page = 1, 
       limit = 10, 
-      sortBy = 'name', 
+      sortBy = 'range_name', 
       sortOrder = 'ASC',
       search,
-      districtId,
       stateId 
     } = req.query;
 
@@ -19,7 +18,6 @@ async function list(req, res) {
       sortBy,
       sortOrder: sortOrder.toUpperCase(),
       search,
-      districtId,
       stateId
     };
 
@@ -75,6 +73,15 @@ async function detail(req, res) {
 // POST /api/ranges - Create new range
 async function create(req, res) {
   try {
+    // Check if range name already exists in this state
+    const nameExists = await RangeService.isNameExists(req.body.rangeName, req.body.stateId);
+    if (nameExists) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'Range with this name already exists in this state'
+      });
+    }
+
     const rangeData = {
       ...req.body,
       createdBy: req.user.id,
@@ -92,7 +99,7 @@ async function create(req, res) {
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Range with this name or code already exists in this district'
+        message: 'Range with this name already exists'
       });
     }
     
@@ -108,6 +115,18 @@ async function create(req, res) {
 async function update(req, res) {
   try {
     const { id } = req.params;
+    
+    // Check if range name already exists in this state (excluding current range)
+    if (req.body.rangeName) {
+      const nameExists = await RangeService.isNameExists(req.body.rangeName, req.body.stateId, id);
+      if (nameExists) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'Range with this name already exists in this state'
+        });
+      }
+    }
+
     const rangeData = {
       ...req.body,
       updatedBy: req.user.id
@@ -131,7 +150,7 @@ async function update(req, res) {
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Range with this name or code already exists in this district'
+        message: 'Range with this name already exists'
       });
     }
     
@@ -169,46 +188,11 @@ async function remove(req, res) {
   }
 }
 
-// GET /api/ranges/by-district/:districtId - Get ranges by district
-async function byDistrict(req, res) {
-  try {
-    const { districtId } = req.params;
-    const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
-    
-    const options = {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      sortBy,
-      sortOrder: sortOrder.toUpperCase()
-    };
-
-    const result = await RangeService.getRangesByDistrict(districtId, options);
-    
-    res.json({
-      status: 'SUCCESS',
-      message: 'Ranges retrieved successfully',
-      data: result.ranges,
-      pagination: {
-        total: result.total,
-        page: options.page,
-        limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'ERROR',
-      message: 'Failed to retrieve ranges',
-      error: error.message
-    });
-  }
-}
-
 // GET /api/ranges/by-state/:stateId - Get ranges by state
 async function byState(req, res) {
   try {
     const { stateId } = req.params;
-    const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC' } = req.query;
+    const { page = 1, limit = 10, sortBy = 'range_name', sortOrder = 'ASC' } = req.query;
     
     const options = {
       page: parseInt(page),
@@ -243,13 +227,12 @@ async function byState(req, res) {
 async function search(req, res) {
   try {
     const { searchTerm } = req.params;
-    const { page = 1, limit = 10, districtId, stateId } = req.query;
+    const { page = 1, limit = 10, stateId } = req.query;
     
     const options = {
       page: parseInt(page),
       limit: parseInt(limit),
       search: searchTerm,
-      districtId,
       stateId
     };
 
@@ -275,43 +258,9 @@ async function search(req, res) {
   }
 }
 
-// GET /api/ranges/:id/police-stations - Get police stations by range
-async function policeStations(req, res) {
-  try {
-    const { id } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-    
-    const options = {
-      page: parseInt(page),
-      limit: parseInt(limit)
-    };
-
-    const result = await RangeService.getPoliceStationsByRange(id, options);
-    
-    res.json({
-      status: 'SUCCESS',
-      message: 'Police stations retrieved successfully',
-      data: result.policeStations,
-      pagination: {
-        total: result.total,
-        page: options.page,
-        limit: options.limit,
-        totalPages: Math.ceil(result.total / options.limit)
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'ERROR',
-      message: 'Failed to retrieve police stations',
-      error: error.message
-    });
-  }
-}
-
 // GET /api/ranges/active - Get all active ranges
 async function active(req, res) {
   try {
-   
     const ranges = await RangeService.getActiveRanges();
     
     res.json({
@@ -382,11 +331,11 @@ async function deactivate(req, res) {
   }
 }
 
-// GET /api/ranges/statistics - Get range statistics
+// GET /api/ranges/stats/overview - Get range statistics
 async function stats(req, res) {
   try {
-    const { districtId, stateId } = req.query;
-    const statistics = await RangeService.getRangeStatistics(districtId, stateId);
+    const { stateId } = req.query;
+    const statistics = await RangeService.getRangeStatistics(stateId);
     
     res.json({
       status: 'SUCCESS',
@@ -441,10 +390,8 @@ module.exports = {
   create,
   update,
   remove,
-  byDistrict,
   byState,
   search,
-  policeStations,
   active,
   activate,
   deactivate,

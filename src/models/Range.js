@@ -10,71 +10,71 @@ const Range = sequelize.define('Range', {
   stateId: {
     type: DataTypes.INTEGER,
     field: 'state_id',
-    allowNull: true,
+    allowNull: false,
     references: {
-      model: 'states',
+      model: 'state',
       key: 'id'
     }
   },
   rangeName: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(250),
     field: 'range_name',
     allowNull: false
   },
   rangeHead: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(250),
     field: 'range_head',
-    allowNull: true
+    allowNull: false
   },
   rangeContactNo: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(20),
     field: 'range_contact_no',
-    allowNull: true
+    allowNull: false
   },
   rangeMobileNo: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(20),
     field: 'range_mobile_no',
-    allowNull: true
+    allowNull: false
   },
   rangeEmail: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(50),
     field: 'range_email',
-    allowNull: true,
+    allowNull: false,
     validate: {
       isEmail: true
     }
   },
   rangeDescription: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('long'),
     field: 'range_discription',
     allowNull: true
   },
   rangeImage: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(250),
     field: 'range_image',
     allowNull: true
   },
   rangePersonImage: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(250),
     field: 'range_person_image',
     allowNull: true
   },
   createdBy: {
     type: DataTypes.INTEGER,
     field: 'created_by',
-    allowNull: true
+    allowNull: false
   },
   updatedBy: {
     type: DataTypes.INTEGER,
     field: 'updated_by',
-    allowNull: true
+    allowNull: false
   },
   active: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
   }
 }, {
-  tableName: 'zone', // Note: Java entity uses 'zone' table name
+  tableName: 'zone',
   timestamps: true,
   createdAt: 'created_date',
   updatedAt: 'updated_date'
