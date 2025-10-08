@@ -35,6 +35,7 @@ const topicRoutes = require('./src/routes/topicRoutes');
 const subTopicRoutes = require('./src/routes/subTopicRoutes');
 const questionRoutes = require('./src/routes/questionRoutes');
 const battalionRoutes = require('./src/routes/battalionRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
 
 // Import middleware
 const errorHandler = require('./src/middleware/errorHandler');
@@ -124,6 +125,7 @@ app.use('/api/sub-topics', subTopicRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/permissions', permissionRoutes);
 app.use('/api/battalions', battalionRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

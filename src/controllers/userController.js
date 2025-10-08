@@ -44,7 +44,7 @@ async function search(req, res) {
 // GET /api/users/:id - Get user by ID
 async function detail(req, res) {
   try {
-    const { id } = req.params;
+    const id = req.user.id;
     const user = await UserService.getUserById(id);
     
     if (!user) {

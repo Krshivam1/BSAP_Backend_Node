@@ -13,7 +13,7 @@ router.get('/test', (req, res) => {
 // Protected routes with automatic permission checking based on URL
 router.get('/', authenticateWithPermission, validatePagination, userController.search);
 router.get('/active', authenticateWithPermission, userController.active);
-router.get('/:id', authenticateWithPermission, validateId, userController.detail);
+router.get('/self', authenticateWithPermission, userController.detail);
 router.post('/', authenticateWithPermission, userController.create);
 router.put('/:id', authenticateWithPermission, validateId, userController.update);
 router.delete('/:id', authenticateWithPermission, validateId, userController.remove);

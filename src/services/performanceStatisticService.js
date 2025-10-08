@@ -668,8 +668,10 @@ class PerformanceStatisticService {
       prevMonth.setMonth(currentMonth - 1);
       const prevMonthYear = prevMonth.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
       
-      // Calculate current month year
-      const currentMonthYear = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
+      // Calculate current month year (current month - 1)
+      const currentMonthDate = new Date(now);
+      currentMonthDate.setMonth(now.getMonth() - 1);
+      const currentMonthYear = currentMonthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
 
       // Get user details with district info
       const user = await User.findByPk(userId, {

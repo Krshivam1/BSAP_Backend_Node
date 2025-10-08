@@ -4,7 +4,7 @@ const router = express.Router();
 // Import all route modules with error handling
 console.log('🔧 Loading route modules...');
 
-let authRoutes, userRoutes, performanceStatisticRoutes, communicationRoutes, reportRoutes, cidRoutes, adminRoutes;
+let authRoutes, userRoutes, performanceStatisticRoutes, communicationRoutes, reportRoutes, cidRoutes, adminRoutes, dashboardRoutes;
 let stateRoutes, districtRoutes, rangeRoutes, battalionRoutes, moduleRoutes, topicRoutes, subTopicRoutes, questionRoutes, menuRoutes,subMenuRoutes,roleRoutes,permissionRoutes, fileRoutes;
 
 try {
@@ -61,6 +61,14 @@ try {
 } catch (error) {
   console.error('❌ Failed to load adminRoutes:', error.message);
   adminRoutes = express.Router();
+}
+
+try {
+  dashboardRoutes = require('./dashboardRoutes');
+  console.log('✅ dashboardRoutes loaded');
+} catch (error) {
+  console.error('❌ Failed to load dashboardRoutes:', error.message);
+  dashboardRoutes = express.Router();
 }
 
 try {
@@ -507,6 +515,28 @@ permissions: {
     'POST /:id/activate - Activate permission',
     'POST /:id/deactivate - Deactivate permission'
   ]
+},
+dashboard: {
+  prefix: '/api/dashboard',
+  description: 'Dashboard and analytics endpoints',
+  endpoints: [
+    'GET /overview - Get dashboard overview',
+    'GET /stats - Get comprehensive statistics',
+    'GET /users/stats - Get user statistics',
+    'GET /users/by-role - Get users grouped by role',
+    'GET /users/by-state - Get users grouped by state',
+    'GET /users/recent - Get recent users',
+    'GET /performance/overview - Get performance overview',
+    'GET /performance/by-month - Get performance by month',
+    'GET /performance/by-module - Get performance by module',
+    'GET /performance/trends - Get performance trends',
+    'GET /geography/stats - Get geography statistics',
+    'GET /geography/distribution - Get geographic distribution',
+    'GET /modules/stats - Get module statistics',
+    'GET /questions/stats - Get question statistics',
+    'GET /system/health - Get system health',
+    'GET /activity/recent - Get recent activity'
+  ]
 }
     }
   });
@@ -520,6 +550,8 @@ router.use('/users', userRoutes);
 console.log('✅ /users mounted');
 router.use('/admin', adminRoutes);
 console.log('✅ /admin mounted');
+router.use('/dashboard', dashboardRoutes);
+console.log('✅ /dashboard mounted');
 router.use('/performance-statistics', performanceStatisticRoutes);
 console.log('✅ /performance-statistics mounted');
 router.use('/communications', communicationRoutes);
