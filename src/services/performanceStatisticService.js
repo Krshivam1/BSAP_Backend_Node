@@ -1,4 +1,4 @@
-const { PerformanceStatistic, User, Question, Module, Topic, SubTopic, State, Range, District } = require('../models');
+const { PerformanceStatistic, User, Question, Module, Topic, SubTopic, State, Range, District, Battalion } = require('../models');
 const logger = require('../utils/logger');
 const { Op, Sequelize } = require('sequelize');
 
@@ -475,7 +475,7 @@ class PerformanceStatisticService {
         { 
           model: User, 
           as: 'user',
-          include: [{ model: District, as: 'district' }]
+          include: [{ model:Battalion, as: 'battalion' }]
         }
       ] : [],
       raw: type !== 'user' && type !== 'multiUser'
@@ -632,7 +632,7 @@ class PerformanceStatisticService {
         { model: SubTopic, as: 'subTopic' },
         { model: State, as: 'state' },
         { model: Range, as: 'range' },
-        { model: District, as: 'district' }
+        { model:Battalion, as: 'battalion' }
       ],
       limit,
       offset,
@@ -673,7 +673,7 @@ class PerformanceStatisticService {
 
       // Get user details with district info
       const user = await User.findByPk(userId, {
-        include: [{ model: District, as: 'district' }]
+        include: [{ model: Battalion, as: 'battalion' }]
       });
 
       if (!user) {
@@ -1076,11 +1076,12 @@ class PerformanceStatisticService {
       const now = new Date();
       const currentMonthYear = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
 
-      // Get user details for district info
+      // Get user details for battalion info
       const user = await User.findByPk(userId, {
-        include: [{ model: District, as: 'district' }]
+        include: [{ model: Battalion, as: 'battalion' }]
       });
-
+      console.log(`User details:`, user );
+      console.log(`Saving statistics for user ${userId} in battalion ${user.battalion || 'Unknown Battalion'}`);
       const statisticsToSave = performanceStatistics.map(stat => ({
         userId,
         questionId: stat.questionId,
@@ -1090,7 +1091,7 @@ class PerformanceStatisticService {
         value: stat.value,
         status: stat.status || 'INPROGRESS',
         monthYear: currentMonthYear,
-        districtId: user.district?.id || null,
+        battalionId: user.battalionId || null,
         rangeId: user.rangeId || null,
         stateId: user.stateId || null,
         createdBy: userId,

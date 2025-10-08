@@ -25,12 +25,12 @@ const PerformanceStatistic = sequelize.define('PerformanceStatistic', {
       key: 'id'
     }
   },
-  districtId: {
+  battalionId: {
     type: DataTypes.INTEGER,
-    field: 'district_id',
+    field: 'battalion_id',
     allowNull: true,
     references: {
-      model: 'districts',
+      model: 'battalions',
       key: 'id'
     }
   },
