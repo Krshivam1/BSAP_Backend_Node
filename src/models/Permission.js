@@ -44,4 +44,4 @@ const Permission = sequelize.define('Permission', {
   updatedAt: 'updated_date'
 });
 
-module.exports = Permission;
+module.exports = Permission; 

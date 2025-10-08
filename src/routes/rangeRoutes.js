@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const rangeController = require('../controllers/rangeController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate,authenticateWithPermission } = require('../middleware/auth');
 const { validatePagination, validateId, validateRangeCreate, validateRangeUpdate } = require('../middleware/validationMiddleware');
 
 // Stats and active
@@ -15,7 +15,7 @@ router.get('/by-state/:stateId', authenticate, validatePagination, rangeControll
 router.get('/:id/users', authenticate, validateId, validatePagination, rangeController.users);
 
 // CRUD
-router.get('/', authenticate, validatePagination, rangeController.list);
+router.get('/', authenticateWithPermission, validatePagination, rangeController.list);
 router.get('/:id', authenticate, validateId, rangeController.detail);
 router.post('/', authenticate, validateRangeCreate, rangeController.create);
 router.put('/:id', authenticate, validateId, validateRangeUpdate, rangeController.update);

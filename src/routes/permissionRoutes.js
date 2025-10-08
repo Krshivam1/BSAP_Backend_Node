@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const permissionController = require('../controllers/permissionController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate , authenticateWithPermission } = require('../middleware/auth');
 const { validatePagination, validateId } = require('../middleware/validationMiddleware');
 
 router.get('/test', (req, res) => {
   res.json({ message: 'Permission routes are working!', timestamp: new Date() });
 });
 
-router.get('/', authenticate, validatePagination, permissionController.search);
+router.get('/', authenticateWithPermission, validatePagination, permissionController.search);
 router.get('/active', authenticate, permissionController.active);
 router.get('/by-code/:code', authenticate, permissionController.byCode);
 
