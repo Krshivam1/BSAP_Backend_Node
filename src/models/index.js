@@ -9,6 +9,7 @@ const SubMenu = require('./SubMenu');
 const Permission = require('./Permission');
 const RolePermission = require('./RolePermission');
 const RoleMenu = require('./RoleMenu');
+const RoleSubMenu = require('./RoleSubMenu');
 const Module = require('./Module');
 const Topic = require('./Topic');
 const SubTopic = require('./SubTopic');
@@ -63,6 +64,13 @@ Role.belongsToMany(Menu, {
   as: 'menus'
 });
 
+Role.belongsToMany(SubMenu, {
+  through: RoleSubMenu,
+  foreignKey: 'roleId',
+  otherKey: 'subMenuId',
+  as: 'subMenus'
+});
+
 // Permission associations
 Permission.belongsToMany(Role, {
   through: RolePermission,
@@ -109,6 +117,24 @@ SubMenu.hasMany(Module, {
 SubMenu.hasMany(Topic, {
   foreignKey: 'subMenuId',
   as: 'topics'
+});
+
+SubMenu.belongsToMany(Role, {
+  through: RoleSubMenu,
+  foreignKey: 'subMenuId',
+  otherKey: 'roleId',
+  as: 'roles'
+});
+
+// RoleSubMenu associations (for eager loading)
+RoleSubMenu.belongsTo(SubMenu, {
+  foreignKey: 'subMenuId',
+  as: 'subMenu'
+});
+
+RoleSubMenu.belongsTo(Role, {
+  foreignKey: 'roleId',
+  as: 'role'
 });
 
 // State associations
@@ -272,6 +298,7 @@ module.exports = {
   Permission,
   RolePermission,
   RoleMenu,
+  RoleSubMenu,
   Module,
   Topic,
   SubTopic,

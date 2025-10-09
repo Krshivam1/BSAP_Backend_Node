@@ -176,7 +176,7 @@ class SubMenuService {
         {
           model: Menu,
           as: 'menu',
-          attributes: ['id', 'menuName'],
+          attributes: ['id', 'menuName', 'priority'],
           required: false
         }
       ];
@@ -184,7 +184,10 @@ class SubMenuService {
       const subMenus = await SubMenu.findAll({
         where: whereClause,
         include,
-        order: [['priority', 'ASC']]
+        order: [
+          [{ model: Menu, as: 'menu' }, 'priority', 'ASC'],
+          ['priority', 'ASC']
+        ]
       });
 
       // Transform the data to include parentMenu

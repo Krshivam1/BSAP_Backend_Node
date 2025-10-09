@@ -30,6 +30,7 @@ const menuRoutes = require('./src/routes/menuRoutes');
 const subMenuRoutes = require('./src/routes/subMenuRoutes');
 const roleRoutes = require('./src/routes/roleRoutes');
 const permissionRoutes = require('./src/routes/permissionRoutes');
+const permissionHandleRoutes = require('./src/routes/permissionHandleRoutes');
 const moduleRoutes = require('./src/routes/moduleRoutes');
 const topicRoutes = require('./src/routes/topicRoutes');
 const subTopicRoutes = require('./src/routes/subTopicRoutes');
@@ -124,6 +125,7 @@ app.use('/api/topics', topicRoutes);
 app.use('/api/sub-topics', subTopicRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/permissions', permissionRoutes);
+app.use('/api/permission-handle', permissionHandleRoutes);
 app.use('/api/battalions', battalionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
