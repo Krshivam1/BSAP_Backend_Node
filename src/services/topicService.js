@@ -89,27 +89,7 @@ class TopicService {
 
   // Get topic by ID
   static async getTopicById(id) {
-    const topic = await Topic.findByPk(id, {
-      include: [
-        {
-          model: Module,
-          as: 'module',
-          attributes: ['id', 'moduleName', 'description']
-        },
-        {
-          model: SubTopic,
-          as: 'subTopics',
-          attributes: ['id', 'name', 'description', 'active', 'displayOrder'],
-          order: [['displayOrder', 'ASC']]
-        },
-        {
-          model: Question,
-          as: 'questions',
-          attributes: ['id', 'question', 'questionType', 'isActive', 'displayOrder'],
-          order: [['displayOrder', 'ASC']]
-        }
-      ]
-    });
+    const topic = await Topic.findByPk(id);
 
     if (!topic) return null;
 
@@ -118,8 +98,8 @@ class TopicService {
       ...topicJson,
       moduleName: topicJson.module ? topicJson.module.moduleName : null,
       moduleDescription: topicJson.module ? topicJson.module.description : null,
-      moduleId: topicJson.moduleId, // Keep moduleId for reference
-      module: undefined // Remove nested module object
+      moduleId: topicJson.moduleId, 
+      module: undefined 
     };
   }
 
@@ -148,7 +128,7 @@ class TopicService {
         menuId: 5, // Fixed value as per requirement
         menuName: topicData.topicName,
         subMenuId: module.subMenuId,
-        menuUrl: `/performance?module=${module.priority}&topic=${newTopic.priority}`,
+        menuUrl: `/performance?module=${module.priority-1}&topic=${newTopic.priority}`,
         priority: topicData.priority || 0,
         active: topicData.active !== undefined ? topicData.active : true,
         createdBy: topicData.createdBy,

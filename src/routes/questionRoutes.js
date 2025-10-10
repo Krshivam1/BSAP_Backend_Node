@@ -46,7 +46,6 @@ router.get('/topic/:topicId/formulas', authenticate, withFormulas);
 router.get('/topic/:topicId/for-formula', authenticate, forFormula);
 router.get('/topic/:topicId/form', authenticate, forForm);
 
-
 // Collections
 router.get('/', authenticate, validatePagination, list);
 router.post('/', authenticate, validateQuestionCreate, create);

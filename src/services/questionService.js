@@ -104,6 +104,7 @@ class QuestionService {
 
   // Create new question
   static async createQuestion(questionData) {
+    console.log('Creating question with data:', questionData);
     return await Question.create(questionData);
   }
 

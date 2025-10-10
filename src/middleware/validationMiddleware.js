@@ -48,7 +48,7 @@ const userCreateSchema = Joi.object({
   roleId: Joi.number().integer().positive().required(),
   stateId: Joi.number().integer().positive().optional(),
   rangeId: Joi.number().integer().positive().optional(),
-  districtId: Joi.number().integer().positive().optional(),
+  battalionId: Joi.number().integer().positive().optional(),
   password: Joi.string().min(6).optional()
 });
 
@@ -60,7 +60,7 @@ const userUpdateSchema = Joi.object({
   roleId: Joi.number().integer().positive().optional(),
   stateId: Joi.number().integer().positive().optional(),
   rangeId: Joi.number().integer().positive().optional(),
-  districtId: Joi.number().integer().positive().optional(),
+  battalionId: Joi.number().integer().positive().optional(),
   password: Joi.string().min(6).optional(),
   active: Joi.boolean().optional()
 });
@@ -258,9 +258,9 @@ const topicCreateSchema = Joi.object({
     'number.integer': 'Priority must be an integer',
     'number.min': 'Priority must be at least 0'
   }),
-  formType: Joi.string().valid('NORMAL', 'Q/ST', 'SPECIAL').optional().messages({
+  formType: Joi.string().valid('NORMAL', 'Q/ST', 'ST/Q').optional().messages({
     'string.base': 'Form type must be a string',
-    'any.only': 'Form type must be one of: NORMAL, Q/ST, SPECIAL'
+    'any.only': 'Form type must be one of: NORMAL, Q/ST, ST/Q'
   }),
   isShowCummulative: Joi.boolean().optional().default(false).messages({
     'boolean.base': 'Show cumulative must be true or false'
@@ -313,9 +313,9 @@ const topicUpdateSchema = Joi.object({
     'number.integer': 'Priority must be an integer',
     'number.min': 'Priority must be at least 0'
   }),
-  formType: Joi.string().valid('NORMAL', 'Q/ST', 'SPECIAL').optional().messages({
+  formType: Joi.string().valid('NORMAL', 'Q/ST', 'ST/Q').optional().messages({
     'string.base': 'Form type must be a string',
-    'any.only': 'Form type must be one of: NORMAL, Q/ST, SPECIAL'
+    'any.only': 'Form type must be one of: NORMAL, Q/ST, ST/Q'
   }),
   isShowCummulative: Joi.boolean().optional().messages({
     'boolean.base': 'Show cumulative must be true or false'
@@ -372,7 +372,13 @@ const questionCreateSchema = Joi.object({
   topicId: Joi.number().integer().positive().required(),
   subTopicId: Joi.number().integer().positive().optional(),
   displayOrder: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional().default(true)
+  isActive: Joi.boolean().optional().default(true),
+  formula: Joi.string().optional().allow('', null),
+  priority: Joi.number().integer().min(0).optional().messages({
+    'number.base': 'Priority must be a number',
+    'number.integer': 'Priority must be an integer',
+    'number.min': 'Priority must be at least 0'
+  })
 });
 
 const questionUpdateSchema = Joi.object({
@@ -383,7 +389,13 @@ const questionUpdateSchema = Joi.object({
   topicId: Joi.number().integer().positive().optional(),
   subTopicId: Joi.number().integer().positive().optional(),
   displayOrder: Joi.number().integer().positive().optional(),
-  isActive: Joi.boolean().optional()
+  isActive: Joi.boolean().optional(),
+  formula: Joi.string().optional().allow('', null),
+  priority: Joi.number().integer().min(0).optional().messages({
+    'number.base': 'Priority must be a number',
+    'number.integer': 'Priority must be an integer',
+    'number.min': 'Priority must be at least 0'
+  })
 });
 
 // Bulk operations validation schemas

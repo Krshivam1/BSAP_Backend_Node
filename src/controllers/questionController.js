@@ -95,7 +95,7 @@ async function create(req, res) {
       createdBy: req.user.id,
       updatedBy: req.user.id
     };
-
+    console.log('Creating question with data:', questionData);
     const question = await QuestionService.createQuestion(questionData);
     
     res.status(201).json({
