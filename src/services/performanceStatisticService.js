@@ -654,18 +654,21 @@ class PerformanceStatisticService {
    * @param {Object} params - Module and topic parameters
    * @returns {Object} Form data with modules, topics, and questions
    */
-  async getPerformanceForm({ modulePathId, topicPathId, userId }) {
+ async getPerformanceForm({ modulePathId, topicPathId, userId }) {
     try {
       console.log(`Performance form request - Module: ${modulePathId}, Topic: ${topicPathId}, User: ${userId}`);
       
-      // Get current date for month calculations
+      const startTime = process.hrtime.bigint();
+      logger.info(`Function Started AT: ${new Date().toISOString()}`);
+
+      // Date calculations
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
       
-      // Calculate previous month for data comparison
+      // Calculate previous month (current - 2 months as per Java logic)
       const prevMonth = new Date(now);
-      prevMonth.setMonth(currentMonth - 1);
+      prevMonth.setMonth(currentMonth - 2);
       const prevMonthYear = prevMonth.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
       
       // Calculate current month year (current month - 1)
@@ -673,7 +676,7 @@ class PerformanceStatisticService {
       currentMonthDate.setMonth(now.getMonth() - 1);
       const currentMonthYear = currentMonthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
 
-      // Get user details with district info
+      // Get user details
       const user = await User.findByPk(userId, {
         include: [{ model: Battalion, as: 'battalion' }]
       });
@@ -682,7 +685,7 @@ class PerformanceStatisticService {
         throw new Error('User not found');
       }
 
-      // Find module by priority (modulePathId + 1 because menu uses 0-based, priority is 1-based)
+      // Get module by priority
       const modules = await Module.findAll({
         where: { 
           active: true,
@@ -691,40 +694,22 @@ class PerformanceStatisticService {
         order: [['priority', 'ASC']]
       });
 
-      console.log(`Looking for module with priority: ${modulePathId + 1}`);
-      
       if (!modules.length) {
-        // Get all modules for debugging
-        const allModules = await Module.findAll({
-          where: { active: true },
-          order: [['priority', 'ASC']]
-        });
-        console.log(`Available modules:`, allModules.map(m => `${m.id}: ${m.moduleName} (priority: ${m.priority})`));
         throw new Error(`Module not found with priority: ${modulePathId + 1}`);
       }
 
       const currentModule = modules[0];
-      console.log(`Selected module: ${currentModule.id}: ${currentModule.moduleName} (priority: ${currentModule.priority})`);
 
-      // Check navigation availability
-      const nextModules = await Module.findAll({
-        where: { 
-          active: true,
-          priority: modulePathId + 2
-        }
-      });
-
-      const prevModules = await Module.findAll({
-        where: { 
-          active: true,
-          priority: modulePathId
-        }
-      });
+      // Check navigation
+      const [nextModules, prevModules] = await Promise.all([
+        Module.findAll({ where: { active: true, priority: modulePathId + 2 } }),
+        Module.findAll({ where: { active: true, priority: modulePathId } })
+      ]);
 
       const moduleData = [];
 
       for (const module of modules) {
-        // Check if module is completed
+        // Check module completion
         const moduleCompletionCount = await PerformanceStatistic.count({
           where: {
             moduleId: module.id,
@@ -734,7 +719,7 @@ class PerformanceStatisticService {
           }
         });
 
-        // Get all topics for this module ordered by priority, then select by index
+        // Get topics
         const allTopics = await Topic.findAll({
           where: { 
             moduleId: module.id,
@@ -743,113 +728,57 @@ class PerformanceStatisticService {
           order: [['priority', 'ASC']]
         });
 
-        console.log(`Module ${module.moduleName} has ${allTopics.length} topics:`);
-        console.log(`Topics:`, allTopics.map((t, index) => `Index ${index + 1}: ${t.id}: ${t.topicName} (priority: ${t.priority})`));
-
         if (!allTopics.length || topicPathId - 1 >= allTopics.length || topicPathId < 1) {
-          console.log(`Topic not found. Module: ${module.id}, TopicPathId: ${topicPathId}, Available topics: ${allTopics.length}`);
-          console.log(`Valid topic IDs for this module: 1 to ${allTopics.length}`);
-          continue; // Skip this module if topic not found
+          continue;
         }
 
-        // Select topic by index (topicPathId is 1-based, convert to 0-based)
         const currentTopic = allTopics[topicPathId - 1];
-        console.log(`Selected topic at index ${topicPathId}: ${currentTopic.id}: ${currentTopic.topicName}`);
-        const topics = [currentTopic]; // Keep array format for compatibility
-
-        // Check topic navigation (topicPathId is 1-based)
+        
+        // Check topic navigation
         const hasNextTopic = topicPathId < allTopics.length;
         const hasPrevTopic = topicPathId > 1;
 
-        const topicData = [];
-
-        for (const topic of topics) {
-          // Get questions for this topic
-          const questions = await Question.findAll({
-            where: { 
-              topicId: topic.id,
-              active: true
-            },
-            order: [['priority', 'ASC']]
-          });
-
-          // Get question IDs for batch queries
-          const questionIds = questions.map(q => q.id);
-
-          // Batch query for performance data
-          const [prevData, currentData, finYearData] = await Promise.all([
-            this.getPreviousMonthData(prevMonthYear, questionIds, userId),
-            this.getCurrentMonthData(currentMonthYear, questionIds, userId),
-            this.getFinancialYearData(currentYear, questionIds, userId)
-          ]);
-
-          const processedQuestions = await this.processQuestions(
-            questions, 
-            prevData, 
-            currentData, 
-            finYearData,
-            topic,
-            userId,
-            currentMonthYear
-          );
-
-          // Get subtopics if needed
-          const subTopics = await SubTopic.findAll({
-            where: { 
-              topicId: topic.id,
-              active: true
-            },
-            order: [['priority', 'ASC']]
-          });
-
-          topicData.push({
-            id: topic.id,
-            topicName: topic.topicName,
-            topicSubName: topic.topicSubName,
-            formType: topic.formType,
-            moduleId: module.id,
-            isShowPrevious: topic.isShowPrevious || true,
-            isShowCummulative: topic.isShowCummulative || true,
-            questionDTOs: processedQuestions,
-            questions: processedQuestions,
-            subTopics: subTopics.map(st => ({
-              id: st.id,
-              subTopicName: st.subTopicName,
-              isDisabled: false
-            })),
-            nextTopic: hasNextTopic,
-            prevTopic: hasPrevTopic
-          });
+        // Process topic based on form type
+        let topicData;
+        switch (currentTopic.formType) {
+          case 'NORMAL':
+            topicData = await this.processNormalForm(currentTopic, userId, currentMonthYear, prevMonthYear, currentYear);
+            break;
+          case 'ST/Q':
+            topicData = await this.processSTQForm(currentTopic, userId, currentMonthYear, prevMonthYear, currentYear);
+            break;
+          case 'Q/ST':
+            topicData = await this.processQSTForm(currentTopic, userId, currentMonthYear, prevMonthYear, currentYear);
+            break;
+          default:
+            topicData = await this.processNormalForm(currentTopic, userId, currentMonthYear, prevMonthYear, currentYear);
         }
+
+        // Add navigation info
+        topicData.nextTopic = hasNextTopic;
+        topicData.prevTopic = hasPrevTopic;
 
         moduleData.push({
           id: module.id,
           moduleName: module.moduleName,
           priority: module.priority,
           isDisabled: moduleCompletionCount > 0,
-          topicDTOs: topicData
+          topicDTOs: [topicData]
         });
       }
 
-      // Calculate global navigation flags
-      let globalHasNextTopic = false;
-      let globalHasPrevTopic = false;
-      
-      if (moduleData.length > 0 && moduleData[0].topicDTOs.length > 0) {
-        const currentTopicData = moduleData[0].topicDTOs[0]; // Current topic data
-        globalHasNextTopic = currentTopicData.nextTopic;
-        globalHasPrevTopic = currentTopicData.prevTopic;
-      }
+      // Check success status
+      const isSuccess = await this.checkSuccessStatus(user, currentMonthYear);
 
       return {
         modules: moduleData,
-        userDistrict: user.district?.districtName || 'Unknown District',
+        userDistrict: user.battalion?.battalionName || 'Unknown District',
         monthYear: currentMonthYear,
-        isSuccess: false, // Will be calculated based on completion status
+        isSuccess,
         nextModule: nextModules.length > 0,
         prevModule: prevModules.length > 0,
-        nextTopic: globalHasNextTopic,
-        prevTopic: globalHasPrevTopic
+        nextTopic: moduleData[0]?.topicDTOs[0]?.nextTopic || false,
+        prevTopic: moduleData[0]?.topicDTOs[0]?.prevTopic || false
       };
 
     } catch (error) {
@@ -857,6 +786,644 @@ class PerformanceStatisticService {
       throw error;
     }
   }
+
+  async processNormalForm(topic, userId, currentMonthYear, prevMonthYear, currentYear) {
+    const questions = await Question.findAll({
+      where: { topicId: topic.id, active: true },
+      order: [['priority', 'ASC']]
+    });
+
+    const questionIds = questions.map(q => q.id);
+    
+    // Generate financial year months
+    const months = this.generateFinancialYearMonths(topic, currentYear);
+
+    // Bulk queries for performance
+    const [prevData, finYearData, currentData] = await Promise.all([
+      this.getBulkPreviousData(prevMonthYear, questionIds, userId),
+      this.getBulkFinYearData(months, questionIds, userId),
+      this.getBulkCurrentData(currentMonthYear, questionIds, userId)
+    ]);
+
+    const processedQuestions = [];
+    let totalCurrentCount = 0;
+    let lastMonthEndValue = null;
+    let oldSubTopicID = 0;
+    let tId = 1;
+
+    for (const question of questions) {
+      const questionDTO = this.createQuestionDTO(question);
+
+      // Handle subtopic grouping
+      if (question.subTopicId && question.subTopicId !== oldSubTopicID) {
+        oldSubTopicID = question.subTopicId;
+        tId = 1;
+      }
+      questionDTO.tId = tId++;
+
+      // Find data for this question
+      const prevValue = prevData.find(d => d.questionId === question.id)?.value;
+      const finYearValue = finYearData.find(d => d.questionId === question.id)?.value;
+      const currentValue = currentData.find(d => d.questionId === question.id)?.value;
+      const status = currentData.find(d => d.questionId === question.id)?.status;
+
+      // Set previous count
+      if (prevValue && this.shouldShowPrevious(question, topic)) {
+        questionDTO.previousCount = prevValue;
+        
+        if (this.shouldIncludeInTotal(question, prevValue)) {
+          totalCurrentCount += this.parseNumericValue(prevValue);
+        }
+      }
+
+      // Set financial year count
+      if (finYearValue && this.shouldShowCummulative(question)) {
+        questionDTO.finYearCount = finYearValue;
+        
+        // Check for end of month values
+        if (this.isEndOfMonthQuestion(question.question)) {
+          lastMonthEndValue = prevValue;
+        }
+      }
+
+      // Apply default value logic
+      const processedCurrentValue = await this.applyDefaultValue(
+        question, 
+        prevValue, 
+        currentValue, 
+        userId, 
+        prevMonthYear,
+        lastMonthEndValue
+      );
+
+      questionDTO.currentCount = processedCurrentValue;
+
+      // Calculate totals
+      if (this.shouldIncludeInTotal(question, processedCurrentValue)) {
+        totalCurrentCount += this.parseNumericValue(processedCurrentValue);
+      }
+
+      // Set disabled status
+      questionDTO.isDisabled = status === 'SUCCESS' || this.hasFormula(question);
+
+      // Get subtopic info if exists
+      if (question.subTopicId) {
+        const subTopic = await SubTopic.findByPk(question.subTopicId);
+        if (subTopic) {
+          questionDTO.subTopicName = subTopic.subTopicName;
+        }
+      }
+
+      processedQuestions.push(questionDTO);
+    }
+
+    // Get subtopics
+    const subTopics = await SubTopic.findAll({
+      where: { topicId: topic.id, active: true },
+      order: [['priority', 'ASC']]
+    });
+
+    return {
+      id: topic.id,
+      topicName: topic.topicName,
+      topicSubName: topic.topicSubName,
+      formType: topic.formType,
+      moduleId: topic.moduleId,
+      isShowPrevious: topic.isShowPrevious !== false,
+      isShowCummulative: topic.isShowCummulative !== false,
+      questionDTOs: processedQuestions,
+      questions: processedQuestions,
+      subTopics: subTopics.map(st => ({
+        id: st.id,
+        subTopicName: st.subTopicName,
+        isDisabled: false
+      })),
+      totalCurrentCount
+    };
+  }
+
+  async processSTQForm(topic, userId, currentMonthYear, prevMonthYear, currentYear) {
+    const [questions, subTopics] = await Promise.all([
+      Question.findAll({
+        where: { topicId: topic.id, active: true },
+        order: [['priority', 'ASC']]
+      }),
+      SubTopic.findAll({
+        where: { topicId: topic.id, active: true },
+        order: [['priority', 'ASC']]
+      })
+    ]);
+
+    const questionIds = questions.map(q => q.id);
+    const subTopicIds = subTopics.map(st => st.id);
+
+    // Bulk queries for subtopic combinations
+    const [currentCountData, valueData, finYearData] = await Promise.all([
+      this.getCurrentCountAllByUser(currentMonthYear, questionIds, userId, subTopicIds),
+      this.getCountByPreviousMonthSub(prevMonthYear, questionIds, userId, subTopicIds),
+      this.getFinYearCountAllByUser(currentYear, questionIds, userId, subTopicIds)
+    ]);
+
+    const processedQuestions = [];
+    const processedSubTopics = subTopics.map(st => ({
+      id: st.id,
+      subTopicName: st.subTopicName,
+      isDisabled: false
+    }));
+
+    let tId = 1;
+
+    for (const question of questions) {
+      const questionDTO = this.createQuestionDTO(question);
+      questionDTO.tId = tId++;
+
+      const currentCountList = [];
+      const valueList = [];
+      const finYearList = [];
+
+      for (const subTopic of subTopics) {
+        // Find data for this question-subtopic combination
+        const currentCount = currentCountData.find(
+          d => d.questionId === question.id && d.subTopicId === subTopic.id
+        )?.value;
+
+        const prevValue = valueData.find(
+          d => d.questionId === question.id && d.subTopicId === subTopic.id
+        )?.value;
+
+        const finYearValue = finYearData.find(
+          d => d.questionId === question.id && d.subTopicId === subTopic.id
+        )?.value;
+
+        const status = currentCountData.find(
+          d => d.questionId === question.id && d.subTopicId === subTopic.id
+        )?.status;
+
+        // Apply default value logic
+        const processedValue = await this.applyDefaultValueForSubTopic(
+          question,
+          subTopic,
+          prevValue,
+          currentCount,
+          userId,
+          prevMonthYear
+        );
+
+        currentCountList.push(processedValue || '0');
+        valueList.push(prevValue || '0');
+        finYearList.push(finYearValue || '0');
+
+        // Check if this combination is disabled
+        if (status === 'SUCCESS' || this.hasFormulaForCombination(question, subTopic)) {
+          questionDTO.isDisabled = true;
+        }
+      }
+
+      questionDTO.currentCountList = currentCountList;
+      questionDTO.valueList = valueList;
+      questionDTO.finYearList = finYearList;
+
+      processedQuestions.push(questionDTO);
+    }
+
+    return {
+      id: topic.id,
+      topicName: topic.topicName,
+      topicSubName: topic.topicSubName,
+      formType: topic.formType,
+      moduleId: topic.moduleId,
+      isShowPrevious: topic.isShowPrevious !== false,
+      isShowCummulative: topic.isShowCummulative !== false,
+      questions: processedQuestions,
+      subTopics: processedSubTopics
+    };
+  }
+
+  async processQSTForm(topic, userId, currentMonthYear, prevMonthYear, currentYear) {
+    // Similar to ST/Q but with different processing logic for new entries
+    const result = await this.processSTQForm(topic, userId, currentMonthYear, prevMonthYear, currentYear);
+
+    // Add new entry detection for Q/ST form
+    for (const question of result.questions) {
+      for (let i = 0; i < result.subTopics.length; i++) {
+        const subTopic = result.subTopics[i];
+        
+        // Check if this is a new entry
+        const preCount = await PerformanceStatistic.count({
+          where: {
+            questionId: question.id,
+            userId,
+            subTopicId: subTopic.id,
+            monthYear: { [Op.not]: currentMonthYear }
+          }
+        });
+
+        question.isNewList = question.isNewList || [];
+        question.isNewList[i] = preCount === 0;
+      }
+    }
+
+    return result;
+  }
+
+  // Apply default value logic
+  async applyDefaultValue(question, prevValue, currentValue, userId, prevMonthYear, lastMonthEndValue) {
+    switch (question.defaultVal) {
+      case 'PREVIOUS':
+        return prevValue || '0';
+
+      case 'QUESTION':
+        if (currentValue) return currentValue;
+        
+        const questValue = await this.getReferencedQuestionValue(
+          question.defaultQue,
+          userId,
+          prevMonthYear,
+          question.subTopicId
+        );
+        return questValue || '0';
+
+      case 'PS':
+        return await this.getUserPSCount(userId);
+
+      case 'SUB':
+        return await this.getUserSubCount(userId);
+
+      case 'CIRCLE':
+        return await this.getUserCircleCount(userId);
+
+      case 'PSOP':
+        return await this.getUserPSOPCount(userId);
+
+      case 'NONE':
+        return currentValue || '0';
+
+      default:
+        // Handle "beginning of month" logic
+        if (this.isBeginningOfMonthQuestion(question.question) && lastMonthEndValue) {
+          return lastMonthEndValue;
+        }
+        return '0';
+    }
+  }
+
+  async applyDefaultValueForSubTopic(question, subTopic, prevValue, currentValue, userId, prevMonthYear) {
+    switch (question.defaultVal) {
+      case 'PREVIOUS':
+        return prevValue || '0';
+
+      case 'QUESTION':
+        if (currentValue) return currentValue;
+        
+        const questValue = await this.getReferencedQuestionValueSub(
+          question.defaultQue,
+          userId,
+          prevMonthYear,
+          subTopic.id
+        );
+        return questValue || '0';
+
+      case 'NONE':
+        return currentValue || '0';
+
+      default:
+        return '0';
+    }
+  }
+
+  // Bulk data retrieval methods
+  async getBulkPreviousData(prevMonthYear, questionIds, userId) {
+    const results = await PerformanceStatistic.findAll({
+      where: {
+        monthYear: { [Op.like]: `%${prevMonthYear}%` },
+        questionId: { [Op.in]: questionIds },
+        userId
+      },
+      attributes: ['questionId', 'value']
+    });
+
+    return results.map(r => ({
+      questionId: r.questionId,
+      value: r.value
+    }));
+  }
+
+  async getBulkCurrentData(currentMonthYear, questionIds, userId) {
+    const results = await PerformanceStatistic.findAll({
+      where: {
+        monthYear: { [Op.like]: `%${currentMonthYear}%` },
+        questionId: { [Op.in]: questionIds },
+        userId
+      },
+      attributes: ['questionId', 'value', 'status']
+    });
+
+    return results.map(r => ({
+      questionId: r.questionId,
+      value: r.value,
+      status: r.status
+    }));
+  }
+
+  async getBulkFinYearData(months, questionIds, userId) {
+    const results = await PerformanceStatistic.findAll({
+      where: {
+        monthYear: { [Op.in]: months },
+        questionId: { [Op.in]: questionIds },
+        userId
+      },
+      attributes: ['questionId', 'value']
+    });
+
+    return results.map(r => ({
+      questionId: r.questionId,
+      value: r.value
+    }));
+  }
+
+  async getCurrentCountAllByUser(currentMonthYear, questionIds, userId, subTopicIds) {
+    const results = await PerformanceStatistic.findAll({
+      where: {
+        monthYear: { [Op.like]: `%${currentMonthYear}%` },
+        questionId: { [Op.in]: questionIds },
+        userId,
+        subTopicId: { [Op.in]: subTopicIds }
+      },
+      attributes: ['questionId', 'subTopicId', 'value', 'status']
+    });
+
+    return results.map(r => ({
+      questionId: r.questionId,
+      subTopicId: r.subTopicId,
+      value: r.value,
+      status: r.status
+    }));
+  }
+
+  async getCountByPreviousMonthSub(prevMonthYear, questionIds, userId, subTopicIds) {
+    const results = await PerformanceStatistic.findAll({
+      where: {
+        monthYear: { [Op.like]: `%${prevMonthYear}%` },
+        questionId: { [Op.in]: questionIds },
+        userId,
+        subTopicId: { [Op.in]: subTopicIds }
+      },
+      attributes: ['questionId', 'subTopicId', 'value']
+    });
+
+    return results.map(r => ({
+      questionId: r.questionId,
+      subTopicId: r.subTopicId,
+      value: r.value
+    }));
+  }
+
+  async getFinYearCountAllByUser(currentYear, questionIds, userId, subTopicIds) {
+    const months = this.generateFinancialYearMonths(null, currentYear);
+    
+    const results = await PerformanceStatistic.findAll({
+      where: {
+        monthYear: { [Op.in]: months },
+        questionId: { [Op.in]: questionIds },
+        userId,
+        subTopicId: { [Op.in]: subTopicIds }
+      },
+      attributes: ['questionId', 'subTopicId', 'value']
+    });
+
+    return results.map(r => ({
+      questionId: r.questionId,
+      subTopicId: r.subTopicId,
+      value: r.value
+    }));
+  }
+
+  // User count methods
+  async getUserPSCount(userId) {
+    const user = await User.findByPk(userId, {
+      attributes: ['psCount'] // Assuming ps count field exists
+    });
+    return user?.psCount?.toString() || '0';
+  }
+
+  async getUserSubCount(userId) {
+    const user = await User.findByPk(userId, {
+      attributes: ['subCount'] // Assuming sub count field exists  
+    });
+    return user?.subCount?.toString() || '0';
+  }
+
+  async getUserCircleCount(userId) {
+    const user = await User.findByPk(userId, {
+      attributes: ['circleCount'] // Assuming circle count field exists
+    });
+    return user?.circleCount?.toString() || '0';
+  }
+
+  async getUserPSOPCount(userId) {
+    const user = await User.findByPk(userId, {
+      attributes: ['psopCount'] // Assuming psop count field exists
+    });
+    return user?.psopCount?.toString() || '0';
+  }
+
+  async getReferencedQuestionValue(questionId, userId, monthYear, subTopicId = null) {
+    const where = {
+      questionId,
+      userId,
+      monthYear: { [Op.like]: `%${monthYear}%` }
+    };
+
+    if (subTopicId) {
+      where.subTopicId = subTopicId;
+    }
+
+    const result = await PerformanceStatistic.findOne({
+      where,
+      attributes: ['value']
+    });
+
+    return result?.value || '0';
+  }
+
+  async getReferencedQuestionValueSub(questionId, userId, monthYear, subTopicId) {
+    return this.getReferencedQuestionValue(questionId, userId, monthYear, subTopicId);
+  }
+
+  // Success status check
+  async checkSuccessStatus(user, currentMonthYear) {
+    const totalModules = await Module.count({ where: { active: true } });
+    
+    const inProgressCount = await PerformanceStatistic.count({
+      where: {
+        // Assuming district-based logic, adjust based on your user model
+        userId: user.id,
+        monthYear: { [Op.like]: `%${currentMonthYear}%` },
+        status: 'INPROGRESS'
+      }
+    });
+
+    const successCount = await PerformanceStatistic.count({
+      where: {
+        userId: user.id,
+        monthYear: { [Op.like]: `%${currentMonthYear}%` },
+        status: 'SUCCESS'
+      }
+    });
+
+    const totalQuestions = await Question.count({ where: { active: true } });
+
+    if (inProgressCount === 0 && successCount >= totalQuestions) {
+      // Check if all modules are completed
+      const completedModules = await PerformanceStatistic.findAll({
+        where: {
+          userId: user.id,
+          monthYear: { [Op.like]: `%${currentMonthYear}%` },
+          status: 'SUCCESS'
+        },
+        attributes: ['moduleId'],
+        group: ['moduleId']
+      });
+
+      return completedModules.length === totalModules;
+    }
+
+    return false;
+  }
+
+  // Helper methods
+  createQuestionDTO(question) {
+    return {
+      id: question.id,
+      question: question.question,
+      type: question.type,
+      topicId: question.topicId,
+      subTopicId: question.subTopicId,
+      defaultVal: question.defaultVal,
+      defaultQue: question.defaultQue,
+      defaultSub: question.defaultSub,
+      formula: question.formula,
+      defaultTo: question.defaultTo,
+      defaultFormula: question.defaultFormula,
+      priority: question.priority,
+      isDisabled: false,
+      currentCount: '0',
+      previousCount: null,
+      finYearCount: null
+    };
+  }
+
+  generateFinancialYearMonths(topic, currentYear) {
+    const months = [];
+    const cal = new Date();
+    
+    if (topic && topic.startMonth !== undefined && topic.endMonth !== undefined) {
+      cal.setDate(1);
+      cal.setMonth(topic.startMonth + 1);
+      cal.setFullYear(currentYear);
+      
+      const endMonth = topic.endMonth;
+      
+      do {
+        cal.setMonth(cal.getMonth() - 1);
+        const monthYear = cal.toLocaleDateString('en-US', { 
+          month: 'short', 
+          year: 'numeric' 
+        }).toUpperCase();
+        months.push(monthYear);
+      } while (cal.getMonth() !== (endMonth + 1));
+    } else {
+      // Default financial year: April to March
+      const currentMonth = new Date().getMonth();
+      const startYear = currentMonth >= 3 ? currentYear : currentYear - 1; // April = month 3
+      
+      for (let i = 0; i < 12; i++) {
+        const month = new Date(startYear, 3 + i, 1); // Start from April
+        const monthYear = month.toLocaleDateString('en-US', { 
+          month: 'short', 
+          year: 'numeric' 
+        }).toUpperCase();
+        months.push(monthYear);
+      }
+    }
+    
+    return months;
+  }
+
+  shouldIncludeInTotal(question, value) {
+    return (
+      question.type !== 'Text' &&
+      question.type !== 'Date' &&
+      value !== 'Yes' &&
+      value !== 'No' &&
+      !value?.includes('/') &&
+      value &&
+      value.length > 0 &&
+      !value.includes('NaN')
+    );
+  }
+
+  shouldShowPrevious(question, topic) {
+    if (!topic.isShowPrevious) return false;
+    
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    
+    if (topic.isStartJan && currentMonth - 1 !== topic.startMonth) {
+      return true;
+    } else if (!topic.isStartJan) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  shouldShowCummulative(question) {
+    return question.type !== 'Text' && question.type !== 'Date';
+  }
+
+  parseNumericValue(value) {
+    if (!value || value === 'Yes' || value === 'No' || value.includes('/')) {
+      return 0;
+    }
+    
+    const numValue = parseFloat(value);
+    return isNaN(numValue) ? 0 : numValue;
+  }
+
+  hasFormula(question) {
+    return question.formula || 
+           question.defaultFormula || 
+           (question.defaultVal !== 'NONE' && question.defaultTo);
+  }
+
+  hasFormulaForCombination(question, subTopic) {
+    return (
+      question.formula?.includes(`=${question.id}_${subTopic.id}`) ||
+      (question.defaultVal !== 'NONE' && 
+       question.defaultTo === `${question.id}_${subTopic.id}`) ||
+      question.defaultFormula?.includes(`=${question.id}_${subTopic.id}`)
+    );
+  }
+
+  isEndOfMonthQuestion(questionText) {
+    return (
+      questionText.includes('end of the month') ||
+      questionText.includes('end month') ||
+      questionText.includes('end of month') ||
+      questionText.includes('ending of the month')
+    );
+  }
+
+  isBeginningOfMonthQuestion(questionText) {
+    return (
+      questionText.includes('beginning of the month') ||
+      questionText.includes('beginning month') ||
+      questionText.includes('beginning of month') ||
+      questionText.includes('beginning month')
+    );
+  }
+
 
   /**
    * Get previous month data for questions
@@ -1076,6 +1643,8 @@ class PerformanceStatisticService {
   async saveStatistics({ performanceStatistics, userId }) {
     try {
       const now = new Date();
+      // Set to current month - 1
+      now.setMonth(now.getMonth() - 1);
       const currentMonthYear = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
 
       // Get user details for battalion info

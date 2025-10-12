@@ -2043,3 +2043,135 @@
 {"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-10 01:16:10"}
 {"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-10 01:16:11"}
 {"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-10 01:16:11"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 10:36:02"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 10:36:02"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 10:36:02"}
+{"level":"info","message":"User mocsoft@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-10-11 10:59:46"}
+{"level":"info","message":"User mocsoft@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-10-11 11:22:25"}
+{"level":"info","message":"User mocsoft@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:09:10"}
+{"level":"info","message":"User mocsoft@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:37:14"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:25"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:26"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:26"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:36"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:36"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:36"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:44"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:44"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:47:44"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:53:10"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:53:11"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:53:11"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:53:49"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:53:49"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:53:49"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:54:02"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:54:02"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:54:02"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:54:17"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:54:17"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:54:17"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:56:17"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:56:18"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:56:18"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 12:57:41"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 12:57:42"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 12:57:42"}
+{"level":"error","message":"Login error: Incorrect username or password!","service":"performance-statistics-api","stack":"Error: Incorrect username or password!\n    at AuthService.doLogin (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\services\\authService.js:39:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async Object.login (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\controllers\\authController.js:8:20)","timestamp":"2025-10-11 13:04:06"}
+{"level":"error","message":"Login error: Incorrect username or password!","service":"performance-statistics-api","stack":"Error: Incorrect username or password!\n    at AuthService.doLogin (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\services\\authService.js:39:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async Object.login (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\controllers\\authController.js:8:20)","timestamp":"2025-10-11 13:04:28"}
+{"level":"error","message":"Login error: Incorrect username or password!","service":"performance-statistics-api","stack":"Error: Incorrect username or password!\n    at AuthService.doLogin (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\services\\authService.js:45:13)\n    at async Object.login (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\controllers\\authController.js:8:20)","timestamp":"2025-10-11 13:29:59"}
+{"level":"error","message":"Login error: Incorrect username or password!","service":"performance-statistics-api","stack":"Error: Incorrect username or password!\n    at AuthService.doLogin (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\services\\authService.js:45:13)\n    at async Object.login (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\controllers\\authController.js:8:20)","timestamp":"2025-10-11 13:30:01"}
+{"level":"info","message":"User mocsoft@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-10-11 13:30:13"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:00:02"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:00:32"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:01:01"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:06:09"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 16:06:10"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 16:06:10"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:06:35"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 16:06:35"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 16:06:35"}
+{"level":"info","message":"User mocsoft@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:17:51"}
+{"level":"info","message":"User mocsoft@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:21:21"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:30:14"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:30:45"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:31:15"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:31:45"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:32:15"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:32:28"}
+{"level":"info","message":"OTP 624802 generated for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:32:28"}
+{"level":"info","message":"OTP verified and statistics finalized for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:32:42"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:35:59"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:36:29"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:36:46"}
+{"level":"info","message":"OTP 205407 generated for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:36:46"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:37:00"}
+{"level":"info","message":"OTP verified and statistics finalized for user 2","service":"performance-statistics-api","timestamp":"2025-10-11 16:37:02"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:42:25"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 16:42:26"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 16:42:26"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:42:43"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 16:42:44"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 16:42:44"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:05"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:05"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:05"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:15"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:15"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:15"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:44"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:44"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 16:43:44"}
+{"level":"info","message":"Database connected successfully","service":"performance-statistics-api","timestamp":"2025-10-11 23:23:45"}
+{"level":"info","message":"Database synchronized","service":"performance-statistics-api","timestamp":"2025-10-11 23:23:46"}
+{"level":"info","message":"Server is running on port 5000","service":"performance-statistics-api","timestamp":"2025-10-11 23:23:46"}
+{"level":"info","message":"Function Started AT: 2025-10-11T17:54:10.157Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:24:10"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:05:32.616Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:35:32"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:10:19.317Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:40:19"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:11:37.917Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:41:37"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:22:52.139Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:52:52"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:24:16.814Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:54:16"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:24:27.375Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:54:27"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:24:47.019Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:54:47"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:26:12.557Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:56:12"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:26:25.960Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:56:25"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:26:40.067Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:56:40"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:27:37.714Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:57:37"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:27:52.211Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:57:52"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:28:59.333Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:58:59"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:29:41.612Z","service":"performance-statistics-api","timestamp":"2025-10-11 23:59:41"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:30:55.123Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:00:55"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:31:11.130Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:01:11"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:31:27.659Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:01:27"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:31:38.884Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:01:38"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:31:51.567Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:01:51"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:33:37.816Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:03:37"}
+{"level":"info","message":"Saved 0 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-12 00:04:20"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:34:23.129Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:04:23"}
+{"level":"info","message":"Saved 0 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-12 00:04:57"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:36:31.260Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:06:31"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:36:48.921Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:06:48"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:37:04.783Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:07:04"}
+{"level":"info","message":"Saved 24 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-12 00:07:19"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:37:31.843Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:07:31"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:38:21.641Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:08:21"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:38:32.915Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:08:32"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:39:01.015Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:09:01"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:39:28.577Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:09:28"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:39:54.299Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:09:54"}
+{"level":"info","message":"Function Started AT: 2025-10-11T18:40:31.385Z","service":"performance-statistics-api","timestamp":"2025-10-12 00:10:31"}
+{"level":"error","message":"Login error: Incorrect username or password!","service":"performance-statistics-api","stack":"Error: Incorrect username or password!\n    at AuthService.doLogin (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\services\\authService.js:45:13)\n    at async Object.login (G:\\MocSoft\\BSAP\\Darpan\\New folder\\performancestatistics-nodejs\\src\\controllers\\authController.js:8:20)","timestamp":"2025-10-12 20:13:53"}
+{"level":"info","message":"User mocsoft@gmail.com logged in successfully","service":"performance-statistics-api","timestamp":"2025-10-12 20:14:00"}
+{"level":"info","message":"Function Started AT: 2025-10-12T14:44:06.319Z","service":"performance-statistics-api","timestamp":"2025-10-12 20:14:06"}
+{"level":"info","message":"Function Started AT: 2025-10-12T15:15:21.146Z","service":"performance-statistics-api","timestamp":"2025-10-12 20:45:21"}
+{"level":"info","message":"Function Started AT: 2025-10-12T16:22:06.035Z","service":"performance-statistics-api","timestamp":"2025-10-12 21:52:06"}
+{"level":"info","message":"Function Started AT: 2025-10-12T16:24:23.410Z","service":"performance-statistics-api","timestamp":"2025-10-12 21:54:23"}
+{"level":"info","message":"Saved 28 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-12 21:55:12"}
+{"level":"info","message":"OTP 576872 generated for user 2","service":"performance-statistics-api","timestamp":"2025-10-12 21:55:12"}
+{"level":"info","message":"Saved 28 performance statistics for user 2","service":"performance-statistics-api","timestamp":"2025-10-12 21:55:18"}
+{"level":"info","message":"Function Started AT: 2025-10-12T16:25:30.227Z","service":"performance-statistics-api","timestamp":"2025-10-12 21:55:30"}
+{"level":"info","message":"Function Started AT: 2025-10-12T16:26:14.930Z","service":"performance-statistics-api","timestamp":"2025-10-12 21:56:14"}
+{"level":"info","message":"Function Started AT: 2025-10-12T16:29:20.434Z","service":"performance-statistics-api","timestamp":"2025-10-12 21:59:20"}
+{"level":"info","message":"Function Started AT: 2025-10-12T16:30:36.397Z","service":"performance-statistics-api","timestamp":"2025-10-12 22:00:36"}
+{"level":"info","message":"Function Started AT: 2025-10-12T16:30:40.775Z","service":"performance-statistics-api","timestamp":"2025-10-12 22:00:40"}
+{"level":"info","message":"Function Started AT: 2025-10-12T16:31:44.570Z","service":"performance-statistics-api","timestamp":"2025-10-12 22:01:44"}

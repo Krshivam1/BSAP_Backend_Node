@@ -168,7 +168,8 @@ class SubMenuService {
         whereClause.menuId = menuId;
       }
 
-      if (parentId !== undefined) {
+      // Only add subMenuId filter if parentId is explicitly provided
+      if (parentId !== null && parentId !== undefined) {
         whereClause.subMenuId = parentId === 'null' ? null : parentId;
       }
 
