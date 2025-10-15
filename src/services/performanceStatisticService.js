@@ -1315,23 +1315,39 @@ class PerformanceStatisticService {
 
   generateFinancialYearMonths(topic, currentYear) {
     const months = [];
-    const cal = new Date();
     
     if (topic && topic.startMonth !== undefined && topic.endMonth !== undefined) {
+      // Calculate the number of months between start and end
+      let startMonth = topic.startMonth;
+      let endMonth = topic.endMonth;
+      
+      // Handle year crossing (e.g., start month 1 (Feb), end month 12 (Jan next year))
+      let monthsToGenerate = 12; // Default to 12 months
+      
+      if (endMonth >= startMonth) {
+        monthsToGenerate = endMonth - startMonth + 1;
+      } else {
+        monthsToGenerate = 12 - startMonth + endMonth + 1;
+      }
+      
+      // Limit to maximum 24 months for safety
+      monthsToGenerate = Math.min(monthsToGenerate, 24);
+      
+      const cal = new Date();
       cal.setDate(1);
-      cal.setMonth(topic.startMonth + 1);
+      cal.setMonth(startMonth);
       cal.setFullYear(currentYear);
       
-      const endMonth = topic.endMonth;
-      
-      do {
-        cal.setMonth(cal.getMonth() - 1);
+      for (let i = 0; i < monthsToGenerate; i++) {
         const monthYear = cal.toLocaleDateString('en-US', { 
           month: 'short', 
           year: 'numeric' 
         }).toUpperCase();
         months.push(monthYear);
-      } while (cal.getMonth() !== (endMonth + 1));
+        
+        // Move to next month
+        cal.setMonth(cal.getMonth() + 1);
+      }
     } else {
       // Default financial year: April to March
       const currentMonth = new Date().getMonth();
