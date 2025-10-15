@@ -152,11 +152,50 @@ class TopicService {
 
   // Update topic
   static async updateTopic(id, topicData) {
-    const topic = await Topic.findByPk(id);
-    if (!topic) return null;
+    const transaction = await sequelize.transaction();
+    
+    try {
+      // Step 1: Find the topic with its module
+      const topic = await Topic.findByPk(id, {
+        include: [{ model: Module, as: 'module' }],
+        transaction
+      });
+      if (!topic) return null;
 
-    await topic.update(topicData);
-    return await this.getTopicById(id);
+      // Step 2: Update the topic
+      await topic.update(topicData, { transaction });
+
+      // Step 3: Find and update the corresponding SubMenu
+      const subMenu = await SubMenu.findOne({
+        where: {
+          subMenuId: topic.module.subMenuId,
+          menuUrl: `/performance?module=${topic.module.priority-1}&topic=${topic.priority}`
+        },
+        transaction
+      });
+
+      if (subMenu) {
+        const updatedSubMenuData = {
+          menuName: topicData.topicName || subMenu.menuName,
+          menuUrl: `/performance?module=${topic.module.priority-1}&topic=${topicData.priority || topic.priority}`,
+          priority: topicData.priority !== undefined ? topicData.priority : subMenu.priority,
+          active: topicData.active !== undefined ? topicData.active : subMenu.active,
+          updatedBy: topicData.updatedBy || topicData.createdBy
+        };
+
+        await subMenu.update(updatedSubMenuData, { transaction });
+      }
+
+      // Commit transaction if all operations succeed
+      await transaction.commit();
+
+      return await this.getTopicById(id);
+
+    } catch (error) {
+      // Rollback transaction on any error
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   // Delete topic

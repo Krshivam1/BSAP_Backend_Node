@@ -72,6 +72,20 @@ class ModuleService {
     const module = await Module.findByPk(id);
     if (!module) return null;
 
+    // If module has a subMenuId, update the corresponding SubMenu
+    if (module.subMenuId) {
+      const subMenu = await SubMenu.findByPk(module.subMenuId);
+      if (subMenu) {
+        await subMenu.update({
+          menuName: moduleData.moduleName || subMenu.menuName,
+          priority: moduleData.priority !== undefined ? moduleData.priority : subMenu.priority,
+          active: moduleData.active !== undefined ? moduleData.active : subMenu.active,
+          updatedBy: moduleData.updatedBy || moduleData.createdBy
+        });
+      }
+    }
+
+    // Update the module
     await module.update(moduleData);
     return await this.getModuleById(id);
   }
