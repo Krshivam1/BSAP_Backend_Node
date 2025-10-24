@@ -82,6 +82,25 @@ async function getBattalionById(req, res) {
   }
 }
 
+
+async function getActiveBattalions(req, res) {
+  try {
+    const activeBattalions = await BattalionService.getActiveBattalions();
+    res.json({
+      status: 'SUCCESS',
+      message: 'Active battalions retrieved successfully',
+      data: activeBattalions
+    });
+  } catch (error) {
+    console.error('Get active battalions error:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Failed to retrieve active battalions',
+      error: error.message
+    });
+  }
+}
+
 // POST /api/battalions - Create new battalion
 async function createBattalion(req, res) {
   try {
@@ -316,5 +335,6 @@ module.exports = {
   deleteBattalion,
   toggleBattalionStatus,
   getBattalionsByRange,
-  getBattalionsByDistrict
+  getBattalionsByDistrict,
+  getActiveBattalions
 };

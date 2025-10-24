@@ -19,6 +19,9 @@ router.get('/by-range/:rangeId', authenticate, battalionController.getBattalions
 // GET /api/battalions/by-district/:districtId - Get battalions by district  
 router.get('/by-district/:districtId', authenticate, battalionController.getBattalionsByDistrict);
 
+// GET /api/battalions/active - Get active battalions
+router.get('/active', authenticate, battalionController.getActiveBattalions);
+
 // GET /api/battalions/:id - Get battalion by ID
 router.get('/:id', authenticate, validateId, battalionController.getBattalionById);
 
@@ -33,5 +36,6 @@ router.patch('/:id/toggle-status', authenticate, validateId, battalionController
 
 // DELETE /api/battalions/:id - Delete battalion (soft delete)
 router.delete('/:id', authenticate, validateId, battalionController.deleteBattalion);
+
 
 module.exports = router;

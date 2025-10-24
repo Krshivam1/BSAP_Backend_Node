@@ -80,6 +80,19 @@ class BattalionService {
     }
   }
 
+  static async getActiveBattalions() {
+    try {
+      const battalions = await Battalion.findAll({
+        where: { active: true }
+      });
+
+      return battalions;
+    } catch (error) {
+      console.error('Error in getActiveBattalions:', error);
+      throw error;
+    }
+  }
+
   static async getBattalionById(id) {
     try {
       const battalion = await Battalion.findOne({

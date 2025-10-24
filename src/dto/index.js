@@ -30,6 +30,18 @@ const {
   PaginatedUserDTO
 } = require('./UserDTO');
 
+// Report DTOs
+// const {
+//   ReportRequestDTO,
+//   ReportResponseDTO,
+//   ReportMetadataDTO,
+//   ReportStatisticsDTO,
+//   ReportDataRowDTO,
+//   ChartDataDTO,
+//   ExportConfigDTO,
+//   FilterOptionsDTO
+// } = require('./ReportDTO');
+
 /**
  * DTO Factory for creating appropriate DTOs
  */
@@ -57,7 +69,17 @@ class DTOFactory {
       'user': UserDTO,
       'role': RoleDTO,
       'userhistory': UserHistoryDTO,
-      'performancestatistic': PerformanceStatisticDTO
+      'performancestatistic': PerformanceStatisticDTO,
+      
+      // Report DTOs
+      'reportrequest': ReportRequestDTO,
+      'reportresponse': ReportResponseDTO,
+      'reportmetadata': ReportMetadataDTO,
+      'reportstatistics': ReportStatisticsDTO,
+      'reportdatarow': ReportDataRowDTO,
+      'chartdata': ChartDataDTO,
+      'exportconfig': ExportConfigDTO,
+      'filteroptions': FilterOptionsDTO
     };
 
     const DTOClass = dtoMap[type.toLowerCase()];
@@ -319,6 +341,16 @@ module.exports = {
   PerformanceStatisticDTO,
   PerformanceAnalyticsDTO,
   PaginatedUserDTO,
+  
+  // Report DTOs
+  // ReportRequestDTO,
+  // ReportResponseDTO,
+  // ReportMetadataDTO,
+  // ReportStatisticsDTO,
+  // ReportDataRowDTO,
+  // ChartDataDTO,
+  // ExportConfigDTO,
+  // FilterOptionsDTO,
   
   // Utilities
   DTOFactory,

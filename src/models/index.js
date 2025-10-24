@@ -185,6 +185,11 @@ District.hasMany(Battalion, {
   as: 'battalions'
 });
 
+Battalion.hasMany(PerformanceStatistic, {
+  foreignKey: 'battalionId',
+  as: 'performanceStatistics'
+});
+
 // Module associations
 Module.belongsTo(SubMenu, {
   foreignKey: 'subMenuId',
@@ -255,6 +260,11 @@ PerformanceStatistic.belongsTo(Range, {
   as: 'range'
 });
 
+PerformanceStatistic.belongsTo(Battalion, {
+  foreignKey: 'battalionId',
+  as: 'battalion'
+});
+
 PerformanceStatistic.belongsTo(Module, {
   foreignKey: 'moduleId',
   as: 'module'
@@ -273,6 +283,17 @@ PerformanceStatistic.belongsTo(SubTopic, {
 PerformanceStatistic.belongsTo(Question, {
   foreignKey: 'questionId',
   as: 'question'
+});
+
+// User associations for audit fields
+PerformanceStatistic.belongsTo(User, {
+  foreignKey: 'createdBy',
+  as: 'CreatedByUser'
+});
+
+PerformanceStatistic.belongsTo(User, {
+  foreignKey: 'updatedBy',
+  as: 'UpdatedByUser'
 });
 
 // CID Crime associations
